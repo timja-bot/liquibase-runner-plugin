@@ -9,11 +9,13 @@
         </select>
     </f:entry>
 
-    <f:entry title="Command" field="liquibaseCommand">
+    <f:entry title="Command" field="liquibaseCommand"
+            description="Command to run, i.e. 'update', 'validate', 'updateTestingRollback', etc.">
         <f:textbox value="${instance.liquibaseCommand}"/>
     </f:entry>
     
-    <f:entry title="Change Log File" field="changeLogFile">
+    <f:entry title="Change Log File" field="changeLogFile"
+            description="Root changeset file.">
         <f:textbox value="${instance.changeLogFile}"/>
     </f:entry>
 
@@ -29,14 +31,16 @@
         <f:textbox value="${instance.driverClassName}"/>
     </f:entry>
 
-    <f:entry title="Username" field="username">
+    <f:entry title="Username" field="username"
+            description="Username used to connect to the database">
         <f:textbox value="${instance.username}"/>
     </f:entry>
 
-    <f:entry title="Password" field="password">
+    <f:entry title="Password" field="password"
+            description="Password used to connect to the database (will be masked in build log).">
         <f:textbox value="${instance.password}"/>
     </f:entry>
-    <f:entry title="Contexts" field="contexts">
+    <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
         <f:textbox value="${instance.contexts}"/>
     </f:entry>
 
