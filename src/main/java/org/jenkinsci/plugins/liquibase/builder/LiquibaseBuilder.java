@@ -148,7 +148,7 @@ public class LiquibaseBuilder extends Builder {
         if (exitStatus != 0) {
             result = false;
         } else {
-            // check for errors that don't result
+            // check for errors that don't result in an exit code less than 0.
             File logFile = build.getLogFile();
             if (Util.doesErrorExist(logFile)) {
                 result = false;
