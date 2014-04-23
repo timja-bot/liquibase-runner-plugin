@@ -15,10 +15,12 @@ import hudson.tools.ToolProperty;
 import java.io.IOException;
 import java.util.List;
 
-import org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder;
 import org.jenkinsci.plugins.liquibase.builder.LiquibaseStepDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * Describes details of liquibase installation.
+ */
 public class LiquibaseInstallation extends ToolInstallation implements NodeSpecific<LiquibaseInstallation>,
         EnvironmentSpecific<LiquibaseInstallation> {
     @DataBoundConstructor
