@@ -19,18 +19,19 @@
         <f:textbox value="${instance.changeLogFile}"/>
     </f:entry>
 
-    <f:entry title="Defaults File" field="defaultsFile">
+    <f:entry title="Defaults File" field="defaultsFile" description="File with default option values.  You may use this instead of defining each option.">
         <f:textbox value="${instance.defaultsFile}"/>
     </f:entry>
 
-    <f:entry title="Database URL" field="url">
+    <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb">
         <f:textbox value="${instance.url}"/>
     </f:entry>
-
-    <f:entry title="Driver Classname" field="driverClassName">
+    <f:entry title="Default Schema Name" field="defaultSchemaName" description="Default database schema to use.  Leave blank to default to that defined by the URL.">
+        <f:textbox value="${instance.url}"/>
+    </f:entry>
+    <f:entry title="Driver Classname" field="driverClassName" description="example: com.mysql.jdbc.Driver">
         <f:textbox value="${instance.driverClassName}"/>
     </f:entry>
-
     <f:entry title="Username" field="username"
             description="Username used to connect to the database">
         <f:textbox value="${instance.username}"/>

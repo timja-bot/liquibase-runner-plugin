@@ -16,23 +16,57 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.google.common.base.Strings;
 
+/**
+ * Jenkins builder which runs liquibase.
+ */
 public class LiquibaseBuilder extends Builder {
 
     private static final String DEFAULT_LOGLEVEL = "info";
+    private static final String OPTION_HYPHENS = "--";
+
+    /**
+     * The liquibase action to execute.
+     */
     private String liquibaseCommand;
+    /**
+     * Which liquibase installation to use during invocation.
+     */
     private String installationName;
 
+    /**
+     * Root changeset file.
+     */
     private String changeLogFile;
+    /**
+     * Username with which to connect to database.
+     */
     private String username;
+    /**
+     * Password with which to connect to database.
+     */
     private String password;
+    /**
+     * JDBC database connection URL.
+     */
     private String url;
     private String defaultSchemaName;
+    /**
+     * Contexts to activate during execution.
+     */
     private String contexts;
+    /**
+     * File in which configuration options may be found.
+     */
     private String defaultsFile;
+    /**
+     * Class name of database driver.
+     */
     private String driverClassName;
 
+    /**
+     * Catch-all option which can be used to supply additional options to liquibase.
+     */
     private String commandLineArgs;
-
 
     @Extension
     public static final LiquibaseStepDescriptor DESCRIPTOR = new LiquibaseStepDescriptor();
@@ -47,9 +81,9 @@ public class LiquibaseBuilder extends Builder {
                             String url,
                             String defaultSchemaName,
                             String contexts,
-                            String defaultsFile, String driverClassName) {
+                            String defaultsFile,
+                            String driverClassName) {
         this.changeLogFile = changeLogFile;
-
 
         this.liquibaseCommand = liquibaseCommand;
         this.installationName = installationName;
@@ -86,17 +120,13 @@ public class LiquibaseBuilder extends Builder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
-
         ArgumentListBuilder cliCommand = new ArgumentListBuilder();
         cliCommand.add(new File(getInstallation().getHome()));
-
-        cliCommand.add(commandLineArgs);
-
 
         addOptionIfPresent(cliCommand, CliOption.CHANGELOG_FILE, changeLogFile);
         addOptionIfPresent(cliCommand, CliOption.USERNAME, username);
         if (!Strings.isNullOrEmpty(password)) {
-            cliCommand.add("--" + CliOption.PASSWORD.getCliOption());
+            cliCommand.add(OPTION_HYPHENS + CliOption.PASSWORD.getCliOption());
             cliCommand.addMasked(password);
         }
         addOptionIfPresent(cliCommand, CliOption.DEFAULTS_FILE, defaultsFile);
@@ -105,12 +135,10 @@ public class LiquibaseBuilder extends Builder {
         addOptionIfPresent(cliCommand, CliOption.DEFAULT_SCHEMA_NAME, defaultSchemaName);
         addOptionIfPresent(cliCommand, CliOption.DATABASE_DRIVER_NAME, driverClassName);
 
-
-
         if (!Strings.isNullOrEmpty(commandLineArgs)) {
             cliCommand.addTokenized(commandLineArgs);
         }
-        cliCommand.add("--" + CliOption.LOG_LEVEL.getCliOption(), DEFAULT_LOGLEVEL);
+        cliCommand.add(OPTION_HYPHENS + CliOption.LOG_LEVEL.getCliOption(), DEFAULT_LOGLEVEL);
 
         cliCommand.addTokenized(liquibaseCommand);
 
@@ -131,7 +159,7 @@ public class LiquibaseBuilder extends Builder {
 
     private static void addOptionIfPresent(ArgumentListBuilder cmdExecArgs, CliOption cliOption, String value) {
         if (!Strings.isNullOrEmpty(value)) {
-            cmdExecArgs.add("--" + cliOption.getCliOption(), value);
+            cmdExecArgs.add(OPTION_HYPHENS + cliOption.getCliOption(), value);
         }
     }
 
