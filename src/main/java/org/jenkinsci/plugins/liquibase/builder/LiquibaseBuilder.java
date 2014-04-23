@@ -29,9 +29,6 @@ public class LiquibaseBuilder extends Builder {
     private String contexts;
     private String defaultsFile;
     private String driverClassName;
-    
-
-
 
     private String commandLineArgs;
 
@@ -89,41 +86,42 @@ public class LiquibaseBuilder extends Builder {
             throws InterruptedException, IOException {
 
 
-        ArgumentListBuilder cmdExecArgs = new ArgumentListBuilder();
-        cmdExecArgs.add(new File(getInstallation().getHome()));
+        ArgumentListBuilder cliCommand = new ArgumentListBuilder();
+        cliCommand.add(new File(getInstallation().getHome()));
 
-        cmdExecArgs.add(commandLineArgs);
+        cliCommand.add(commandLineArgs);
 
-        addOptionIfPresent(cmdExecArgs, CliOption.CHANGELOG_FILE, changeLogFile);
-        addOptionIfPresent(cmdExecArgs, CliOption.USERNAME, username);
-        addOptionIfPresent(cmdExecArgs, CliOption.PASSWORD, password);
-        addOptionIfPresent(cmdExecArgs, CliOption.DEFAULTS_FILE, defaultsFile);
-        addOptionIfPresent(cmdExecArgs, CliOption.CONTEXTS, contexts);
-        addOptionIfPresent(cmdExecArgs, CliOption.URL, url);
-        addOptionIfPresent(cmdExecArgs, CliOption.DEFAULT_SCHEMA_NAME, defaultSchemaName);
-        addOptionIfPresent(cmdExecArgs, CliOption.DATABASE_DRIVER_NAME, driverClassName);
+        addOptionIfPresent(cliCommand, CliOption.CHANGELOG_FILE, changeLogFile);
+        addOptionIfPresent(cliCommand, CliOption.USERNAME, username);
+        addOptionIfPresent(cliCommand, CliOption.PASSWORD, password);
+        addOptionIfPresent(cliCommand, CliOption.DEFAULTS_FILE, defaultsFile);
+        addOptionIfPresent(cliCommand, CliOption.CONTEXTS, contexts);
+        addOptionIfPresent(cliCommand, CliOption.URL, url);
+        addOptionIfPresent(cliCommand, CliOption.DEFAULT_SCHEMA_NAME, defaultSchemaName);
+        addOptionIfPresent(cliCommand, CliOption.DATABASE_DRIVER_NAME, driverClassName);
 
         if (!Strings.isNullOrEmpty(commandLineArgs)) {
-            cmdExecArgs.add(liquibaseCommand);
+            cliCommand.add(liquibaseCommand);
         }
 
-        listener.getLogger().println("Executing : " + cmdExecArgs.toStringWithQuote());
+        listener.getLogger().println("Executing : " + cliCommand.toStringWithQuote());
 
-        int exitStatus = launcher.launch().cmds(cmdExecArgs).stdout(listener).pwd(build.getWorkspace()).join();
+        int exitStatus = launcher.launch().cmds(cliCommand).stdout(listener).pwd(build.getWorkspace()).join();
 
         boolean result = true;
         if (exitStatus != 0) {
             result = false;
         } else {
             // check for errors that don't result
+            File logFile = build.getLogFile();
+            if (Util.doesErrorExist(logFile)) {
+                result = false;
+            }
         }
         return result;
     }
 
     private static void addOptionIfPresent(ArgumentListBuilder cmdExecArgs, CliOption cliOption, String value) {
-        boolean s =false;
-        s |= false;
-
         if (!Strings.isNullOrEmpty(value)) {
             cmdExecArgs.add("--" + cliOption.getCliOption(), value);
         }
