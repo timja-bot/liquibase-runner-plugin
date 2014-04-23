@@ -15,7 +15,7 @@ import hudson.tools.ToolProperty;
 import java.io.IOException;
 import java.util.List;
 
-import org.jenkinsci.plugins.liquibase.builder.LiquibaseStepDescriptor;
+import org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -45,12 +45,12 @@ public class LiquibaseInstallation extends ToolInstallation implements NodeSpeci
 
         @Override
         public LiquibaseInstallation[] getInstallations() {
-            return Hudson.getInstance().getDescriptorByType(LiquibaseStepDescriptor.class).getInstallations();
+            return Hudson.getInstance().getDescriptorByType(LiquibaseBuilder.StepDescriptor.class).getInstallations();
         }
 
         @Override
         public void setInstallations(LiquibaseInstallation... installations) {
-            Hudson.getInstance().getDescriptorByType(LiquibaseStepDescriptor.class).setInstallations(installations);
+            Hudson.getInstance().getDescriptorByType(LiquibaseBuilder.StepDescriptor.class).setInstallations(installations);
         }
     }
 }

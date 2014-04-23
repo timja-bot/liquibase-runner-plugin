@@ -3,9 +3,12 @@ package org.jenkinsci.plugins.liquibase.builder;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.tools.ToolInstallation;
 import hudson.util.ArgumentListBuilder;
 
 import java.io.File;
@@ -22,7 +25,6 @@ import com.google.common.base.Strings;
 public class LiquibaseBuilder extends Builder {
 
     private static final String DEFAULT_LOGLEVEL = "info";
-    private static final String OPTION_HYPHENS = "--";
 
     /**
      * The liquibase action to execute.
@@ -69,7 +71,7 @@ public class LiquibaseBuilder extends Builder {
     private String commandLineArgs;
 
     @Extension
-    public static final LiquibaseStepDescriptor DESCRIPTOR = new LiquibaseStepDescriptor();
+    public static final StepDescriptor DESCRIPTOR = new StepDescriptor();
 
     @DataBoundConstructor
     public LiquibaseBuilder(String commandLineArgs,
@@ -120,30 +122,41 @@ public class LiquibaseBuilder extends Builder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
+        ArgumentListBuilder cliCommand = composeLiquibaseCommand();
+
+        int exitStatus = launcher.launch().cmds(cliCommand).stdout(listener).pwd(build.getWorkspace()).join();
+
+        boolean result = didErrorsOccur(build, exitStatus);
+        return result;
+    }
+
+    private ArgumentListBuilder composeLiquibaseCommand() {
         ArgumentListBuilder cliCommand = new ArgumentListBuilder();
+
         cliCommand.add(new File(getInstallation().getHome()));
 
-        addOptionIfPresent(cliCommand, CliOption.CHANGELOG_FILE, changeLogFile);
-        addOptionIfPresent(cliCommand, CliOption.USERNAME, username);
+        Util.addOptionIfPresent(cliCommand, CliOption.CHANGELOG_FILE, changeLogFile);
+        Util.addOptionIfPresent(cliCommand, CliOption.USERNAME, username);
         if (!Strings.isNullOrEmpty(password)) {
-            cliCommand.add(OPTION_HYPHENS + CliOption.PASSWORD.getCliOption());
+            cliCommand.add(Util.OPTION_HYPHENS + CliOption.PASSWORD.getCliOption());
             cliCommand.addMasked(password);
         }
-        addOptionIfPresent(cliCommand, CliOption.DEFAULTS_FILE, defaultsFile);
-        addOptionIfPresent(cliCommand, CliOption.CONTEXTS, contexts);
-        addOptionIfPresent(cliCommand, CliOption.URL, url);
-        addOptionIfPresent(cliCommand, CliOption.DEFAULT_SCHEMA_NAME, defaultSchemaName);
-        addOptionIfPresent(cliCommand, CliOption.DATABASE_DRIVER_NAME, driverClassName);
+        Util.addOptionIfPresent(cliCommand, CliOption.DEFAULTS_FILE, defaultsFile);
+        Util.addOptionIfPresent(cliCommand, CliOption.CONTEXTS, contexts);
+        Util.addOptionIfPresent(cliCommand, CliOption.URL, url);
+        Util.addOptionIfPresent(cliCommand, CliOption.DEFAULT_SCHEMA_NAME, defaultSchemaName);
+        Util.addOptionIfPresent(cliCommand, CliOption.DATABASE_DRIVER_NAME, driverClassName);
 
         if (!Strings.isNullOrEmpty(commandLineArgs)) {
             cliCommand.addTokenized(commandLineArgs);
         }
-        cliCommand.add(OPTION_HYPHENS + CliOption.LOG_LEVEL.getCliOption(), DEFAULT_LOGLEVEL);
+        cliCommand.add(Util.OPTION_HYPHENS + CliOption.LOG_LEVEL.getCliOption(), DEFAULT_LOGLEVEL);
 
         cliCommand.addTokenized(liquibaseCommand);
+        return cliCommand;
+    }
 
-        int exitStatus = launcher.launch().cmds(cliCommand).stdout(listener).pwd(build.getWorkspace()).join();
-
+    private boolean didErrorsOccur(AbstractBuild<?, ?> build, int exitStatus) throws IOException {
         boolean result = true;
         if (exitStatus != 0) {
             result = false;
@@ -155,12 +168,6 @@ public class LiquibaseBuilder extends Builder {
             }
         }
         return result;
-    }
-
-    private static void addOptionIfPresent(ArgumentListBuilder cmdExecArgs, CliOption cliOption, String value) {
-        if (!Strings.isNullOrEmpty(value)) {
-            cmdExecArgs.add(OPTION_HYPHENS + cliOption.getCliOption(), value);
-        }
     }
 
     public String getCommandLineArgs() {
@@ -205,5 +212,37 @@ public class LiquibaseBuilder extends Builder {
 
     public String getDefaultSchemaName() {
         return defaultSchemaName;
+    }
+    public static final class StepDescriptor extends BuildStepDescriptor<Builder> {
+        private volatile LiquibaseInstallation[] installations = new LiquibaseInstallation[0];
+
+        public StepDescriptor() {
+            super(LiquibaseBuilder.class);
+            load();
+        }
+
+        public LiquibaseInstallation[] getInstallations() {
+            return installations;
+        }
+
+        public void setInstallations(LiquibaseInstallation... installations) {
+            this.installations = installations;
+            save();
+        }
+
+        public LiquibaseInstallation.DescriptorImpl getToolDescriptor() {
+            return ToolInstallation.all().get(LiquibaseInstallation.DescriptorImpl.class);
+        }
+
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Invoke Liquibase";
+        }
+
     }
 }
