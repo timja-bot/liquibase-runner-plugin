@@ -4,7 +4,7 @@ public enum CliOption {
     USERNAME,
     PASSWORD,
     DEFAULTS_FILE("defaultsFile"), CHANGELOG_FILE("changeLogFile"), CONTEXTS(), URL(), DEFAULT_SCHEMA_NAME(
-            "defaultSchemaName"), DATABASE_DRIVER_NAME("driver");
+            "defaultSchemaName"), DATABASE_DRIVER_NAME("driver"), LOG_LEVEL("logLevel");
 
 
     private String cliOption;

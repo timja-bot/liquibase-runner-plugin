@@ -18,6 +18,7 @@ import com.google.common.base.Strings;
 
 public class LiquibaseBuilder extends Builder {
 
+    private static final String DEFAULT_LOGLEVEL = "info";
     private String liquibaseCommand;
     private String installationName;
 
@@ -93,16 +94,24 @@ public class LiquibaseBuilder extends Builder {
 
         addOptionIfPresent(cliCommand, CliOption.CHANGELOG_FILE, changeLogFile);
         addOptionIfPresent(cliCommand, CliOption.USERNAME, username);
-        addOptionIfPresent(cliCommand, CliOption.PASSWORD, password);
+        if (!Strings.isNullOrEmpty(password)) {
+            cliCommand.add("--" + CliOption.PASSWORD.getCliOption());
+            cliCommand.addMasked(password);
+        }
         addOptionIfPresent(cliCommand, CliOption.DEFAULTS_FILE, defaultsFile);
         addOptionIfPresent(cliCommand, CliOption.CONTEXTS, contexts);
         addOptionIfPresent(cliCommand, CliOption.URL, url);
         addOptionIfPresent(cliCommand, CliOption.DEFAULT_SCHEMA_NAME, defaultSchemaName);
         addOptionIfPresent(cliCommand, CliOption.DATABASE_DRIVER_NAME, driverClassName);
 
+
+        cliCommand.add(CliOption.LOG_LEVEL.getCliOption(), DEFAULT_LOGLEVEL);
+
         if (!Strings.isNullOrEmpty(commandLineArgs)) {
-            cliCommand.add(liquibaseCommand);
+            cliCommand.add(commandLineArgs);
         }
+
+        cliCommand.add(liquibaseCommand);
 
         listener.getLogger().println("Executing : " + cliCommand.toStringWithQuote());
 
