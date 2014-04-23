@@ -3,16 +3,28 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.509.4</version><!-- which version of Jenkins is this plugin built against? -->
+    <version>1.509.4</version>
   </parent>
 
-  <groupId>com.keithcollison</groupId>
-  <artifactId>jenkins-liquibase</artifactId>
+    <groupId>org.jenkins-ci.plugins</groupId>
+  <artifactId>liquibase-runner</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>hpi</packaging>
 
-  <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
-  <repositories>
+  <packaging>hpi</packaging>
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/jenkins-liquibase.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins-liquibase.git</developerConnection>
+        <url>https://github.com/jenkinsci/MYPLUGINNAME</url>
+    </scm>
+    <developers>
+        <developer>
+            <id>Keith</id>
+            <name>Keith Collison</name>
+            <email>keithc238@gmail.com</email>
+        </developer>
+    </developers>
+
+   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
