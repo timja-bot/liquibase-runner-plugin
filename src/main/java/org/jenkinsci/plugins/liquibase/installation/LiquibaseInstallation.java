@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.liquibase.installation;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Hudson;
 import hudson.model.Node;
@@ -15,18 +14,18 @@ import hudson.tools.ToolProperty;
 import java.io.IOException;
 import java.util.List;
 
-import org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder;
-import org.kohsuke.stapler.DataBoundConstructor;
+import org.jenkinsci.plugins.liquibase.builder.LiquibaseStepDescriptor;
 
 /**
  * Describes details of liquibase installation.
  */
 public class LiquibaseInstallation extends ToolInstallation implements NodeSpecific<LiquibaseInstallation>,
         EnvironmentSpecific<LiquibaseInstallation> {
-    @DataBoundConstructor
+
     public LiquibaseInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
-        super(Util.fixEmptyAndTrim(name), Util.fixEmptyAndTrim(home), properties);
+        super(name, home, properties);
     }
+
 
     public LiquibaseInstallation forEnvironment(EnvVars environment) {
         return new LiquibaseInstallation(getName(), getHome(), getProperties().toList());
@@ -45,12 +44,12 @@ public class LiquibaseInstallation extends ToolInstallation implements NodeSpeci
 
         @Override
         public LiquibaseInstallation[] getInstallations() {
-            return Hudson.getInstance().getDescriptorByType(LiquibaseBuilder.StepDescriptor.class).getInstallations();
+            return Hudson.getInstance().getDescriptorByType(LiquibaseStepDescriptor.class).getInstallations();
         }
 
         @Override
         public void setInstallations(LiquibaseInstallation... installations) {
-            Hudson.getInstance().getDescriptorByType(LiquibaseBuilder.StepDescriptor.class).setInstallations(installations);
+            Hudson.getInstance().getDescriptorByType(LiquibaseStepDescriptor.class).setInstallations(installations);
         }
     }
 }
