@@ -1,0 +1,88 @@
+DEBUG 4/25/14 10:27 AM:liquibase: Connected to root@localhost@jdbc:mysql://localhost:3306/sampledb?zeroDateTimeBehavior=convertToNull&characterEncoding=utf8&characterSetResults=utf8
+DEBUG 4/25/14 10:27 AM:liquibase: Setting auto commit to false from true
+DEBUG 4/25/14 10:27 AM:liquibase: Executing QUERY database command: select count(*) from sampledb.DATABASECHANGELOGLOCK
+DEBUG 4/25/14 10:27 AM:liquibase: Executing QUERY database command: SELECT LOCKED FROM sampledb.DATABASECHANGELOGLOCK WHERE ID=1
+DEBUG 4/25/14 10:27 AM:liquibase: Lock Database
+DEBUG 4/25/14 10:27 AM:liquibase: Executing UPDATE database command: UPDATE sampledb.DATABASECHANGELOGLOCK SET LOCKED = 1, LOCKEDBY = 'kant (fe80:0:0:0:e8b:fdff:fe66:fec2%3)', LOCKGRANTED = '2014-04-25 10:27:03.682' WHERE ID = 1 AND LOCKED = 0
+INFO 4/25/14 10:27 AM:liquibase: Successfully acquired change log lock
+DEBUG 4/25/14 10:27 AM:liquibase: Executing QUERY database command: SELECT MD5SUM FROM sampledb.DATABASECHANGELOG WHERE MD5SUM IS NOT NULL
+INFO 4/25/14 10:27 AM:liquibase: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: Executing QUERY database command: select count(*) from sampledb.DATABASECHANGELOGLOCK
+INFO 4/25/14 10:27 AM:liquibase: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+INFO 4/25/14 10:27 AM:liquibase: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Running Changeset:changeset.xml::sample::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Changeset changeset.xml::sample::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: sample changeset
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Reading ChangeSet: changeset.xml::sample::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Executing Statement: liquibase.statement.core.RawSqlStatement
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Executing EXECUTE database command: CREATE TABLE `sample_table` (
+			  `id` int(11) NOT NULL AUTO_INCREMENT,
+			  PRIMARY KEY (`id`)
+			) ENGINE=InnoDB  DEFAULT CHARSET=utf8
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Custom SQL executed
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: ChangeSet changeset.xml::sample::keith ran successfully in 33ms
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Executing QUERY database command: SELECT MAX(ORDEREXECUTED) FROM sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Computed checksum for inputStream as 16fe01073a927ad9cf01e43e22d76510
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Computed checksum for 7:16fe01073a927ad9cf01e43e22d76510: as 167e3af6984c840dc369a81b018fc273
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Executing EXECUTE database command: INSERT INTO sampledb.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, LIQUIBASE) VALUES ('sample', 'keith', 'changeset.xml', NOW(), 1, '7:167e3af6984c840dc369a81b018fc273', 'sql', 'sample changeset', 'EXECUTED', '3.1.1')
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Computed checksum for inputStream as 16fe01073a927ad9cf01e43e22d76510
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: sample::keith: Computed checksum for 7:16fe01073a927ad9cf01e43e22d76510: as 167e3af6984c840dc369a81b018fc273
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Running Changeset:data_insert.sql::column_add::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Changeset data_insert.sql::column_add::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Reading ChangeSet: data_insert.sql::column_add::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Executing Statement: liquibase.statement.core.RawSqlStatement
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Executing EXECUTE database command: ALTER TABLE `sample_table` ADD COLUMN `shape` VARCHAR(128) NULL
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Custom SQL executed
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: ChangeSet data_insert.sql::column_add::keith ran successfully in 47ms
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Computed checksum for inputStream as 2cc2a413cec2acd92b6c8f191a7f6191
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Computed checksum for 7:2cc2a413cec2acd92b6c8f191a7f6191: as f37ee181f09ca5f1cbca5438d04791a4
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Executing EXECUTE database command: INSERT INTO sampledb.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, LIQUIBASE) VALUES ('column_add', 'keith', 'data_insert.sql', NOW(), 2, '7:f37ee181f09ca5f1cbca5438d04791a4', 'sql', '', 'EXECUTED', '3.1.1')
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Computed checksum for inputStream as 2cc2a413cec2acd92b6c8f191a7f6191
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::column_add::keith: Computed checksum for 7:2cc2a413cec2acd92b6c8f191a7f6191: as f37ee181f09ca5f1cbca5438d04791a4
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Running Changeset:data_insert.sql::insertion::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Changeset data_insert.sql::insertion::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Reading ChangeSet: data_insert.sql::insertion::keith
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Executing Statement: liquibase.statement.core.RawSqlStatement
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Executing EXECUTE database command: insert into sample_table(shape) values ('circle')
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Custom SQL executed
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: ChangeSet data_insert.sql::insertion::keith ran successfully in 6ms
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Computed checksum for inputStream as 088229123f5efa2092dd88c22e9819fb
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Computed checksum for 7:088229123f5efa2092dd88c22e9819fb: as 3c85da4b45cd2056038b4a4a2a3484a2
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Executing EXECUTE database command: INSERT INTO sampledb.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, LIQUIBASE) VALUES ('insertion', 'keith', 'data_insert.sql', NOW(), 3, '7:3c85da4b45cd2056038b4a4a2a3484a2', 'sql', '', 'EXECUTED', '3.1.1')
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Computed checksum for inputStream as 088229123f5efa2092dd88c22e9819fb
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion::keith: Computed checksum for 7:088229123f5efa2092dd88c22e9819fb: as 3c85da4b45cd2056038b4a4a2a3484a2
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Running Changeset:data_insert.sql::insertion_anon::anonymous
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Changeset data_insert.sql::insertion_anon::anonymous
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Reading ChangeSet: data_insert.sql::insertion_anon::anonymous
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Executing Statement: liquibase.statement.core.RawSqlStatement
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Executing EXECUTE database command: insert into sample_table(shape) values ('square')
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Custom SQL executed
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: ChangeSet data_insert.sql::insertion_anon::anonymous ran successfully in 6ms
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Computed checksum for inputStream as 43a0696c2d77c703ae6fdfce388a64f0
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Computed checksum for 7:43a0696c2d77c703ae6fdfce388a64f0: as b66fe614b5c307a111bb6aed804892d4
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Executing EXECUTE database command: INSERT INTO sampledb.DATABASECHANGELOG (ID, AUTHOR, FILENAME, DATEEXECUTED, ORDEREXECUTED, MD5SUM, DESCRIPTION, COMMENTS, EXECTYPE, LIQUIBASE) VALUES ('insertion_anon', 'anonymous', 'data_insert.sql', NOW(), 4, '7:b66fe614b5c307a111bb6aed804892d4', 'sql', '', 'EXECUTED', '3.1.1')
+INFO 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Reading from sampledb.DATABASECHANGELOG
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Executing QUERY database command: SELECT FILENAME,AUTHOR,ID,MD5SUM,DATEEXECUTED,ORDEREXECUTED,TAG,EXECTYPE,DESCRIPTION,COMMENTS FROM sampledb.DATABASECHANGELOG ORDER BY DATEEXECUTED ASC, ORDEREXECUTED ASC
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Computed checksum for inputStream as 43a0696c2d77c703ae6fdfce388a64f0
+DEBUG 4/25/14 10:27 AM:liquibase: changeset.xml: data_insert.sql::insertion_anon::anonymous: Computed checksum for 7:43a0696c2d77c703ae6fdfce388a64f0: as b66fe614b5c307a111bb6aed804892d4
+DEBUG 4/25/14 10:27 AM:liquibase: Release Database Lock
+DEBUG 4/25/14 10:27 AM:liquibase: Executing UPDATE database command: UPDATE sampledb.DATABASECHANGELOGLOCK SET LOCKED = 0, LOCKEDBY = NULL, LOCKGRANTED = NULL WHERE ID = 1
+INFO 4/25/14 10:27 AM:liquibase: Successfully released change log lock
+Liquibase Update Successful
