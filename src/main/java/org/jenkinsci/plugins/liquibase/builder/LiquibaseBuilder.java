@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -9,15 +10,12 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import liquibase.Liquibase;
-import liquibase.changelog.ChangeSet;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.integration.commandline.CommandLineUtils;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
@@ -111,21 +109,15 @@ public class LiquibaseBuilder extends Builder {
                             this.driverClassName, null, null, true, true, null, null, null, null);
 
             Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
-            List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts);
-            for (ChangeSet changeSet : changeSets) {
-                LOG.info(changeSet.getId() + " has not been run. author:" + changeSet.getAuthor());
-            }
+            final ExecutedChangesetAction action = new ExecutedChangesetAction();
+            liquibase.setChangeExecListener(new BuildChangeExecListener(action));
 
-            StringWriter output = new StringWriter();
-            liquibase.update(contexts, output);
-
-            LOG.info(output.toString());
-
-
+            liquibase.update(contexts);
+            build.addAction(action);
         } catch (DatabaseException e) {
-            throw new RuntimeException("Error creating liquibase database", e);
+            throw new LiquibaseRuntimeException("Error creating liquibase database", e);
         } catch (LiquibaseException e) {
-            throw new RuntimeException("Error creating liquibase database", e);
+            throw new LiquibaseRuntimeException("Error executing liquibase liquibase database", e);
         } finally {
             if (databaseObject != null) {
                 try {
@@ -185,6 +177,7 @@ public class LiquibaseBuilder extends Builder {
         return defaultSchemaName;
     }
 
+    @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
         @Override
