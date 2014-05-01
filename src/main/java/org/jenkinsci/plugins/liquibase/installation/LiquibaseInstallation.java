@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.liquibase.installation;
 
 import hudson.EnvVars;
-import hudson.Extension;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Hudson;
 import hudson.model.Node;
@@ -35,7 +34,7 @@ public class LiquibaseInstallation extends ToolInstallation implements NodeSpeci
         return new LiquibaseInstallation(getName(), getHome(), getProperties().toList());
     }
 
-    @Extension
+    // @Extension
     public static class DescriptorImpl extends ToolDescriptor<LiquibaseInstallation> {
         @Override
         public String getDisplayName() {

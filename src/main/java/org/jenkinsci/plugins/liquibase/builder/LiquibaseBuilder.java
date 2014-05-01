@@ -1,11 +1,11 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
-import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import liquibase.Liquibase;
@@ -14,20 +14,11 @@ import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.integration.commandline.CommandLineUtils;
-import liquibase.resource.ResourceAccessor;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 
-import org.jenkinsci.plugins.liquibase.installation.LiquibaseInstallation;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +30,6 @@ import com.google.common.base.Strings;
  */
 public class LiquibaseBuilder extends Builder {
 
-    @Extension
-    public static final LiquibaseStepDescriptor DESCRIPTOR = new LiquibaseStepDescriptor();
     protected static final String DEFAULT_LOGLEVEL = "info";
     protected static final String OPTION_HYPHENS = "--";
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseBuilder.class);
@@ -48,10 +37,6 @@ public class LiquibaseBuilder extends Builder {
      * The liquibase action to execute.
      */
     protected String liquibaseCommand;
-    /**
-     * Which liquibase installation to use during invocation.
-     */
-    protected String installationName;
     /**
      * Root changeset file.
      */
@@ -89,9 +74,7 @@ public class LiquibaseBuilder extends Builder {
     @DataBoundConstructor
     public LiquibaseBuilder(String commandLineArgs,
                             String changeLogFile,
-                            String liquibaseCommand,
-                            String installationName,
-                            String username,
+                            String liquibaseCommand, String username,
                             String password,
                             String url,
                             String defaultSchemaName,
@@ -103,7 +86,7 @@ public class LiquibaseBuilder extends Builder {
         this.url = url;
         this.driverClassName = driverClassName;
         this.username = username;
-        this.installationName = installationName;
+
         this.defaultsFile = defaultsFile;
         this.changeLogFile = changeLogFile;
         this.liquibaseCommand = liquibaseCommand;
@@ -125,8 +108,7 @@ public class LiquibaseBuilder extends Builder {
         try {
             databaseObject = CommandLineUtils
                     .createDatabaseObject(getClass().getClassLoader(), this.url, this.username, this.password,
-                            this.driverClassName, null, null, true, true, null,
-                            null, null, null);
+                            this.driverClassName, null, null, true, true, null, null, null, null);
 
             Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
             List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts);
@@ -144,7 +126,7 @@ public class LiquibaseBuilder extends Builder {
             throw new RuntimeException("Error creating liquibase database", e);
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database", e);
-        }  finally {
+        } finally {
             if (databaseObject != null) {
                 try {
                     databaseObject.close();
@@ -158,22 +140,9 @@ public class LiquibaseBuilder extends Builder {
         return true;
     }
 
-    public LiquibaseInstallation getInstallation() {
-        LiquibaseInstallation found = null;
-        if (installationName != null) {
-            for (LiquibaseInstallation i : DESCRIPTOR.getInstallations()) {
-                if (installationName.equals(i.getName())) {
-                    found = i;
-                    break;
-                }
-            }
-        }
-        return found;
-    }
-
     @Override
     public Descriptor<Builder> getDescriptor() {
-        return DESCRIPTOR;
+        return new DescriptorImpl();
     }
 
     public String getCommandLineArgs() {
@@ -186,10 +155,6 @@ public class LiquibaseBuilder extends Builder {
 
     public String getLiquibaseCommand() {
         return liquibaseCommand;
-    }
-
-    public String getInstallationName() {
-        return installationName;
     }
 
     public String getContexts() {
@@ -220,58 +185,17 @@ public class LiquibaseBuilder extends Builder {
         return defaultSchemaName;
     }
 
-    private static class FilePathAccessor implements ResourceAccessor {
-        private final AbstractBuild<?, ?> build;
+    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
-        public FilePathAccessor(AbstractBuild<?, ?> build) {
-            this.build = build;
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
         }
 
-        public InputStream getResourceAsStream(String s) throws IOException {
-            FilePath child = build.getWorkspace().child(s);
-            InputStream inputStream=null;
-            try {
-                if (child.exists()) {
-                    inputStream = child.read();
-                }
-            } catch (InterruptedException e) {
-                throw new IOException("Error reading resource[" + s + "] ", e);
-            }
-
-            return inputStream;
-        }
-
-        public Enumeration<URL> getResources(String s) throws IOException {
-            Enumeration<URL> o = null;
-            FilePath childDir = build.getWorkspace().child(s);
-            try {
-                List<URL> urls= new ArrayList<URL>();
-                if (childDir.isDirectory()) {
-                    List<FilePath> children = childDir.list();
-                    for (FilePath child : children) {
-                        urls.add(child.toURI().toURL());
-
-                    }
-                    o= Collections.enumeration(urls);
-
-                } else {
-                    urls.add(childDir.toURI().toURL());
-
-                }
-            } catch (InterruptedException e) {
-                throw new IOException("Error loading resources from[" + s + "] ", e);
-            }
-
-
-            return o;
-        }
-
-        public ClassLoader toClassLoader() {
-            try {
-                return new URLClassLoader(new URL[]{new URL("file://" + build.getWorkspace().getBaseName())});
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
+        @Override
+        public String getDisplayName() {
+            return "Invoke Liquibase";
         }
     }
+
 }
