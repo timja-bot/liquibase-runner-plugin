@@ -99,6 +99,7 @@ public class LiquibaseBuilder extends Builder {
         }
     }
 
+    @Override
     public boolean perform(final AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
