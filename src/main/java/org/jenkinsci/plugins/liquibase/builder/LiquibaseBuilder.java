@@ -16,7 +16,6 @@ import liquibase.exception.LiquibaseException;
 import liquibase.integration.commandline.CommandLineUtils;
 import liquibase.resource.ResourceAccessor;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -157,48 +156,6 @@ public class LiquibaseBuilder extends Builder {
         }
 
         return true;
-    }
-
-    public boolean performd(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-            throws InterruptedException, IOException {
-
-        Annotator annotator = new Annotator(listener.getLogger(), build.getCharset());
-
-        ArgumentListBuilder cliCommand = new ArgumentListBuilder();
-        cliCommand.add(new File(getInstallation().getHome()));
-
-        addOptionIfPresent(cliCommand, CliOption.CHANGELOG_FILE, changeLogFile);
-        addOptionIfPresent(cliCommand, CliOption.USERNAME, username);
-        if (!Strings.isNullOrEmpty(password)) {
-            cliCommand.add(OPTION_HYPHENS + CliOption.PASSWORD.getCliOption());
-            cliCommand.addMasked(password);
-        }
-        addOptionIfPresent(cliCommand, CliOption.DEFAULTS_FILE, defaultsFile);
-        addOptionIfPresent(cliCommand, CliOption.CONTEXTS, contexts);
-        addOptionIfPresent(cliCommand, CliOption.URL, url);
-        addOptionIfPresent(cliCommand, CliOption.DEFAULT_SCHEMA_NAME, defaultSchemaName);
-        addOptionIfPresent(cliCommand, CliOption.DATABASE_DRIVER_NAME, driverClassName);
-
-        if (!Strings.isNullOrEmpty(commandLineArgs)) {
-            cliCommand.addTokenized(commandLineArgs);
-        }
-        cliCommand.add(OPTION_HYPHENS + CliOption.LOG_LEVEL.getCliOption(), DEFAULT_LOGLEVEL);
-
-        cliCommand.addTokenized(liquibaseCommand);
-
-        int exitStatus = launcher.launch().cmds(cliCommand).stderr(annotator).stdout(annotator).pwd(build.getWorkspace()).join();
-
-        boolean result = true;
-        if (exitStatus != 0) {
-            result = false;
-        } else {
-            // check for errors that don't result in an exit code less than 0.
-            File logFile = build.getLogFile();
-            if (Util.doesErrorExist(logFile)) {
-                result = false;
-            }
-        }
-        return result;
     }
 
     public LiquibaseInstallation getInstallation() {
