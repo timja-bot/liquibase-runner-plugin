@@ -1,0 +1,56 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
+         xmlns:f="/lib/form">
+
+    <l:layout title="${it.name}">
+        <l:main-panel>
+            <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
+            <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
+            <h1>Executed changesets</h1>
+
+            <j:forEach items="${it.changeSets}" var="ch">
+                <ol>
+                    <li class="changeSetItem">
+                        <span class="changeSetId" style="font-weight: bold;margin-right: 2px;">${ch.id}</span>
+                        by
+                        <span class="changeSetAuthor">${ch.author}</span>
+                        <br/>
+                        <j:if test="${ch.comments !=null}">
+                            <span class="changeSetComment">${ch.comments}</span>
+                        </j:if>
+                        <span class="sql">
+                            <j:forEach items="${it.getSql(ch)}" var="sql">
+                                <f:textarea codemirror-mode="text/x-plsql"
+                                            codemirror-config="mode:'text/x-plsql',readOnly:true,viewportMargin:'Infinity'"
+                                            value="${sql.toSql()}"/>
+                            </j:forEach>
+                        </span>
+                    </li>
+                </ol>
+            </j:forEach>
+            <style type="text/css">
+                /* some css hacking to tailor display */
+                .CodeMirror {
+
+                height:auto ;
+                    overflow-y: hidden;
+                    overflow-x: hidden;
+
+                }
+                .CodeMirror-scroll {
+                    border:1px solid rgba(30, 30, 30, 0.15) !important;
+                    height:auto !important ;
+                    overflow-y: hidden;
+                    overflow-x: hidden;
+                }
+                .changeSetComment {
+                    font-style: italic;
+                    font-weight: lighter;
+                }
+
+                .textarea-handle {
+                    display:none;
+                }
+            </style>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
