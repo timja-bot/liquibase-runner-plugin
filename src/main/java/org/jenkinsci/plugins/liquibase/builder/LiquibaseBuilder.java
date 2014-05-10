@@ -16,21 +16,30 @@ import liquibase.exception.LiquibaseException;
 import liquibase.integration.commandline.CommandLineUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  * Jenkins builder which runs liquibase.
  */
 public class LiquibaseBuilder extends Builder {
+    @Extension
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     protected static final String DEFAULT_LOGLEVEL = "info";
     protected static final String OPTION_HYPHENS = "--";
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseBuilder.class);
+
+    protected List<EmbeddedDriver> embeddedDrivers =
+            Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
+                    new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
+                    new EmbeddedDriver("Hypersonic SQL", "org.hsqldb.jdbcDriver"));
     /**
      * The liquibase action to execute.
      */
@@ -57,10 +66,6 @@ public class LiquibaseBuilder extends Builder {
      */
     protected String contexts;
     /**
-     * File in which configuration options may be found.
-     */
-    protected String defaultsFile;
-    /**
      * Class name of database driver.
      */
     protected String driverClassName;
@@ -69,27 +74,29 @@ public class LiquibaseBuilder extends Builder {
      */
     protected String commandLineArgs;
 
+    private String databaseEngine;
+
     @DataBoundConstructor
     public LiquibaseBuilder(String commandLineArgs,
                             String changeLogFile,
-                            String liquibaseCommand, String username,
+                            String liquibaseCommand,
+                            String username,
                             String password,
                             String url,
                             String defaultSchemaName,
-                            String contexts,
-                            String defaultsFile,
-                            String driverClassName) {
+                            String contexts, String databaseEngine) {
         this.password = password;
         this.defaultSchemaName = defaultSchemaName;
         this.url = url;
-        this.driverClassName = driverClassName;
         this.username = username;
 
-        this.defaultsFile = defaultsFile;
         this.changeLogFile = changeLogFile;
         this.liquibaseCommand = liquibaseCommand;
         this.commandLineArgs = commandLineArgs;
         this.contexts = contexts;
+
+        this.databaseEngine = databaseEngine;
+
 
     }
 
@@ -105,9 +112,20 @@ public class LiquibaseBuilder extends Builder {
 
         Database databaseObject = null;
         try {
+            String driver = null;
+
+            for (EmbeddedDriver embeddedDriver : embeddedDrivers) {
+                if (embeddedDriver.getDisplayName().equals(databaseEngine)) {
+                    driver = embeddedDriver.getDriverClassName();
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("using db driver class[" + driver + "] ");
+                    }
+                    break;
+                }
+            }
             databaseObject = CommandLineUtils
-                    .createDatabaseObject(getClass().getClassLoader(), this.url, this.username, this.password,
-                            this.driverClassName, null, null, true, true, null, null, null, null);
+                    .createDatabaseObject(getClass().getClassLoader(), this.url, this.username, this.password, driver,
+                            null, null, true, true, null, null, null, null);
 
             Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
             final ExecutedChangesetAction action = new ExecutedChangesetAction();
@@ -116,9 +134,11 @@ public class LiquibaseBuilder extends Builder {
             liquibase.update(contexts);
             build.addAction(action);
         } catch (DatabaseException e) {
-            throw new LiquibaseRuntimeException("Error creating liquibase database", e);
+            e.printStackTrace(listener.getLogger());
+            throw new RuntimeException("Error creating liquibase database", e);
         } catch (LiquibaseException e) {
-            throw new LiquibaseRuntimeException("Error executing liquibase liquibase database", e);
+            e.printStackTrace(listener.getLogger());
+            throw new RuntimeException("Error executing liquibase liquibase database", e);
         } finally {
             if (databaseObject != null) {
                 try {
@@ -129,13 +149,12 @@ public class LiquibaseBuilder extends Builder {
             }
 
         }
-
         return true;
     }
 
     @Override
     public Descriptor<Builder> getDescriptor() {
-        return new DescriptorImpl();
+        return DESCRIPTOR;
     }
 
     public String getCommandLineArgs() {
@@ -152,10 +171,6 @@ public class LiquibaseBuilder extends Builder {
 
     public String getContexts() {
         return contexts;
-    }
-
-    public String getDefaultsFile() {
-        return defaultsFile;
     }
 
     public String getDriverClassName() {
@@ -178,8 +193,13 @@ public class LiquibaseBuilder extends Builder {
         return defaultSchemaName;
     }
 
-    @Extension
+    public String getDatabaseEngine() {
+        return databaseEngine;
+    }
+
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+
+        private List<EmbeddedDriver> embeddedDrivers;
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -189,6 +209,18 @@ public class LiquibaseBuilder extends Builder {
         @Override
         public String getDisplayName() {
             return "Invoke Liquibase";
+        }
+
+        public List<EmbeddedDriver> getEmbeddedDrivers() {
+            if (embeddedDrivers == null) {
+                initDriverList();
+            }
+            return embeddedDrivers;
+        }
+
+        private void initDriverList() {
+            embeddedDrivers = Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
+                    new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"));
         }
     }
 
