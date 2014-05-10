@@ -6,9 +6,9 @@
             <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
             <h1>Executed changesets</h1>
+            <ol>
+                <j:forEach items="${it.changeSets}" var="ch">
 
-            <j:forEach items="${it.changeSets}" var="ch">
-                <ol>
                     <li class="changeSetItem">
                         <span class="changeSetId" style="font-weight: bold;margin-right: 2px;">${ch.id}</span>
                         by
@@ -25,30 +25,31 @@
                             </j:forEach>
                         </span>
                     </li>
-                </ol>
-            </j:forEach>
+
+                </j:forEach>
+            </ol>
             <style type="text/css">
                 /* some css hacking to tailor display */
                 .CodeMirror {
 
                 height:auto ;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
+                overflow-y: hidden;
+                overflow-x: hidden;
 
                 }
                 .CodeMirror-scroll {
-                    border:1px solid rgba(30, 30, 30, 0.15) !important;
-                    height:auto !important ;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
+                border:1px solid rgba(30, 30, 30, 0.15) !important;
+                height:auto !important ;
+                overflow-y: hidden;
+                overflow-x: hidden;
                 }
                 .changeSetComment {
-                    font-style: italic;
-                    font-weight: lighter;
+                font-style: italic;
+                font-weight: lighter;
                 }
 
                 .textarea-handle {
-                    display:none;
+                display:none;
                 }
             </style>
         </l:main-panel>

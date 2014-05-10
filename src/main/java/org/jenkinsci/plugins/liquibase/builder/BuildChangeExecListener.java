@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
+import hudson.model.BuildListener;
 import liquibase.change.Change;
 import liquibase.changelog.ChangeSet;
 import liquibase.changelog.DatabaseChangeLog;
@@ -22,9 +23,15 @@ import org.slf4j.LoggerFactory;
 public class BuildChangeExecListener implements ChangeExecListener {
     private final ExecutedChangesetAction action;
     private static final Logger LOG = LoggerFactory.getLogger(BuildChangeExecListener.class);
+    private BuildListener buildListener;
 
     public BuildChangeExecListener(ExecutedChangesetAction action) {
         this.action = action;
+    }
+
+    public BuildChangeExecListener(ExecutedChangesetAction action, BuildListener buildListener) {
+        this.action = action;
+        this.buildListener = buildListener;
     }
 
     public void willRun(ChangeSet changeSet,
@@ -42,9 +49,11 @@ public class BuildChangeExecListener implements ChangeExecListener {
     }
 
     public void rolledBack(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database) {
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("rolling back changeset[" + changeSet.getId() + "] ");
         }
+        buildMessage("Successfully rolled back", changeSet, databaseChangeLog);
     }
 
     public void preconditionFailed(PreconditionFailedException error,
@@ -71,6 +80,9 @@ public class BuildChangeExecListener implements ChangeExecListener {
         }
         SqlStatement[] sqlStatements = change.generateStatements(database);
 
+        String msg = "Ran successfully";
+        buildMessage(msg, changeSet, changeLog);
+
         if (sqlStatements != null && sqlStatements.length > 0) {
             SqlStatement sqlStatement = sqlStatements[0];
             Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
@@ -84,5 +96,35 @@ public class BuildChangeExecListener implements ChangeExecListener {
             }
         }
 
+    }
+
+    private void buildMessage(String msg, ChangeSet changeSet, DatabaseChangeLog changeLog) {
+        String filePath = null;
+        if (changeLog!=null) {
+            filePath = changeLog.getFilePath();
+        }                  else {
+            filePath="";
+
+        }
+        String changeSetName;
+        if (changeSet!=null) {
+            changeSetName = changeSet.toString(false);
+        } else {
+            changeSetName = "";
+        }
+        String logMessage = buildMessage(msg, filePath, changeSetName);
+        buildListener.getLogger().println(logMessage);
+    }
+
+    private String buildMessage(String message, String changeLogName, String changeSetName) {
+        StringBuilder msg = new StringBuilder();
+        if (changeLogName != null) {
+            msg.append(changeLogName).append(": ");
+        }
+        if (changeSetName != null) {
+            msg.append(changeSetName.replace(changeLogName + "::", "")).append(": ");
+        }
+        msg.append(message);
+        return msg.toString();
     }
 }

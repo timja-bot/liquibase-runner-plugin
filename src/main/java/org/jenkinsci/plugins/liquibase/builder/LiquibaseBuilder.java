@@ -132,12 +132,14 @@ public class LiquibaseBuilder extends Builder {
             Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
             final ExecutedChangesetAction action = new ExecutedChangesetAction();
 
-            liquibase.setChangeExecListener(new BuildChangeExecListener(action));
+            liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
+
 
             if (testRollbacks) {
                 liquibase.updateTestingRollback(contexts);
             } else {
                 liquibase.update(contexts);
+
             }
             build.addAction(action);
         } catch (DatabaseException e) {
