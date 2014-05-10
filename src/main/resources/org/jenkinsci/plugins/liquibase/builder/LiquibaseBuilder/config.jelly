@@ -37,7 +37,7 @@
     <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
         <f:textbox value="${instance.contexts}"/>
     </f:entry>
-    <f:checkbox
+
 
 
 </j:jelly>
