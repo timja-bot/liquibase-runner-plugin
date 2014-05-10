@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 /**
  * Jenkins builder which runs liquibase.
  */
+@SuppressWarnings("ProhibitedExceptionThrown")
 public class LiquibaseBuilder extends Builder {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
@@ -65,6 +66,8 @@ public class LiquibaseBuilder extends Builder {
      * Contexts to activate during execution.
      */
     protected String contexts;
+
+    protected boolean testRollbacks;
     /**
      * Catch-all option which can be used to supply additional options to liquibase.
      */
@@ -80,7 +83,9 @@ public class LiquibaseBuilder extends Builder {
                             String password,
                             String url,
                             String defaultSchemaName,
-                            String contexts, String databaseEngine) {
+                            String contexts,
+                            String databaseEngine,
+                            boolean testRollbacks) {
         this.password = password;
         this.defaultSchemaName = defaultSchemaName;
         this.url = url;
@@ -92,6 +97,7 @@ public class LiquibaseBuilder extends Builder {
         this.contexts = contexts;
 
         this.databaseEngine = databaseEngine;
+        this.testRollbacks=testRollbacks;
 
 
     }
@@ -125,9 +131,14 @@ public class LiquibaseBuilder extends Builder {
 
             Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
             final ExecutedChangesetAction action = new ExecutedChangesetAction();
+
             liquibase.setChangeExecListener(new BuildChangeExecListener(action));
 
-            liquibase.update(contexts);
+            if (testRollbacks) {
+                liquibase.updateTestingRollback(contexts);
+            } else {
+                liquibase.update(contexts);
+            }
             build.addAction(action);
         } catch (DatabaseException e) {
             e.printStackTrace(listener.getLogger());
@@ -163,6 +174,10 @@ public class LiquibaseBuilder extends Builder {
 
     public String getLiquibaseCommand() {
         return liquibaseCommand;
+    }
+
+    public boolean isTestRollbacks() {
+        return testRollbacks;
     }
 
     public String getContexts() {
