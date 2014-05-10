@@ -66,10 +66,6 @@ public class LiquibaseBuilder extends Builder {
      */
     protected String contexts;
     /**
-     * Class name of database driver.
-     */
-    protected String driverClassName;
-    /**
      * Catch-all option which can be used to supply additional options to liquibase.
      */
     protected String commandLineArgs;
@@ -171,10 +167,6 @@ public class LiquibaseBuilder extends Builder {
 
     public String getContexts() {
         return contexts;
-    }
-
-    public String getDriverClassName() {
-        return driverClassName;
     }
 
     public String getUsername() {
