@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Listens for changeset execution to add them to {@link org.jenkinsci.plugins.liquibase.builder.ExecutedChangesetAction}.
- *
  */
 public class BuildChangeExecListener implements ChangeExecListener {
     private final ExecutedChangesetAction action;
@@ -53,24 +52,19 @@ public class BuildChangeExecListener implements ChangeExecListener {
         if (LOG.isDebugEnabled()) {
             LOG.debug("rolling back changeset[" + changeSet.getId() + "] ");
         }
-        buildMessage("Successfully rolled back", changeSet, databaseChangeLog);
+        String logMessage = buildLogMessage(changeSet, databaseChangeLog, "Successfully rolled back");
+        buildListener.getLogger().println(logMessage);
     }
 
-    public void preconditionFailed(PreconditionFailedException error,
-                                   PreconditionContainer.FailOption onFail) {
-
-    }
-
-    public void preconditionErrored(PreconditionErrorException error,
-                                    PreconditionContainer.ErrorOption onError) {
+    public void preconditionFailed(PreconditionFailedException error, PreconditionContainer.FailOption onFail) {
 
     }
 
-    public void willRun(Change change,
-                        ChangeSet changeSet,
-                        DatabaseChangeLog changeLog,
-                        Database database) {
+    public void preconditionErrored(PreconditionErrorException error, PreconditionContainer.ErrorOption onError) {
 
+    }
+
+    public void willRun(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {
 
     }
 
@@ -81,7 +75,8 @@ public class BuildChangeExecListener implements ChangeExecListener {
         SqlStatement[] sqlStatements = change.generateStatements(database);
 
         String msg = "Ran successfully";
-        buildMessage(msg, changeSet, changeLog);
+        String logMessage = buildLogMessage(changeSet, changeLog, msg);
+        buildListener.getLogger().println(logMessage);
 
         if (sqlStatements != null && sqlStatements.length > 0) {
             SqlStatement sqlStatement = sqlStatements[0];
@@ -90,41 +85,32 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
             for (int i = 0; i < sqls.length; i++) {
                 Sql sql = sqls[i];
-                if(LOG.isDebugEnabled()) {
-                	LOG.debug("sql.toSql():[" + sql.toSql() + "]");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("sql.toSql():[" + sql.toSql() + "]");
                 }
             }
         }
 
     }
 
-    private void buildMessage(String msg, ChangeSet changeSet, DatabaseChangeLog changeLog) {
-        String filePath = null;
-        if (changeLog!=null) {
+    private static String buildLogMessage(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
+        String filePath;
+        if (changeLog != null) {
             filePath = changeLog.getFilePath();
-        }                  else {
-            filePath="";
-
+        } else {
+            filePath = "";
         }
         String changeSetName;
-        if (changeSet!=null) {
+        if (changeSet != null) {
             changeSetName = changeSet.toString(false);
         } else {
             changeSetName = "";
         }
-        String logMessage = buildMessage(msg, filePath, changeSetName);
-        buildListener.getLogger().println(logMessage);
+        StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append(filePath).append(": ");
+        msgBuilder.append(changeSetName.replace(filePath + "::", "")).append(": ");
+        msgBuilder.append(msg);
+        return msgBuilder.toString();
     }
 
-    private String buildMessage(String message, String changeLogName, String changeSetName) {
-        StringBuilder msg = new StringBuilder();
-        if (changeLogName != null) {
-            msg.append(changeLogName).append(": ");
-        }
-        if (changeSetName != null) {
-            msg.append(changeSetName.replace(changeLogName + "::", "")).append(": ");
-        }
-        msg.append(message);
-        return msg.toString();
-    }
 }
