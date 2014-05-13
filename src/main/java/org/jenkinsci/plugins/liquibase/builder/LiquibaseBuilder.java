@@ -40,11 +40,8 @@ public class LiquibaseBuilder extends Builder {
     protected List<EmbeddedDriver> embeddedDrivers =
             Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
                     new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
-                    new EmbeddedDriver("Hypersonic SQL", "org.hsqldb.jdbcDriver"));
-    /**
-     * The liquibase action to execute.
-     */
-    protected String liquibaseCommand;
+                    new EmbeddedDriver("Hypersonic SQL", "org.hsqldb.jdbc.JDBCDriver"),
+                    new EmbeddedDriver("H2", "org.h2.Driver"));
     /**
      * Root changeset file.
      */
@@ -68,18 +65,11 @@ public class LiquibaseBuilder extends Builder {
     protected String contexts;
 
     protected boolean testRollbacks;
-    /**
-     * Catch-all option which can be used to supply additional options to liquibase.
-     */
-    protected String commandLineArgs;
 
     private String databaseEngine;
 
     @DataBoundConstructor
-    public LiquibaseBuilder(String commandLineArgs,
-                            String changeLogFile,
-                            String liquibaseCommand,
-                            String username,
+    public LiquibaseBuilder(String changeLogFile, String username,
                             String password,
                             String url,
                             String defaultSchemaName,
@@ -92,8 +82,6 @@ public class LiquibaseBuilder extends Builder {
         this.username = username;
 
         this.changeLogFile = changeLogFile;
-        this.liquibaseCommand = liquibaseCommand;
-        this.commandLineArgs = commandLineArgs;
         this.contexts = contexts;
 
         this.databaseEngine = databaseEngine;
@@ -166,16 +154,8 @@ public class LiquibaseBuilder extends Builder {
         return DESCRIPTOR;
     }
 
-    public String getCommandLineArgs() {
-        return commandLineArgs;
-    }
-
     public String getChangeLogFile() {
         return changeLogFile;
-    }
-
-    public String getLiquibaseCommand() {
-        return liquibaseCommand;
     }
 
     public boolean isTestRollbacks() {
