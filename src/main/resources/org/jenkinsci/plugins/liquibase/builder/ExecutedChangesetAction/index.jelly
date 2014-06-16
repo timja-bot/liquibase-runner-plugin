@@ -26,7 +26,7 @@
                         <span class="sql">
                             <j:forEach items="${it.getSql(ch)}" var="sql">
                                 <f:textarea codemirror-mode="sql"
-                                            codemirror-config="mode:'text/x-plsql',readOnly:true,viewportMargin:'Infinity'"
+                                            codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
                                             value="${sql.toSql()}"/>
                             </j:forEach>
                         </span>
@@ -38,6 +38,7 @@
                 /* some css hacking to tailor display */
                 .CodeMirror {
                     height:auto ;
+                    line-height:130%;
                     overflow-y: hidden;
                     overflow-x: hidden;
                 }
