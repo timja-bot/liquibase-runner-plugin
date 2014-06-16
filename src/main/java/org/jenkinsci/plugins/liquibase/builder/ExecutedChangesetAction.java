@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
 import liquibase.sql.Sql;
@@ -16,16 +17,25 @@ import com.google.common.collect.Sets;
  */
 public class ExecutedChangesetAction implements Action {
 
+    private AbstractBuild<?,?> build;
+
     ArrayListMultimap<ChangeSet, Sql> sqlsMap = ArrayListMultimap.create();
 
     Set<ChangeSet> changeSets = Sets.newHashSet();
 
+    public ExecutedChangesetAction() {
+    }
+
+    public ExecutedChangesetAction(AbstractBuild<?, ?> build) {
+        this.build = build;
+    }
+
     public String getIconFileName() {
-        return null;
+        return "/plugin/liquibase-runner/liquibase_icon24x24.png";
     }
 
     public String getDisplayName() {
-        return "Executed ChangeSet";
+        return "Changesets";
     }
 
     public String getUrlName() {
@@ -54,5 +64,13 @@ public class ExecutedChangesetAction implements Action {
         if (!sqlsMap.containsKey(changeSet)) {
             addSql(changeSet, sqls);
         }
+    }
+
+    public AbstractBuild<?, ?> getBuild() {
+        return build;
+    }
+
+    public void setBuild(AbstractBuild<?, ?> build) {
+        this.build = build;
     }
 }

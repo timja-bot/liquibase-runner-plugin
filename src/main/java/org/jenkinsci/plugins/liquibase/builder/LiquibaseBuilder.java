@@ -108,7 +108,7 @@ public class LiquibaseBuilder extends Builder {
                             null, null, true, true, null, null, null, null);
 
             Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
-            ExecutedChangesetAction action = new ExecutedChangesetAction();
+            ExecutedChangesetAction action = new ExecutedChangesetAction(build);
             liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
 
             if (testRollbacks) {

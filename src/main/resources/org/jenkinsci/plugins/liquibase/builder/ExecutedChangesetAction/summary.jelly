@@ -1,6 +1,7 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:t="/lib/hudson">
 
+
     <j:set var="executedChangeSets" value="${it.getChangeSets()}"/>
 
     <j:if test="${executedChangeSets != null}">
