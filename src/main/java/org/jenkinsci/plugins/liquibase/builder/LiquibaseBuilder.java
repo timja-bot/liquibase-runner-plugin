@@ -102,32 +102,19 @@ public class LiquibaseBuilder extends Builder {
 
         Database databaseObject = null;
         try {
-            String driver = null;
-
-            for (EmbeddedDriver embeddedDriver : embeddedDrivers) {
-                if (embeddedDriver.getDisplayName().equals(databaseEngine)) {
-                    driver = embeddedDriver.getDriverClassName();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("using db driver class[" + driver + "] ");
-                    }
-                    break;
-                }
-            }
+            String driver = getDriverName();
             databaseObject = CommandLineUtils
                     .createDatabaseObject(getClass().getClassLoader(), this.url, this.username, this.password, driver,
                             null, null, true, true, null, null, null, null);
 
             Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
-            final ExecutedChangesetAction action = new ExecutedChangesetAction();
-
+            ExecutedChangesetAction action = new ExecutedChangesetAction();
             liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
-
 
             if (testRollbacks) {
                 liquibase.updateTestingRollback(contexts);
             } else {
                 liquibase.update(contexts);
-
             }
             build.addAction(action);
         } catch (DatabaseException e) {
@@ -147,6 +134,21 @@ public class LiquibaseBuilder extends Builder {
 
         }
         return true;
+    }
+
+    private String getDriverName() {
+        String driver = null;
+
+        for (EmbeddedDriver embeddedDriver : embeddedDrivers) {
+            if (embeddedDriver.getDisplayName().equals(databaseEngine)) {
+                driver = embeddedDriver.getDriverClassName();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("using db driver class[" + driver + "] ");
+                }
+                break;
+            }
+        }
+        return driver;
     }
 
     @Override
