@@ -6,9 +6,10 @@ import liquibase.sql.Sql;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Supplies information any executed changesets to a particular build.
@@ -17,7 +18,8 @@ public class ExecutedChangesetAction implements Action {
 
     ArrayListMultimap<ChangeSet, Sql> sqlsMap = ArrayListMultimap.create();
 
-    List<ChangeSet> changeSets = Lists.newArrayList();
+    Set<ChangeSet> changeSets = Sets.newHashSet();
+
     public String getIconFileName() {
         return null;
     }
@@ -32,15 +34,13 @@ public class ExecutedChangesetAction implements Action {
 
     public void addChangeset(ChangeSet changeSet) {
         changeSets.add(changeSet);
-
     }
 
-    public List<ChangeSet> getChangeSets() {
+    public Set<ChangeSet> getChangeSets() {
         return changeSets;
     }
 
     public List<Sql> getSql(ChangeSet changeSet) {
-
         return sqlsMap.get(changeSet);
     }
 
@@ -51,10 +51,8 @@ public class ExecutedChangesetAction implements Action {
 
     public void addChangesetWithSql(ChangeSet changeSet, Sql[] sqls) {
         changeSets.add(changeSet);
-        addSql(changeSet, sqls);
-
-    }
-    public void setChangeSets(List<ChangeSet> changeSets) {
-        this.changeSets = changeSets;
+        if (!sqlsMap.containsKey(changeSet)) {
+            addSql(changeSet, sqls);
+        }
     }
 }
