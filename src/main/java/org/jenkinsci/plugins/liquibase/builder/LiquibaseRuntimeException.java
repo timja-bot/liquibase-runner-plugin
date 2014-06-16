@@ -1,5 +1,8 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
+/**
+ * Translates any liquibase checked exceptions as runtime exceptions.
+ */
 public class LiquibaseRuntimeException extends RuntimeException {
     public LiquibaseRuntimeException() {
         super();
@@ -25,5 +28,6 @@ public class LiquibaseRuntimeException extends RuntimeException {
     }
 
     public LiquibaseRuntimeException(String s, Exception e) {
+        super(s, e);
     }
 }

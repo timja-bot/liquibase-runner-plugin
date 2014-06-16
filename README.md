@@ -9,7 +9,7 @@ Installation
 ----
 
 *  Install the liquibase-runner plugin.
-*  Create an empty version of your database on the target server.
+*  Create an empty version of your database on the target server (if applicable).
 
 
 Configuration

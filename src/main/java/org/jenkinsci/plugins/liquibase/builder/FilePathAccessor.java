@@ -9,12 +9,17 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 
-class FilePathAccessor implements ResourceAccessor {
+import org.apache.commons.io.filefilter.FileFileFilter;
+
+import com.google.common.collect.Sets;
+
+/**
+ * Provides Jenkin's file abstraction as a liquibase resource accessor.
+ */
+public class FilePathAccessor implements ResourceAccessor {
     private final AbstractBuild<?, ?> build;
 
     public FilePathAccessor(AbstractBuild<?, ?> build) {
@@ -35,29 +40,54 @@ class FilePathAccessor implements ResourceAccessor {
         return inputStream;
     }
 
-    public Enumeration<URL> getResources(String s) throws IOException {
-        Enumeration<URL> o = null;
-        FilePath childDir = build.getWorkspace().child(s);
-        try {
-            List<URL> urls= new ArrayList<URL>();
-            if (childDir.isDirectory()) {
-                List<FilePath> children = childDir.list();
-                for (FilePath child : children) {
-                    urls.add(child.toURI().toURL());
+    public Set<InputStream> getResourcesAsStream(String path) throws IOException {
+        Set<InputStream> streams = Sets.newHashSet();
+        streams.add(getResourceAsStream(path));
+        return streams;
+    }
 
-                }
-                o= Collections.enumeration(urls);
+    public Set<String> list(String relativeTo,
+                            String path,
+                            boolean includeFiles,
+                            boolean includeDirectories,
+                            boolean recursive) throws IOException {
 
-            } else {
-                urls.add(childDir.toURI().toURL());
+        Set<String> result = Sets.newHashSet();
 
-            }
-        } catch (InterruptedException e) {
-            throw new IOException("Error loading resources from[" + s + "] ", e);
+        FilePath child;
+        if (relativeTo==null) {
+            child = build.getWorkspace().child(path);
+        } else {
+            child = build.getWorkspace().child(relativeTo).child(path);
         }
 
+        try {
+            if (child.isDirectory()) {
+                if (includeDirectories) {
+                    result.add(child.toURI().toURL().toString());
+                }
+                if (recursive) {
+                    List<FilePath> dirs = child.listDirectories();
+                    for (FilePath dir : dirs) {
+                        result.addAll(list(null, dir.getRemote(),includeFiles, true, true));
+                    }
+                }
+                if (includeFiles) {
+                    List<FilePath> files = child.list(FileFileFilter.FILE);
+                    for (FilePath filePath : files) {
+                        result.add(filePath.toURI().toURL().toString());
+                    }
+                }
+            }
 
-        return o;
+            if (!child.isDirectory() && includeFiles) {
+                result.add(child.getName());
+            }
+        } catch (InterruptedException e) {
+            throw new IOException("Error getting resource '" + path + ".", e);
+        }
+
+        return result;
     }
 
     public ClassLoader toClassLoader() {

@@ -65,7 +65,10 @@ public class BuildChangeExecListener implements ChangeExecListener {
     }
 
     public void willRun(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {
-
+        boolean debugEnabled = LOG.isDebugEnabled();
+        if (debugEnabled) {
+            LOG.debug("will run[" + change + "] ");
+        }
     }
 
     public void ran(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {
@@ -83,8 +86,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
             Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
             action.addChangesetWithSql(changeSet, sqls);
 
-            for (int i = 0; i < sqls.length; i++) {
-                Sql sql = sqls[i];
+            for (Sql sql : sqls) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("sql.toSql():[" + sql.toSql() + "]");
                 }

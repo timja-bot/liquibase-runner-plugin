@@ -209,7 +209,9 @@ public class LiquibaseBuilder extends Builder {
 
         private void initDriverList() {
             embeddedDrivers = Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
-                    new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"));
+                    new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
+                    new EmbeddedDriver("Hypersonic", "org.hsqldb.jdbcDriver"),
+                    new EmbeddedDriver("H2", "org.h2.Driver"));
         }
     }
 

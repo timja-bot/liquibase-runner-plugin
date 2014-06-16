@@ -10,6 +10,9 @@ import java.util.List;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 
+/**
+ * Supplies information any executed changesets to a particular build.
+ */
 public class ExecutedChangesetAction implements Action {
 
     ArrayListMultimap<ChangeSet, Sql> sqlsMap = ArrayListMultimap.create();
