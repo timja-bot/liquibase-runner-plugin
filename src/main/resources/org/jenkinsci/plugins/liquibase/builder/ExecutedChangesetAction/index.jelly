@@ -34,25 +34,22 @@
             <style type="text/css">
                 /* some css hacking to tailor display */
                 .CodeMirror {
-
-                height:auto ;
-                overflow-y: hidden;
-                overflow-x: hidden;
-
+                    height:auto ;
+                    overflow-y: hidden;
+                    overflow-x: hidden;
                 }
                 .CodeMirror-scroll {
-                border:1px solid rgba(30, 30, 30, 0.15) !important;
-                height:auto !important ;
-                overflow-y: hidden;
-                overflow-x: hidden;
+                    border:1px solid rgba(30, 30, 30, 0.15) !important;
+                    height:auto !important ;
+                    overflow-y: hidden;
+                    overflow-x: hidden;
                 }
                 .changeSetComment {
-                font-style: italic;
-                font-weight: lighter;
+                    font-style: italic;
+                    font-weight: lighter;
                 }
-
                 .textarea-handle {
-                display:none;
+                    display:none;
                 }
             </style>
         </l:main-panel>
