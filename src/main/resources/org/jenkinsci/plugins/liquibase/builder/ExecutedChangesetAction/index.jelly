@@ -2,7 +2,7 @@
          xmlns:f="/lib/form">
 
 
-    <l:layout title="${it.name}">
+    <l:layout title="${it.name}" css="/plugin/liquibase-runner/css/style.css">
         <st:include it="${it.build}" page="sidepanel.jelly"/>
         <l:main-panel>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
@@ -16,7 +16,7 @@
                 <j:forEach items="${it.changeSets}" var="ch">
 
                     <li class="changeSetItem">
-                        <span class="changeSetId" style="font-weight: bold;margin-right: 2px;">${ch.id}</span>
+                        <span class="changeSetId">${ch.id}</span>
                         by
                         <span class="changeSetAuthor">${ch.author}</span>
                         <br/>
