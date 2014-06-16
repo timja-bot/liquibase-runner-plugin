@@ -1,13 +1,11 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:t="/lib/hudson">
 
-
     <j:set var="executedChangeSets" value="${it.getChangeSets()}"/>
 
     <j:if test="${executedChangeSets != null}">
         <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
             <br/>
-
             <j:if test="${it.getChangeSets().isEmpty()}">No Changesets Executed.</j:if>
 
             <j:if test="${!it.getChangeSets().isEmpty()}">
