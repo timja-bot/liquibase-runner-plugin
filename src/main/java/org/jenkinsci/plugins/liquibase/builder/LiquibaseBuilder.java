@@ -21,12 +21,12 @@ import liquibase.integration.commandline.CommandLineUtils;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Optional;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
@@ -181,7 +181,7 @@ public class LiquibaseBuilder extends Builder {
         } catch (IllegalAccessException ignored) {
 
         }
-        return Optional.ofNullable(failed);
+        return Optional.fromNullable(failed);
     }
 
     private String getDriverName() {
