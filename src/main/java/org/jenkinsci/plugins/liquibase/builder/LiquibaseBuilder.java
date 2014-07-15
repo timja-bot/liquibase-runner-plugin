@@ -9,14 +9,19 @@ import hudson.model.Descriptor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
+import liquibase.Contexts;
 import liquibase.Liquibase;
+import liquibase.changelog.ChangeSet;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.exception.MigrationFailedException;
 import liquibase.integration.commandline.CommandLineUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Optional;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
@@ -69,7 +74,8 @@ public class LiquibaseBuilder extends Builder {
     private String databaseEngine;
 
     @DataBoundConstructor
-    public LiquibaseBuilder(String changeLogFile, String username,
+    public LiquibaseBuilder(String changeLogFile,
+                            String username,
                             String password,
                             String url,
                             String defaultSchemaName,
@@ -85,7 +91,7 @@ public class LiquibaseBuilder extends Builder {
         this.contexts = contexts;
 
         this.databaseEngine = databaseEngine;
-        this.testRollbacks=testRollbacks;
+        this.testRollbacks = testRollbacks;
 
 
     }
@@ -100,23 +106,23 @@ public class LiquibaseBuilder extends Builder {
     public boolean perform(final AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
-        Database databaseObject = null;
+        ExecutedChangesetAction action = new ExecutedChangesetAction(build);
+
+        Liquibase liquibase = createLiquibase(build, listener, action);
         try {
-            String driver = getDriverName();
-            databaseObject = CommandLineUtils
-                    .createDatabaseObject(getClass().getClassLoader(), this.url, this.username, this.password, driver,
-                            null, null, true, true, null, null, null, null);
-
-            Liquibase liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
-            ExecutedChangesetAction action = new ExecutedChangesetAction(build);
-            liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
-
             if (testRollbacks) {
                 liquibase.updateTestingRollback(contexts);
             } else {
-                liquibase.update(contexts);
+                liquibase.update(new Contexts(contexts));
             }
             build.addAction(action);
+        } catch (MigrationFailedException migrationException) {
+            Optional<ChangeSet> changeSetOptional = reflectFailed(migrationException);
+            if (changeSetOptional.isPresent()) {
+                action.addFailed(changeSetOptional.get());
+            }
+            migrationException.printStackTrace(listener.getLogger());
+            throw new RuntimeException("Error executing liquibase liquibase database", migrationException);
         } catch (DatabaseException e) {
             e.printStackTrace(listener.getLogger());
             throw new RuntimeException("Error creating liquibase database", e);
@@ -124,9 +130,10 @@ public class LiquibaseBuilder extends Builder {
             e.printStackTrace(listener.getLogger());
             throw new RuntimeException("Error executing liquibase liquibase database", e);
         } finally {
-            if (databaseObject != null) {
+
+            if (liquibase.getDatabase() != null) {
                 try {
-                    databaseObject.close();
+                    liquibase.getDatabase().close();
                 } catch (DatabaseException e) {
                     LOG.warn("error closing database", e);
                 }
@@ -136,9 +143,49 @@ public class LiquibaseBuilder extends Builder {
         return true;
     }
 
+    private Liquibase createLiquibase(AbstractBuild<?, ?> build,
+                                      BuildListener listener,
+                                      ExecutedChangesetAction action) {
+        String driver = getDriverName();
+        Liquibase liquibase;
+        try {
+            Database databaseObject = CommandLineUtils
+                    .createDatabaseObject(getClass().getClassLoader(), url, username, password, driver, null, null,
+                            true, true, null, null, null, null);
+
+            liquibase = new Liquibase(changeLogFile, new FilePathAccessor(build), databaseObject);
+        } catch (LiquibaseException e) {
+            throw new RuntimeException("Error creating liquibase database.",e);
+        }
+        liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
+        return liquibase;
+    }
+
+    /**
+     * Reflection necessary because failedChangeset has private access on {@link liquibase.exception.MigrationFailedException}.
+     *
+     * @param me
+     * @return
+     */
+    private static Optional<ChangeSet> reflectFailed(MigrationFailedException me) {
+        ChangeSet failed = null;
+        try {
+            Field field = me.getClass().getDeclaredField("failedChangeSet");
+            field.setAccessible(true);
+            failed = (ChangeSet) field.get(me);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("retrieved reference to failed changeset[" + failed + "] ");
+            }
+
+        } catch (NoSuchFieldException ignored) {
+        } catch (IllegalAccessException ignored) {
+
+        }
+        return Optional.ofNullable(failed);
+    }
+
     private String getDriverName() {
         String driver = null;
-
         for (EmbeddedDriver embeddedDriver : embeddedDrivers) {
             if (embeddedDriver.getDisplayName().equals(databaseEngine)) {
                 driver = embeddedDriver.getDriverClassName();

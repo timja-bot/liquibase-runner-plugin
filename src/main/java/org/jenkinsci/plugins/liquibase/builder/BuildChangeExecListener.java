@@ -37,6 +37,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
                         DatabaseChangeLog databaseChangeLog,
                         Database database,
                         ChangeSet.RunStatus runStatus) {
+        buildListener.getLogger().println("Will run " + formatChangeset(changeSet, databaseChangeLog));
 
     }
 
@@ -48,11 +49,10 @@ public class BuildChangeExecListener implements ChangeExecListener {
     }
 
     public void rolledBack(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database) {
-
         if (LOG.isDebugEnabled()) {
-            LOG.debug("rolling back changeset[" + changeSet.getId() + "] ");
+            LOG.debug("rolling back changeset [" + changeSet.getId() + "] ");
         }
-        String logMessage = buildLogMessage(changeSet, databaseChangeLog, "Successfully rolled back");
+        String logMessage = formatChangesetForLog(changeSet, databaseChangeLog, "Rolled back");
         buildListener.getLogger().println(logMessage);
     }
 
@@ -69,6 +69,8 @@ public class BuildChangeExecListener implements ChangeExecListener {
         if (debugEnabled) {
             LOG.debug("will run[" + change + "] ");
         }
+        action.addChangeset(changeSet);
+
     }
 
     public void ran(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {
@@ -77,15 +79,14 @@ public class BuildChangeExecListener implements ChangeExecListener {
         }
         SqlStatement[] sqlStatements = change.generateStatements(database);
 
-        String msg = "Ran successfully";
-        String logMessage = buildLogMessage(changeSet, changeLog, msg);
-        buildListener.getLogger().println(logMessage);
+        String msg = "Ran changeset: ";
+        String logMessage = formatChangeset(changeSet, changeLog);
+        buildListener.getLogger().println(msg + logMessage);
 
         if (sqlStatements != null && sqlStatements.length > 0) {
             SqlStatement sqlStatement = sqlStatements[0];
             Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
             action.addChangesetWithSql(changeSet, sqls);
-
             for (Sql sql : sqls) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("sql.toSql():[" + sql.toSql() + "]");
@@ -95,7 +96,14 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
     }
 
-    private static String buildLogMessage(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
+    private static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
+        String changeSetLogMsg = formatChangeset(changeSet, changeLog);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(changeSetLogMsg).append(": ").append(msg);
+        return stringBuilder.toString();
+    }
+
+    private static String formatChangeset(ChangeSet changeSet, DatabaseChangeLog changeLog) {
         String filePath;
         if (changeLog != null) {
             filePath = changeLog.getFilePath();
@@ -110,8 +118,8 @@ public class BuildChangeExecListener implements ChangeExecListener {
         }
         StringBuilder msgBuilder = new StringBuilder();
         msgBuilder.append(filePath).append(": ");
-        msgBuilder.append(changeSetName.replace(filePath + "::", "")).append(": ");
-        msgBuilder.append(msg);
+        msgBuilder.append(changeSetName.replace(filePath + "::", ""));
+
         return msgBuilder.toString();
     }
 

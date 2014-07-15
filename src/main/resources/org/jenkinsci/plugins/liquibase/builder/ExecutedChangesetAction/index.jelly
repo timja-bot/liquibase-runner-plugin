@@ -7,13 +7,14 @@
         <l:main-panel>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-
+            <j:set var="executedChangeSets" value="${it.changeSetDetails()}"/>
             <h1>Executed changesets</h1>
-            <j:if test="${it.changeSets.isEmpty()}">
+            <j:if test="${it.changeSetDetails().isEmpty()}">
                 No changesets were executed.
             </j:if>
             <ol>
-                <j:forEach items="${it.changeSets}" var="ch">
+                <j:forEach items="${executedChangeSets.keySet()}" var="key">
+                    <j:set var="ch" value="${executedChangeSets.get(key).getChangeSet()}"/>
 
                     <li class="changeSetItem">
                         <span class="changeSetId">${ch.id}</span>
@@ -24,7 +25,7 @@
                             <span class="changeSetComment">${ch.comments}</span>
                         </j:if>
                         <span class="sql">
-                            <j:forEach items="${it.getSql(ch)}" var="sql">
+                            <j:forEach items="${executedChangeSets.get(key).getSqls()}" var="sql">
                                 <f:textarea codemirror-mode="sql"
                                             codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
                                             value="${sql.toSql()}"/>

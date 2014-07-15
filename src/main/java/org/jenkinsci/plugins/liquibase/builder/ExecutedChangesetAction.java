@@ -5,12 +5,11 @@ import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
 import liquibase.sql.Sql;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Supplies information any executed changesets to a particular build.
@@ -19,9 +18,9 @@ public class ExecutedChangesetAction implements Action {
 
     private AbstractBuild<?,?> build;
 
-    ArrayListMultimap<ChangeSet, Sql> sqlsMap = ArrayListMultimap.create();
+    Map<ChangeSet, ChangeSetDetail> changeSetDetails = Maps.newHashMap();
 
-    Set<ChangeSet> changeSets = Sets.newHashSet();
+    private List<ChangeSet> failed = Lists.newArrayList();
 
     public ExecutedChangesetAction() {
     }
@@ -43,27 +42,25 @@ public class ExecutedChangesetAction implements Action {
     }
 
     public void addChangeset(ChangeSet changeSet) {
-        changeSets.add(changeSet);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
+        if (!changeSetDetails.containsKey(changeSet)) {
+            changeSetDetails.put(changeSet, changeSetDetail);
+        }
+
     }
 
-    public Set<ChangeSet> getChangeSets() {
-        return changeSets;
+    public Map<ChangeSet, ChangeSetDetail> getChangeSetDetails() {
+        return changeSetDetails;
     }
 
-    public List<Sql> getSql(ChangeSet changeSet) {
-        return sqlsMap.get(changeSet);
-    }
-
-    public void addSql(ChangeSet changeSet, Sql[] sqls) {
-        sqlsMap.putAll(changeSet, Arrays.asList(sqls));
-
+    public void addFailed(ChangeSet changeSet) {
+        failed.add(changeSet);
     }
 
     public void addChangesetWithSql(ChangeSet changeSet, Sql[] sqls) {
-        changeSets.add(changeSet);
-        if (!sqlsMap.containsKey(changeSet)) {
-            addSql(changeSet, sqls);
-        }
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.createWithSql(changeSet, sqls);
+        changeSetDetails.put(changeSet, changeSetDetail);
+
     }
 
     public AbstractBuild<?, ?> getBuild() {
