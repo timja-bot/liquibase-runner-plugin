@@ -9,7 +9,7 @@
             <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
             <j:set var="executedChangeSets" value="${it.changeSetDetails}"/>
             <h1>Executed changesets</h1>
-            <j:if test="${it.changeSetDetails().isEmpty()}">
+            <j:if test="${it.getChangeSetDetails().isEmpty()}">
                 No changesets were executed.
             </j:if>
             <ol>

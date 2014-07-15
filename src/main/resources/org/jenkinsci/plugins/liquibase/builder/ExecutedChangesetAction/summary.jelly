@@ -6,9 +6,9 @@
     <j:if test="${executedChangeSets != null}">
         <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
             <br/>
-            <j:if test="${it.changeSetDetails().isEmpty()}">No Changesets Executed.</j:if>
+            <j:if test="${it.getChangeSetDetails().isEmpty()}">No Changesets Executed.</j:if>
 
-            <j:if test="${!it.changeSetDetails().isEmpty()}">
+            <j:if test="${!it.getChangeSetDetails().isEmpty()}">
                 <a href="${it.urlName}">Executed changeSets:</a>
                 <ul class="changeSetList">
                     <j:forEach items="${executedChangeSets.keySet()}" var="key">
