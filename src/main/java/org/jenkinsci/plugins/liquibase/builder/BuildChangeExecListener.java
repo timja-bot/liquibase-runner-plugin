@@ -37,7 +37,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
                         DatabaseChangeLog databaseChangeLog,
                         Database database,
                         ChangeSet.RunStatus runStatus) {
-        buildListener.getLogger().println("Will run " + formatChangeset(changeSet, databaseChangeLog));
+
 
     }
 

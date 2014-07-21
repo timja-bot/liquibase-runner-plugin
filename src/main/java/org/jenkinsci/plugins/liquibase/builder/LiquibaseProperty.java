@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
-public enum CliOption {
+public enum LiquibaseProperty {
     USERNAME,
     PASSWORD,
     DEFAULTS_FILE("defaultsFile"), CHANGELOG_FILE("changeLogFile"), CONTEXTS(), URL(), DEFAULT_SCHEMA_NAME(
@@ -9,14 +9,14 @@ public enum CliOption {
 
     private String cliOption;
 
-    CliOption(String cliOption) {
+    LiquibaseProperty(String cliOption) {
         this.cliOption = cliOption;
     }
 
-    CliOption() {
+    LiquibaseProperty() {
     }
 
-    public String getCliOption() {
+    public String getOptionName() {
         String optionName;
         if (cliOption == null) {
             optionName = name().toLowerCase();
