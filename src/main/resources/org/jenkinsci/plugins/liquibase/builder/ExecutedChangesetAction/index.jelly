@@ -8,33 +8,32 @@
             <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
             <j:set var="executedChangeSets" value="${it.changeSetDetails}"/>
+
             <h1>Executed changesets</h1>
             <j:if test="${it.getChangeSetDetails().isEmpty()}">
                 No changesets were executed.
             </j:if>
             <ol>
-                <j:forEach items="${executedChangeSets.keySet()}" var="key">
-                    <j:set var="ch" value="${executedChangeSets.get(key).getChangeSet()}"/>
-                    <j:set var="detail" value="${executedChangeSets.get(key)}"/>
-
+                <j:forEach items="${it.getChangeSetDetailList()}" var="detail">
+                    <j:set var="ch" value="${detail.getChangeSet()}"/>
+                    <a id="${ch.id}"/>
                     <li class="changeSetItem">
-                        <span class="changeSetId">${ch.id}</span>
-                        by
-                        <span class="changeSetAuthor">${ch.author}</span>
+                        <span class="changeSetId">${ch.id}</span> by <span class="changeSetAuthor">${ch.author}</span>
                         <br/>
                         <j:if test="${ch.comments !=null}">
-                            <span class="changeSetComment">${ch.comments}</span>
+                            Comment: <span class="changeSetComment">${ch.comments}</span><br/>
                         </j:if>
-                        <span class="sql">
-                            <f:textarea codemirror-mode="sql"
-                                            codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
-                                            value="${detail.getTruncatedSql()}"/>
-                        </span>
                         <j:if test="${detail.isInNeedOfTruncate()}">
-                            <em>...SQL Truncated...</em>
+                            <em>...SQL below has been truncated...</em>
                         </j:if>
 
+                        <span class="sql">
+                            <f:textarea codemirror-mode="sql"
+                                        codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
+                                        value="${detail.getTruncatedSql()}"/>
+                        </span>
                     </li>
+
 
                 </j:forEach>
             </ol>

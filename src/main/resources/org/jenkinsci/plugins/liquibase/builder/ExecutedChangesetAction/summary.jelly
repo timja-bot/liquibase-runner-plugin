@@ -6,26 +6,25 @@
     <j:if test="${executedChangeSets != null}">
         <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
             <br/>
-            <j:if test="${it.getChangeSetDetails().isEmpty()}">No Changesets Executed.</j:if>
+            <j:if test="${it.getChangeSetDetailList().isEmpty()}">No Changesets Executed.</j:if>
 
-            <j:if test="${!it.getChangeSetDetails().isEmpty()}">
+            <j:if test="${!it.getChangeSetDetailList().isEmpty()}">
                 <a href="${it.urlName}">Executed changeSets:</a>
                 <ul class="changeSetList">
-                    <j:set var="changeSetIterator" value="${executedChangeSets.keySet().iterator()}"/>
                     <j:set var="displayedCount" value="${1}"/>
 
-                    <j:while test="${changeSetIterator.hasNext() &amp;&amp; displayedCount &lt; 5 }">
-                        <j:set value="${changeSetIterator.next()}" var="key"/>
+                    <j:forEach items="${it.getChangeSetDetailList()}" end="8" var="changeSetDetail">
                         <j:set var="displayedCount" value="${displayedCount + 1}"/>
-                        <j:set var="ch" value="${executedChangeSets.get(key).getChangeSet()}"/>
+                        <j:set var="ch" value="${changeSetDetail.getChangeSet()}"/>
                         <li class="changeSetItem">
-                            <span class="changeSetId" style="font-weight: bold;margin-right: 5px;">${ch.id}</span>
+                            <a href="${it.urlName}#${ch.id}" style="font-weight: bold;margin-right: 5px;"><span class="changeSetId">${ch.id}</span></a>
                             by
                             <span class="changeSetAuthor">${ch.author}</span>
+
                             <br/>
                         </li>
-                    </j:while>
-                    <j:if test="${displayedCount &lt; executedChangeSets.keySet().size() }">
+                    </j:forEach>
+                    <j:if test="${displayedCount &lt; it.getChangeSetDetailList().size() }">
                         <a href="${it.urlName}">View All ${">>>"}</a>
                     </j:if>
 
