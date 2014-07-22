@@ -15,6 +15,7 @@
             <ol>
                 <j:forEach items="${executedChangeSets.keySet()}" var="key">
                     <j:set var="ch" value="${executedChangeSets.get(key).getChangeSet()}"/>
+                    <j:set var="detail" value="${executedChangeSets.get(key)}"/>
 
                     <li class="changeSetItem">
                         <span class="changeSetId">${ch.id}</span>
@@ -25,12 +26,14 @@
                             <span class="changeSetComment">${ch.comments}</span>
                         </j:if>
                         <span class="sql">
-                            <j:forEach items="${executedChangeSets.get(key).getSqls()}" var="sql">
-                                <f:textarea codemirror-mode="sql"
+                            <f:textarea codemirror-mode="sql"
                                             codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
-                                            value="${sql.toSql()}"/>
-                            </j:forEach>
+                                            value="${detail.getTruncatedSql()}"/>
                         </span>
+                        <j:if test="${detail.isInNeedOfTruncate()}">
+                            <em>...SQL Truncated...</em>
+                        </j:if>
+
                     </li>
 
                 </j:forEach>

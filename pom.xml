@@ -95,8 +95,10 @@
                         <version>${maven-jetty-plugin.version}</version>
                         <configuration>
                             <systemProperties>
-                                <logback.configurationFile>/home/keith/config/java/logback.xml
-                                </logback.configurationFile>
+                                <systemProperty>
+                                    <name>logback.configurationFile</name>
+                                    <value>/home/keith/config/java/logback.xml</value>
+                                </systemProperty>
                             </systemProperties>
                         </configuration>
                     </plugin>

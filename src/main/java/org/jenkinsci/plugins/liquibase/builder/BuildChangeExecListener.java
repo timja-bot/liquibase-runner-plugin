@@ -13,8 +13,13 @@ import liquibase.sql.Sql;
 import liquibase.sqlgenerator.SqlGeneratorFactory;
 import liquibase.statement.SqlStatement;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Listens for changeset execution to add them to {@link org.jenkinsci.plugins.liquibase.builder.ExecutedChangesetAction}.
@@ -80,47 +85,28 @@ public class BuildChangeExecListener implements ChangeExecListener {
         SqlStatement[] sqlStatements = change.generateStatements(database);
 
         String msg = "Ran changeset: ";
-        String logMessage = formatChangeset(changeSet, changeLog);
+        String logMessage = Util.formatChangeset(changeSet);
         buildListener.getLogger().println(msg + logMessage);
 
+        List<Sql> statementSqls = Lists.newArrayList();
         if (sqlStatements != null && sqlStatements.length > 0) {
-            SqlStatement sqlStatement = sqlStatements[0];
-            Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
-            action.addChangesetWithSql(changeSet, sqls);
-            for (Sql sql : sqls) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("sql.toSql():[" + sql.toSql() + "]");
-                }
+            for (SqlStatement sqlStatement : sqlStatements) {
+                Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
+                statementSqls.addAll(Arrays.asList(sqls));
             }
+            action.addChangesetWithSql(changeSet, statementSqls);
+
         }
 
     }
 
-    private static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
-        String changeSetLogMsg = formatChangeset(changeSet, changeLog);
+    public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
+
+        String changeSetLogMsg = Util.formatChangeset(changeSet);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(changeSetLogMsg).append(": ").append(msg);
         return stringBuilder.toString();
     }
 
-    private static String formatChangeset(ChangeSet changeSet, DatabaseChangeLog changeLog) {
-        String filePath;
-        if (changeLog != null) {
-            filePath = changeLog.getFilePath();
-        } else {
-            filePath = "";
-        }
-        String changeSetName;
-        if (changeSet != null) {
-            changeSetName = changeSet.toString(false);
-        } else {
-            changeSetName = "";
-        }
-        StringBuilder msgBuilder = new StringBuilder();
-        msgBuilder.append(filePath).append(": ");
-        msgBuilder.append(changeSetName.replace(filePath + "::", ""));
-
-        return msgBuilder.toString();
-    }
 
 }

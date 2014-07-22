@@ -1,5 +1,8 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
+import liquibase.changelog.ChangeSet;
+import liquibase.changelog.DatabaseChangeLog;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -37,5 +40,18 @@ public class Util {
                 return containsError;
             }
         });
+    }
+
+    public static String formatChangeset(ChangeSet changeSet) {
+        String filePath;
+        DatabaseChangeLog log = changeSet.getChangeLog();
+        if (log != null) {
+            filePath = log.getFilePath();
+        } else {
+            filePath = "";
+        }
+        String changeSetName = changeSet.toString(false);
+
+        return filePath + ":" + changeSetName.replace(filePath + "::", "");
     }
 }

@@ -23,6 +23,7 @@ public class ExecutedChangesetAction implements Action {
     private List<ChangeSet> failed = Lists.newArrayList();
 
     public ExecutedChangesetAction() {
+
     }
 
     public ExecutedChangesetAction(AbstractBuild<?, ?> build) {
@@ -69,5 +70,11 @@ public class ExecutedChangesetAction implements Action {
 
     public void setBuild(AbstractBuild<?, ?> build) {
         this.build = build;
+    }
+
+    public void addChangesetWithSql(ChangeSet changeSet, List<Sql> statementSqls) {
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.createWithSql(changeSet, statementSqls);
+        changeSetDetails.put(changeSet, changeSetDetail);
+
     }
 }

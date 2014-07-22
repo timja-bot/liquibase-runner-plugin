@@ -11,12 +11,24 @@
             <j:if test="${!it.getChangeSetDetails().isEmpty()}">
                 <a href="${it.urlName}">Executed changeSets:</a>
                 <ul class="changeSetList">
-                    <j:forEach items="${executedChangeSets.keySet()}" var="key">
+                    <j:set var="changeSetIterator" value="${executedChangeSets.keySet().iterator()}"/>
+                    <j:set var="displayedCount" value="${1}"/>
+
+                    <j:while test="${changeSetIterator.hasNext() &amp;&amp; displayedCount &lt; 5 }">
+                        <j:set value="${changeSetIterator.next()}" var="key"/>
+                        <j:set var="displayedCount" value="${displayedCount + 1}"/>
                         <j:set var="ch" value="${executedChangeSets.get(key).getChangeSet()}"/>
                         <li class="changeSetItem">
-                            <span class="changeSetId" style="font-weight: bold;margin-right: 5px;">${ch.id}</span> by <span class="changeSetAuthor">${ch.author}</span><br/>
+                            <span class="changeSetId" style="font-weight: bold;margin-right: 5px;">${ch.id}</span>
+                            by
+                            <span class="changeSetAuthor">${ch.author}</span>
+                            <br/>
                         </li>
-                    </j:forEach>
+                    </j:while>
+                    <j:if test="${displayedCount &lt; executedChangeSets.keySet().size() }">
+                        <a href="${it.urlName}">View All ${">>>"}</a>
+                    </j:if>
+
                 </ul>
             </j:if>
         </t:summary>
