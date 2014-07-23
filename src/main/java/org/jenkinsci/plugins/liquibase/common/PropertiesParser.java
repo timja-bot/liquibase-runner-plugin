@@ -57,7 +57,7 @@ public class PropertiesParser {
                                      LiquibaseProperty liquibaseProperty,
                                      String value) {
         if (!Strings.isNullOrEmpty(value)) {
-            properties.setProperty(liquibaseProperty.getOptionName(), value);
+            properties.setProperty(liquibaseProperty.getOption(), value);
         }
 
     }
@@ -66,7 +66,7 @@ public class PropertiesParser {
         if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
             for (EmbeddedDriver embeddedDriver : liquibaseBuilder.getDrivers()) {
                 if (embeddedDriver.getDisplayName().equals(liquibaseBuilder.getDatabaseEngine())) {
-                    properties.setProperty("driver", embeddedDriver.getDriverClassName());
+                    properties.setProperty(LiquibaseProperty.DRIVER.getOption(), embeddedDriver.getDriverClassName());
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("using db driver class[" + embeddedDriver.getDriverClassName() + "] ");
                     }

@@ -104,12 +104,6 @@ public class LiquibaseBuilder extends Builder {
 
     }
 
-    protected static void addOptionIfPresent(ArgumentListBuilder cmdExecArgs, LiquibaseProperty liquibaseProperty, String value) {
-        if (!Strings.isNullOrEmpty(value)) {
-            cmdExecArgs.add(OPTION_HYPHENS + liquibaseProperty.getOptionName(), value);
-        }
-    }
-
     @Override
     public boolean perform(final AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
@@ -118,7 +112,7 @@ public class LiquibaseBuilder extends Builder {
         ExecutedChangesetAction action = new ExecutedChangesetAction(build);
 
         Liquibase liquibase = createLiquibase(build, listener, action, configProperties);
-        String liqContexts = configProperties.getProperty("contexts");
+        String liqContexts = configProperties.getProperty(LiquibaseProperty.CONTEXTS.getOption());
         try {
             if (testRollbacks) {
                 liquibase.updateTestingRollback(liqContexts);
@@ -156,17 +150,20 @@ public class LiquibaseBuilder extends Builder {
                                       ExecutedChangesetAction action,
                                       Properties configProperties) {
 
-        String driver = getDriverName();
+
         Liquibase liquibase;
         try {
-            Database databaseObject = CommandLineUtils
-                    .createDatabaseObject(getClass().getClassLoader(), configProperties.getProperty("url"),
-                            configProperties.getProperty("username"), configProperties.getProperty("password"), driver,
-                            configProperties.getProperty("defaultCatalogName"),
-                            configProperties.getProperty("defaultSchemaName"), true, true, null, null, null, null);
+            Database databaseObject = CommandLineUtils.createDatabaseObject(getClass().getClassLoader(),
+                    configProperties.getProperty(LiquibaseProperty.URL.getOption()),
+                    configProperties.getProperty(LiquibaseProperty.USERNAME.getOption()),
+                    configProperties.getProperty(LiquibaseProperty.PASSWORD.getOption()),
+                    configProperties.getProperty(LiquibaseProperty.DRIVER.getOption()),
+                    configProperties.getProperty(LiquibaseProperty.DEFAULT_CATALOG_NAME.getOption()),
+                    configProperties.getProperty(LiquibaseProperty.DEFAULT_SCHEMA_NAME.getOption()), true, true, null,
+                    null, null, null);
 
-            liquibase = new Liquibase(configProperties.getProperty("changeLogFile"), new FilePathAccessor(build),
-                    databaseObject);
+            liquibase = new Liquibase(configProperties.getProperty(LiquibaseProperty.CHANGELOG_FILE.getOption()),
+                    new FilePathAccessor(build), databaseObject);
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
         }
@@ -201,22 +198,12 @@ public class LiquibaseBuilder extends Builder {
         return Optional.fromNullable(failed);
     }
 
-    private String getDriverName() {
-        String driver = null;
-        if (driverName == null) {
-            for (EmbeddedDriver embeddedDriver : embeddedDrivers) {
-                if (embeddedDriver.getDisplayName().equals(databaseEngine)) {
-                    driver = embeddedDriver.getDriverClassName();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("using db driver class[" + driver + "] ");
-                    }
-                    break;
-                }
-            }
-        } else {
-            driver = driverName;
+    protected static void addOptionIfPresent(ArgumentListBuilder cmdExecArgs,
+                                             LiquibaseProperty liquibaseProperty,
+                                             String value) {
+        if (!Strings.isNullOrEmpty(value)) {
+            cmdExecArgs.add(OPTION_HYPHENS + liquibaseProperty.getOption(), value);
         }
-        return driver;
     }
 
     @Override

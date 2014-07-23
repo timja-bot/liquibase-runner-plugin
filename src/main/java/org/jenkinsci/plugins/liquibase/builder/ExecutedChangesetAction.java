@@ -10,7 +10,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 /**
- * Supplies information any executed changesets to a particular build.
+ * Supplies information about executed changesets to a particular build.
  */
 public class ExecutedChangesetAction implements Action {
 

@@ -4,7 +4,8 @@ public enum LiquibaseProperty {
     USERNAME,
     PASSWORD,
     DEFAULTS_FILE("defaultsFile"), CHANGELOG_FILE("changeLogFile"), CONTEXTS(), URL(), DEFAULT_SCHEMA_NAME(
-            "defaultSchemaName"), DATABASE_DRIVER_NAME("driver"), LOG_LEVEL("logLevel");
+            "defaultSchemaName"), LOG_LEVEL("logLevel"), DEFAULT_CATALOG_NAME(
+            "defaultCatalogName"), DRIVER();
 
 
     private String cliOption;
@@ -16,7 +17,7 @@ public enum LiquibaseProperty {
     LiquibaseProperty() {
     }
 
-    public String getOptionName() {
+    public String getOption() {
         String optionName;
         if (cliOption == null) {
             optionName = name().toLowerCase();
