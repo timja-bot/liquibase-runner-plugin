@@ -12,6 +12,7 @@ import hudson.tools.ToolProperty;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 
 import org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder;
@@ -21,7 +22,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Describes details of liquibase installation.
  */
 public class LiquibaseInstallation extends ToolInstallation
-        implements NodeSpecific<LiquibaseInstallation>, EnvironmentSpecific<LiquibaseInstallation> {
+        implements NodeSpecific<LiquibaseInstallation>, EnvironmentSpecific<LiquibaseInstallation>, Serializable {
+
+    public static final String UNIX_EXEC_NAME = "liquibase";
+    public static final String WINDOWS_EXEC_NAME = "liquibase.bat";
 
     @DataBoundConstructor
     public LiquibaseInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {

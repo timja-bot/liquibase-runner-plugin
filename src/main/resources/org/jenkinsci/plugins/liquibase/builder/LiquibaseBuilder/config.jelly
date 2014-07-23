@@ -2,7 +2,7 @@
          xmlns:f="/lib/form">
 
 
-    <f:radioBlock inline="true" name="invokeExternal" checked="${instance.invokeExternal}" value="false"
+    <f:radioBlock inline="true" name="invokeExternal" checked="${instance.invokeExternal}" value="true"
                   title="${%Use Existing Liquibase Installation}">
         <f:entry title="${%Liquibase Version}" field="installationName">
             <select class="setting-input" name="installationName">
@@ -13,7 +13,7 @@
             </select>
         </f:entry>
     </f:radioBlock>
-    <f:radioBlock inline="true" name="invokeExternal" checked="${!instance.invokeExternal}" value="true"
+    <f:radioBlock inline="true" name="invokeExternal" checked="${!instance.invokeExternal}" value="false"
                   title="${%Use Embedded Liquibase}">
     </f:radioBlock>
 

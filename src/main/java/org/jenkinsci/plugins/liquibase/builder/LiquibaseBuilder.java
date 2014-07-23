@@ -118,41 +118,47 @@ public class LiquibaseBuilder extends Builder {
     @Override
     public boolean perform(final AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
-
+        Annotator annotator = new Annotator(listener.getLogger(), build.getCharset());
         Properties configProperties = PropertiesParser.createConfigProperties(this);
-        ExecutedChangesetAction action = new ExecutedChangesetAction(build);
+        if (invokeExternal) {
+            Invoker invoker = new Invoker();
+            invoker.invokeLiquibase(configProperties, listener, launcher,build, this, annotator);
 
-        Liquibase liquibase = createLiquibase(build, listener, action, configProperties);
-        String liqContexts = configProperties.getProperty(LiquibaseProperty.CONTEXTS.getOption());
-        try {
-            if (testRollbacks) {
-                liquibase.updateTestingRollback(liqContexts);
-            } else {
-                liquibase.update(new Contexts(liqContexts));
-            }
-            build.addAction(action);
-        } catch (MigrationFailedException migrationException) {
-            Optional<ChangeSet> changeSetOptional = reflectFailed(migrationException);
-            if (changeSetOptional.isPresent()) {
-                action.addFailed(changeSetOptional.get());
-            }
-            migrationException.printStackTrace(listener.getLogger());
-            build.setResult(Result.UNSTABLE);
-        } catch (DatabaseException e) {
-            e.printStackTrace(listener.getLogger());
-            build.setResult(Result.FAILURE);
-        } catch (LiquibaseException e) {
-            e.printStackTrace(listener.getLogger());
-            build.setResult(Result.FAILURE);
-        } finally {
-            if (liquibase.getDatabase() != null) {
-                try {
-                    liquibase.getDatabase().close();
-                } catch (DatabaseException e) {
-                    LOG.warn("error closing database", e);
+        }   else {
+            ExecutedChangesetAction action = new ExecutedChangesetAction(build);
+            Liquibase liquibase = createLiquibase(build, listener, action, configProperties);
+            String liqContexts = configProperties.getProperty(LiquibaseProperty.CONTEXTS.getOption());
+            try {
+                if (testRollbacks) {
+                    liquibase.updateTestingRollback(liqContexts);
+                } else {
+                    liquibase.update(new Contexts(liqContexts));
+                }
+                build.addAction(action);
+            } catch (MigrationFailedException migrationException) {
+                Optional<ChangeSet> changeSetOptional = reflectFailed(migrationException);
+                if (changeSetOptional.isPresent()) {
+                    action.addFailed(changeSetOptional.get());
+                }
+                migrationException.printStackTrace(listener.getLogger());
+                build.setResult(Result.UNSTABLE);
+            } catch (DatabaseException e) {
+                e.printStackTrace(listener.getLogger());
+                build.setResult(Result.FAILURE);
+            } catch (LiquibaseException e) {
+                e.printStackTrace(listener.getLogger());
+                build.setResult(Result.FAILURE);
+            } finally {
+                if (liquibase.getDatabase() != null) {
+                    try {
+                        liquibase.getDatabase().close();
+                    } catch (DatabaseException e) {
+                        LOG.warn("error closing database", e);
+                    }
                 }
             }
         }
+
         return true;
     }
 
@@ -237,6 +243,10 @@ public class LiquibaseBuilder extends Builder {
         return username;
     }
 
+    public void setInvokeExternal(boolean invokeExternal) {
+        this.invokeExternal = invokeExternal;
+    }
+
     public boolean isInvokeExternal() {
         return invokeExternal;
     }
@@ -259,6 +269,10 @@ public class LiquibaseBuilder extends Builder {
 
     public String getLiquibasePropertiesPath() {
         return liquibasePropertiesPath;
+    }
+
+    public void setLiquibasePropertiesPath(String liquibasePropertiesPath) {
+        this.liquibasePropertiesPath = liquibasePropertiesPath;
     }
 
     public void setChangeLogFile(String changeLogFile) {
@@ -293,10 +307,32 @@ public class LiquibaseBuilder extends Builder {
         this.driverName = driverName;
     }
 
-    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public LiquibaseInstallation getInstallation() {
+        LiquibaseInstallation found = null;
+        if (installationName != null) {
+            for (LiquibaseInstallation i : DESCRIPTOR.getInstallations()) {
+                if (installationName.equals(i.getName())) {
+                    found = i;
+                    break;
+                }
+            }
+        }
+        return found;
+    }
 
+
+
+    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
         private List<EmbeddedDriver> embeddedDrivers;
         private LiquibaseInstallation[] installations;
+
+        public DescriptorImpl() {
+            load();
+        }
+
+        public DescriptorImpl(Class<? extends LiquibaseBuilder> clazz) {
+            super(clazz);
+        }
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -329,7 +365,7 @@ public class LiquibaseBuilder extends Builder {
             return installations;
         }
 
-        public void setInstallations(LiquibaseInstallation[] installations) {
+        public void setInstallations(LiquibaseInstallation... installations) {
             this.installations = installations;
             save();
         }
