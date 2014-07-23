@@ -6,8 +6,10 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.tools.ToolInstallation;
 import hudson.util.ArgumentListBuilder;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jenkinsci.plugins.liquibase.common.PropertiesParser;
+import org.jenkinsci.plugins.liquibase.installation.LiquibaseInstallation;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +82,11 @@ public class LiquibaseBuilder extends Builder {
 
     private String liquibasePropertiesPath;
 
+    private boolean invokeExternal;
+
+    private String installationName;
+
+
     @DataBoundConstructor
     public LiquibaseBuilder(String changeLogFile,
                             String username,
@@ -88,7 +96,9 @@ public class LiquibaseBuilder extends Builder {
                             String contexts,
                             String databaseEngine,
                             boolean testRollbacks,
-                            String liquibasePropertiesPath) {
+                            String liquibasePropertiesPath,
+                            boolean invokeExternal,
+                            String installationName) {
         this.password = password;
         this.defaultSchemaName = defaultSchemaName;
         this.url = url;
@@ -101,7 +111,8 @@ public class LiquibaseBuilder extends Builder {
         this.testRollbacks = testRollbacks;
         this.liquibasePropertiesPath = liquibasePropertiesPath;
 
-
+        this.invokeExternal = invokeExternal;
+        this.installationName = installationName;
     }
 
     @Override
@@ -126,13 +137,13 @@ public class LiquibaseBuilder extends Builder {
                 action.addFailed(changeSetOptional.get());
             }
             migrationException.printStackTrace(listener.getLogger());
-            throw new RuntimeException("Error executing liquibase liquibase database", migrationException);
+            build.setResult(Result.UNSTABLE);
         } catch (DatabaseException e) {
             e.printStackTrace(listener.getLogger());
-            throw new RuntimeException("Error creating liquibase database", e);
+            build.setResult(Result.FAILURE);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
-            throw new RuntimeException("Error executing liquibase liquibase database", e);
+            build.setResult(Result.FAILURE);
         } finally {
             if (liquibase.getDatabase() != null) {
                 try {
@@ -149,7 +160,6 @@ public class LiquibaseBuilder extends Builder {
                                       BuildListener listener,
                                       ExecutedChangesetAction action,
                                       Properties configProperties) {
-
 
         Liquibase liquibase;
         try {
@@ -227,6 +237,10 @@ public class LiquibaseBuilder extends Builder {
         return username;
     }
 
+    public boolean isInvokeExternal() {
+        return invokeExternal;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -282,6 +296,7 @@ public class LiquibaseBuilder extends Builder {
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
         private List<EmbeddedDriver> embeddedDrivers;
+        private LiquibaseInstallation[] installations;
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -299,12 +314,24 @@ public class LiquibaseBuilder extends Builder {
             }
             return embeddedDrivers;
         }
+        public LiquibaseInstallation.DescriptorImpl getToolDescriptor() {
+            return ToolInstallation.all().get(LiquibaseInstallation.DescriptorImpl.class);
+        }
 
         private void initDriverList() {
             embeddedDrivers = Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
                     new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
                     new EmbeddedDriver("Hypersonic", "org.hsqldb.jdbcDriver"),
                     new EmbeddedDriver("H2", "org.h2.Driver"));
+        }
+
+        public LiquibaseInstallation[] getInstallations() {
+            return installations;
+        }
+
+        public void setInstallations(LiquibaseInstallation[] installations) {
+            this.installations = installations;
+            save();
         }
     }
 

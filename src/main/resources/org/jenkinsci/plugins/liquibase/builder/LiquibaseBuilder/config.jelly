@@ -2,6 +2,21 @@
          xmlns:f="/lib/form">
 
 
+    <f:radioBlock inline="true" name="invokeExternal" checked="${instance.invokeExternal}" value="false"
+                  title="${%Use Existing Liquibase Installation}">
+        <f:entry title="${%Liquibase Version}" field="installationName">
+            <select class="setting-input" name="installationName">
+                <option>(Default)</option>
+                <j:forEach var="inst" items="${descriptor.installations}">
+                    <f:option selected="${inst.name==instance.installationName}">${inst.name}</f:option>
+                </j:forEach>
+            </select>
+        </f:entry>
+    </f:radioBlock>
+    <f:radioBlock inline="true" name="invokeExternal" checked="${!instance.invokeExternal}" value="true"
+                  title="${%Use Embedded Liquibase}">
+    </f:radioBlock>
+
     <f:entry title="Change Log File" field="changeLogFile"
              description="Root changeset file.">
         <f:textbox value="${instance.changeLogFile}"/>
@@ -37,11 +52,13 @@
     <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
         <f:textbox value="${instance.contexts}"/>
     </f:entry>
-    <f:entry title="Defaults file" field="liquibasePropertiesPath" description="Properties file defining liquibase configuration.  You can use this instead of defining above configuration.">
+    <f:entry title="Defaults file" field="liquibasePropertiesPath"
+             description="Properties file defining liquibase configuration.  You can use this instead of defining above configuration.">
         <f:textbox value="${instance.liquibasePropertiesPath}"/>
     </f:entry>
 
-    <f:entry title="Test Rollbacks" field="testRollbacks" description="Executes any included rollback statements in addition to the changeset.">
+    <f:entry title="Test Rollbacks" field="testRollbacks"
+             description="Executes any included rollback statements in addition to the changeset.">
         <f:checkbox checked="${instance.testRollbacks}"/>
     </f:entry>
 
