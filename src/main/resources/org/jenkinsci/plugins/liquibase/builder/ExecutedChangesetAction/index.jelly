@@ -14,7 +14,7 @@
                 No changesets were executed.
             </j:if>
             <ol>
-                <j:forEach items="${it.getChangeSetDetailList()}" var="detail">
+                <j:forEach items="${it.getChangeSetDetails()}" var="detail">
                     <j:set var="ch" value="${detail.getChangeSet()}"/>
                     <a id="${ch.id}"/>
                     <li class="changeSetItem">

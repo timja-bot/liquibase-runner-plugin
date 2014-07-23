@@ -6,14 +6,14 @@
     <j:if test="${executedChangeSets != null}">
         <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
             <br/>
-            <j:if test="${it.getChangeSetDetailList().isEmpty()}">No Changesets Executed.</j:if>
+            <j:if test="${it.getChangeSetDetails().isEmpty()}">No Changesets Executed.</j:if>
 
-            <j:if test="${!it.getChangeSetDetailList().isEmpty()}">
+            <j:if test="${!it.getChangeSetDetails().isEmpty()}">
                 <a href="${it.urlName}">Executed changeSets:</a>
                 <ul class="changeSetList">
                     <j:set var="displayedCount" value="${1}"/>
 
-                    <j:forEach items="${it.getChangeSetDetailList()}" end="8" var="changeSetDetail">
+                    <j:forEach items="${it.getChangeSetDetails()}" end="8" var="changeSetDetail">
                         <j:set var="displayedCount" value="${displayedCount + 1}"/>
                         <j:set var="ch" value="${changeSetDetail.getChangeSet()}"/>
                         <li class="changeSetItem">
@@ -24,7 +24,7 @@
                             <br/>
                         </li>
                     </j:forEach>
-                    <j:if test="${displayedCount &lt; it.getChangeSetDetailList().size() }">
+                    <j:if test="${displayedCount &lt; it.getChangeSetDetails().size() }">
                         <a href="${it.urlName}">View All ${">>>"}</a>
                     </j:if>
 

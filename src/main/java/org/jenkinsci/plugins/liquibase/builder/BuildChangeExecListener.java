@@ -42,15 +42,12 @@ public class BuildChangeExecListener implements ChangeExecListener {
                         DatabaseChangeLog databaseChangeLog,
                         Database database,
                         ChangeSet.RunStatus runStatus) {
-
-
     }
 
     public void ran(ChangeSet changeSet,
                     DatabaseChangeLog databaseChangeLog,
                     Database database,
                     ChangeSet.ExecType execType) {
-
     }
 
     public void rolledBack(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database) {
@@ -62,11 +59,9 @@ public class BuildChangeExecListener implements ChangeExecListener {
     }
 
     public void preconditionFailed(PreconditionFailedException error, PreconditionContainer.FailOption onFail) {
-
     }
 
     public void preconditionErrored(PreconditionErrorException error, PreconditionContainer.ErrorOption onError) {
-
     }
 
     public void willRun(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {
@@ -74,8 +69,6 @@ public class BuildChangeExecListener implements ChangeExecListener {
         if (debugEnabled) {
             LOG.debug("will run[" + change + "] ");
         }
-        action.addChangeset(changeSet);
-
     }
 
     public void ran(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {

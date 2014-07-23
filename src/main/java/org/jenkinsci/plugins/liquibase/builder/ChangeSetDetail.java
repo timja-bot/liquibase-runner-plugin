@@ -106,4 +106,27 @@ public class ChangeSetDetail {
                 "changeSet=" + Util.formatChangeset(changeSet) +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChangeSetDetail)) {
+            return false;
+        }
+
+        ChangeSetDetail that = (ChangeSetDetail) o;
+
+        if (!changeSet.equals(that.changeSet)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return changeSet.hashCode();
+    }
 }
