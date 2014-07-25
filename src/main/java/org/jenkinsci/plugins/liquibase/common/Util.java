@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.common;
 
 import liquibase.changelog.ChangeSet;
 import liquibase.changelog.DatabaseChangeLog;
@@ -52,6 +52,6 @@ public class Util {
         }
         String changeSetName = changeSet.toString(false);
 
-        return filePath + ":" + changeSetName.replace(filePath + "::", "");
+        return filePath + "::" + changeSetName.replace(filePath + "::", "");
     }
 }

@@ -6,8 +6,7 @@ import java.util.Properties;
 
 import org.jenkinsci.plugins.liquibase.builder.EmbeddedDriver;
 import org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder;
-import org.jenkinsci.plugins.liquibase.builder.LiquibaseProperty;
-import org.jenkinsci.plugins.liquibase.builder.LiquibaseRuntimeException;
+import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ public class PropertiesParser {
      * @param liquibaseBuilder
      * @return
      */
-    public static Properties createConfigProperties(LiquibaseBuilder liquibaseBuilder) {
+    public static Properties createConfigProperties(AbstractLiquibaseBuildStep liquibaseBuilder) {
         Properties properties = new Properties();
 
         String liquibasePropertiesPath = liquibaseBuilder.getLiquibasePropertiesPath();
@@ -43,8 +42,8 @@ public class PropertiesParser {
         return properties;
     }
 
-    private static void setBasedOnConfiguration(LiquibaseBuilder liquibaseBuilder, Properties properties) {
-        setDriverFromDBEngine(liquibaseBuilder, properties);
+    private static void setBasedOnConfiguration(AbstractLiquibaseBuildStep liquibaseBuilder, Properties properties) {
+
         setIfNotNull(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername());
         setIfNotNull(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName());
         setIfNotNull(properties, LiquibaseProperty.PASSWORD, liquibaseBuilder.getPassword());
@@ -62,7 +61,7 @@ public class PropertiesParser {
 
     }
 
-    private static void setDriverFromDBEngine(LiquibaseBuilder liquibaseBuilder, Properties properties) {
+    public static void setDriverFromDBEngine(LiquibaseBuilder liquibaseBuilder, Properties properties) {
         if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
             for (EmbeddedDriver embeddedDriver : liquibaseBuilder.getDrivers()) {
                 if (embeddedDriver.getDisplayName().equals(liquibaseBuilder.getDatabaseEngine())) {

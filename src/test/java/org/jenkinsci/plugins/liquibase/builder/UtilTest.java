@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.liquibase.builder;
 import java.io.File;
 import java.io.IOException;
 
+import org.jenkinsci.plugins.liquibase.common.Util;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

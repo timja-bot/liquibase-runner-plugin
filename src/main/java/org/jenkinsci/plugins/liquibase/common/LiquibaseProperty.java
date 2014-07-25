@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.common;
 
 public enum LiquibaseProperty {
     USERNAME,

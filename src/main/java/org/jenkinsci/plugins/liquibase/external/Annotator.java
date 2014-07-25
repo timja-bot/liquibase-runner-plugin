@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.external;
 
 import hudson.console.LineTransformationOutputStream;
 
@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-
-import org.jenkinsci.plugins.liquibase.external.ChangeSetNote;
 
 public class Annotator extends LineTransformationOutputStream {
     private final OutputStream out;

@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder;
+import org.jenkinsci.plugins.liquibase.external.LiquibaseExecutor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -50,12 +50,12 @@ public class LiquibaseInstallation extends ToolInstallation
 
         @Override
         public LiquibaseInstallation[] getInstallations() {
-            return Jenkins.getInstance().getDescriptorByType(LiquibaseBuilder.DESCRIPTOR.getClass()).getInstallations();
+            return Jenkins.getInstance().getDescriptorByType(LiquibaseExecutor.DESCRIPTOR.getClass()).getInstallations();
         }
 
         @Override
         public void setInstallations(LiquibaseInstallation... installations) {
-            Jenkins.getInstance().getDescriptorByType(LiquibaseBuilder.DESCRIPTOR.getClass())
+            Jenkins.getInstance().getDescriptorByType(LiquibaseExecutor.DESCRIPTOR.getClass())
                    .setInstallations(installations);
         }
     }

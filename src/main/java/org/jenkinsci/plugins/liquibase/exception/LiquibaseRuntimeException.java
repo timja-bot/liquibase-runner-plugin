@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.exception;
 
 /**
  * Translates any liquibase checked exceptions as runtime exceptions.
