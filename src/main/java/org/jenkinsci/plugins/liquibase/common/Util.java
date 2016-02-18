@@ -14,6 +14,7 @@ public class Util {
 
     private static final String ERROR_STRING = "Errors:";
 
+    public static final String UNEXPECTED_ERROR = "Unexpected error running Liquibase";
     private Util() {
     }
 
@@ -23,15 +24,15 @@ public class Util {
      * @return true if {@link #ERROR_STRING} appears in file.
      * @throws IOException
      */
-    protected static boolean doesErrorExist(File logFile) throws IOException {
+    public static boolean doesErrorExist(File logFile) throws IOException {
         return Files.readLines(logFile, Charsets.UTF_8, new LineProcessor<Boolean>() {
             boolean containsError;
-
             public boolean processLine(String line) throws IOException {
                 boolean continueProcessing = true;
-                if (line !=null && line.contains(ERROR_STRING)) {
-                    containsError = true;
+                if (line != null) {
+                    containsError = line.contains(ERROR_STRING) || line.contains(UNEXPECTED_ERROR);
                     continueProcessing = false;
+
                 }
                 return continueProcessing;
             }

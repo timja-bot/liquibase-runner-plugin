@@ -15,13 +15,18 @@ import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.changelog.ChangeSet;
 import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
-import liquibase.integration.commandline.CommandLineUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,7 +54,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
     protected static final String OPTION_HYPHENS = "--";
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseBuilder.class);
 
-    protected List<EmbeddedDriver> embeddedDrivers =
+    protected static List<EmbeddedDriver> embeddedDrivers =
             Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
                     new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
                     new EmbeddedDriver("Hypersonic SQL", "org.hsqldb.jdbc.JDBCDriver"),
@@ -74,9 +79,6 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
         this.databaseEngine = databaseEngine;
     }
 
-
-
-
     @Override
     public boolean doPerform(final AbstractBuild<?, ?> build,
                              Launcher launcher,
@@ -85,12 +87,9 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
             throws InterruptedException, IOException {
 
         PropertiesParser.setDriverFromDBEngine(this, configProperties);
-
-
-
         ExecutedChangesetAction action = new ExecutedChangesetAction(build);
         Liquibase liquibase = createLiquibase(build, listener, action, configProperties);
-        String liqContexts = configProperties.getProperty(LiquibaseProperty.CONTEXTS.getOption());
+        String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
 
         try {
             if (testRollbacks) {
@@ -125,30 +124,48 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
         return true;
     }
 
-    private Liquibase createLiquibase(AbstractBuild<?, ?> build,
-                                      BuildListener listener,
-                                      ExecutedChangesetAction action,
-                                      Properties configProperties) {
-
+    public static Liquibase createLiquibase(AbstractBuild<?, ?> build,
+                                     BuildListener listener,
+                                     ExecutedChangesetAction action,
+                                     Properties configProperties) {
         Liquibase liquibase;
         try {
-            Database databaseObject = CommandLineUtils.createDatabaseObject(getClass().getClassLoader(),
-                    configProperties.getProperty(LiquibaseProperty.URL.getOption()),
-                    configProperties.getProperty(LiquibaseProperty.USERNAME.getOption()),
-                    configProperties.getProperty(LiquibaseProperty.PASSWORD.getOption()),
-                    configProperties.getProperty(LiquibaseProperty.DRIVER.getOption()),
-                    configProperties.getProperty(LiquibaseProperty.DEFAULT_CATALOG_NAME.getOption()),
-                    configProperties.getProperty(LiquibaseProperty.DEFAULT_SCHEMA_NAME.getOption()), true, true, null,
-                    null, null, null);
+            LiquibaseProperty property = LiquibaseProperty.DRIVER;
+            String driverName = getProperty(configProperties, property);
+            DriverManager.registerDriver((Driver) Class.forName(driverName).newInstance() );
+
+            String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
+
+            Connection connection = DriverManager
+                    .getConnection(dbUrl, getProperty(configProperties, LiquibaseProperty.USERNAME),
+                            getProperty(configProperties,
+                                    LiquibaseProperty.PASSWORD));
+
+            JdbcConnection jdbcConnection = new JdbcConnection(connection);
+            Database database =
+                    DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
 
             liquibase = new Liquibase(configProperties.getProperty(LiquibaseProperty.CHANGELOG_FILE.getOption()),
-                    new FilePathAccessor(build), databaseObject);
+                    new FilePathAccessor(build), database);
 
         } catch (LiquibaseException e) {
+            throw new RuntimeException("Error creating liquibase database.", e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error creating liquibase database.", e);
+
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Error creating liquibase database.", e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Error creating liquibase database.", e);
+        } catch (IllegalAccessException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
         }
         liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
         return liquibase;
+    }
+
+    protected static String getProperty(Properties configProperties, LiquibaseProperty property) {
+        return configProperties.getProperty(property.getOption());
     }
 
     public List<EmbeddedDriver> getDrivers() {

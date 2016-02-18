@@ -1,21 +1,21 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:t="/lib/hudson">
 
-    <j:set var="executedChangeSets" value="${it.changeSetDetails}"/>
+    <j:set var="executedChangeSets" value="${it.changeSetActions}"/>
 
     <j:if test="${executedChangeSets != null}">
         <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
             <br/>
-            <j:if test="${it.getChangeSetDetails().isEmpty()}">No Changesets Executed.</j:if>
+            <j:if test="${it.getChangeSetActions().isEmpty()}">No Changesets Executed.</j:if>
 
-            <j:if test="${!it.getChangeSetDetails().isEmpty()}">
+            <j:if test="${!it.getChangeSetActions().isEmpty()}">
                 <a href="${it.urlName}">Executed changeSets:</a>
                 <ul class="changeSetList">
                     <j:set var="displayedCount" value="${1}"/>
 
-                    <j:forEach items="${it.getChangeSetDetails()}" end="8" var="changeSetDetail">
+                    <j:forEach items="${it.getChangeSetActions()}" end="8" var="changeSetDetail">
                         <j:set var="displayedCount" value="${displayedCount + 1}"/>
-                        <j:set var="ch" value="${changeSetDetail.getChangeSet()}"/>
+                        <j:set var="ch" value="${changeSetDetail}"/>
                         <li class="changeSetItem">
                             <a href="${it.urlName}#${ch.id}" style="font-weight: bold;margin-right: 5px;"><span class="changeSetId">${ch.id}</span></a>
                             by

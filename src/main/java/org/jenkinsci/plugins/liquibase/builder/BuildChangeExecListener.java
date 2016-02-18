@@ -89,18 +89,11 @@ public class BuildChangeExecListener implements ChangeExecListener {
                 statementSqls.addAll(Arrays.asList(sqls));
             }
             action.addChangesetWithSql(changeSet, statementSqls);
-
         }
-
     }
 
     public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
-
         String changeSetLogMsg = Util.formatChangeset(changeSet);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(changeSetLogMsg).append(": ").append(msg);
-        return stringBuilder.toString();
+        return changeSetLogMsg + ": " + msg;
     }
-
-
 }

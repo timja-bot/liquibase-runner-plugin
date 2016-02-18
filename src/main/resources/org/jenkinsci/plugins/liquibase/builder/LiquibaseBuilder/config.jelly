@@ -37,7 +37,7 @@
     <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
         <f:textbox value="${instance.contexts}"/>
     </f:entry>
-    <f:entry title="Defaults file" field="liquibasePropertiesPath"
+    <f:entry title="Liquibase Defaults File" field="liquibasePropertiesPath"
              description="Properties file defining liquibase configuration.  You can use this instead of defining above configuration.">
         <f:textbox value="${instance.liquibasePropertiesPath}"/>
     </f:entry>

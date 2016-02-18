@@ -20,6 +20,8 @@ public class ExecutedChangesetAction implements Action {
 
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
 
+    private List<ChangeSetAction> changeSetActions = Lists.newArrayList();
+
     public ExecutedChangesetAction() {
     }
 
@@ -33,6 +35,10 @@ public class ExecutedChangesetAction implements Action {
 
     public String getDisplayName() {
         return "Changesets";
+    }
+
+    public List<ChangeSetAction> getChangeSetActions() {
+        return changeSetActions;
     }
 
     public String getUrlName() {
@@ -54,9 +60,12 @@ public class ExecutedChangesetAction implements Action {
         this.build = build;
     }
 
+    public void addChangeSetAction(ChangeSetAction changeSetAction) {
+        changeSetActions.add(changeSetAction);
+    }
     public void addChangesetWithSql(ChangeSet changeSet, List<Sql> statementSqls) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.createWithSql(changeSet, statementSqls);
-        // since testing rollbacks executes changesets twice, only add changeset if it isn't already contained.
+        // since testing rollbacks executes changesets twice, only add changeset if it isn't already present.
         if (!changeSetDetails.contains(changeSetDetail)) {
             changeSetDetails.add(changeSetDetail);
         }

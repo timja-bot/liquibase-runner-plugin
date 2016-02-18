@@ -33,6 +33,11 @@ public class ChangeSetDetail {
         this.changeSet = changeSet;
     }
 
+    public ChangeSetDetail() {
+
+
+    }
+
     public String getExecutedSql() {
         StringBuilder sb = new StringBuilder();
         for (Sql changesetSql : sqls) {
@@ -49,13 +54,11 @@ public class ChangeSetDetail {
     public String getTruncatedSql() {
         String executedSql = getExecutedSql();
         return truncateString(executedSql);
-
     }
 
     protected static String truncateString(String executedSql) {
         Iterable<String> strings = Splitter.on('\n').split(executedSql);
         Iterable<String> truncated = Iterables.limit(strings, MAX_LINES);
-
 
         int count = 0;
         for (String s : truncated) {
@@ -122,7 +125,6 @@ public class ChangeSetDetail {
         if (!changeSet.equals(that.changeSet)) {
             return false;
         }
-
         return true;
     }
 

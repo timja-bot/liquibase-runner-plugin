@@ -35,7 +35,7 @@ public abstract class AbstractLiquibaseBuildStep extends Builder {
     protected String contexts;
     protected boolean testRollbacks;
     protected String liquibasePropertiesPath;
-    private String driverName;
+
 
     public AbstractLiquibaseBuildStep(String url,
                                       String password,
@@ -65,6 +65,7 @@ public abstract class AbstractLiquibaseBuildStep extends Builder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
         Properties configProperties = PropertiesParser.createConfigProperties(this);
+
         return doPerform(build, launcher, listener, configProperties);
     }
 
@@ -124,7 +125,4 @@ public abstract class AbstractLiquibaseBuildStep extends Builder {
         this.contexts = contexts;
     }
 
-    public void setDriverName(String driverName) {
-        this.driverName = driverName;
-    }
 }
