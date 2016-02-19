@@ -24,6 +24,10 @@ public class ChangeSetDetail {
     private Sql sql;
     private ChangeSet changeSet;
 
+    public ChangeSetDetail() {
+
+    }
+
     private ChangeSetDetail(ChangeSet changeSet, List<Sql> sqls) {
         this.sqls = sqls;
         this.changeSet = changeSet;
@@ -31,11 +35,6 @@ public class ChangeSetDetail {
 
     private ChangeSetDetail(ChangeSet changeSet) {
         this.changeSet = changeSet;
-    }
-
-    public ChangeSetDetail() {
-
-
     }
 
     public String getExecutedSql() {
@@ -59,17 +58,7 @@ public class ChangeSetDetail {
     protected static String truncateString(String executedSql) {
         Iterable<String> strings = Splitter.on('\n').split(executedSql);
         Iterable<String> truncated = Iterables.limit(strings, MAX_LINES);
-
-        int count = 0;
-        for (String s : truncated) {
-            if(LOG.isDebugEnabled()) {
-            	LOG.debug("s:[" + s + "] " + count);
-            }
-            count++;
-        }
         String join = Joiner.on('\n').join(truncated);
-
-
         return join;
     }
 
