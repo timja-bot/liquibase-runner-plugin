@@ -99,10 +99,6 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
             }
             build.addAction(action);
         } catch (MigrationFailedException migrationException) {
-            Optional<ChangeSet> changeSetOptional = reflectFailed(migrationException);
-            if (changeSetOptional.isPresent()) {
-                action.addFailed(changeSetOptional.get());
-            }
             migrationException.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
         } catch (DatabaseException e) {
@@ -120,27 +116,19 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
                 }
             }
         }
-
         return true;
     }
 
     public static Liquibase createLiquibase(AbstractBuild<?, ?> build,
-                                     BuildListener listener,
-                                     ExecutedChangesetAction action,
-                                     Properties configProperties) {
+                                            BuildListener listener,
+                                            ExecutedChangesetAction action,
+                                            Properties configProperties) {
         Liquibase liquibase;
+
+        LiquibaseProperty property = LiquibaseProperty.DRIVER;
+        String driverName = getProperty(configProperties, property);
         try {
-            LiquibaseProperty property = LiquibaseProperty.DRIVER;
-            String driverName = getProperty(configProperties, property);
-            DriverManager.registerDriver((Driver) Class.forName(driverName).newInstance() );
-
-            String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
-
-            Connection connection = DriverManager
-                    .getConnection(dbUrl, getProperty(configProperties, LiquibaseProperty.USERNAME),
-                            getProperty(configProperties,
-                                    LiquibaseProperty.PASSWORD));
-
+            Connection connection = getDatabaseConnection(configProperties, driverName);
             JdbcConnection jdbcConnection = new JdbcConnection(connection);
             Database database =
                     DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
@@ -150,18 +138,34 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
 
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error creating liquibase database.", e);
-
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Error creating liquibase database.", e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException("Error creating liquibase database.", e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Error creating liquibase database.", e);
         }
         liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
         return liquibase;
+    }
+
+    protected static Connection getDatabaseConnection(Properties configProperties, String driverName) {
+        Connection connection;
+        String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
+        try {
+            DriverManager.registerDriver((Driver) Class.forName(driverName).newInstance());
+            connection = DriverManager
+                    .getConnection(dbUrl, getProperty(configProperties, LiquibaseProperty.USERNAME),
+                            getProperty(configProperties,
+                                    LiquibaseProperty.PASSWORD));
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        }
+        return connection;
     }
 
     protected static String getProperty(Properties configProperties, LiquibaseProperty property) {
@@ -247,7 +251,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Invoke Liquibase";
+            return "Evaluate liquibase changesets";
         }
 
         public List<EmbeddedDriver> getEmbeddedDrivers() {

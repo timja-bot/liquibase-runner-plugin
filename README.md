@@ -31,9 +31,9 @@ step.  Each build's console log will contain the stdout/stderr output of liquiba
 
 Your liquibase installation should include the driver for your database (for example, by having the the driver jar in LIQUIBASE_HOME/lib directory).
 
-**Invoke**
+**Evaluate changesets**
 
-The "Invoke Liquibase" build step runs liquibase internally and doesn't require an existing installation.  In addition,
+The "Evaluate liquibase changesets" build step runs liquibase internally and doesn't require an existing installation.  In addition,
 build summaries include additional reporting features, like a list of changesets executed.
  
 However, using this mode contains a few restrictions:

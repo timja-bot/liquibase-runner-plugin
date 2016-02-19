@@ -93,7 +93,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
     }
 
     public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {
-
+        action.addFailed(changeSet);
     }
 
     public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
