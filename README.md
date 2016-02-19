@@ -36,8 +36,9 @@ Your liquibase installation should include the driver for your database (for exa
 The "Invoke Liquibase" build step runs liquibase internally and doesn't require an existing installation.  In addition,
 build summaries include additional reporting features, like a list of changesets executed.
  
-However, using this mode does not allow you to choose what liquibase command to run.  Furthermore, you'll be restricted
-to using one of the included database drivers. 
+However, using this mode contains a few restrictions:
+  * You cannot choose what liquibase command to run; only "update" and "updateTestingRollback" are used.
+  * You are restricted to one of the database engines available in the build step's dropdown.
  
 # The Future
   
