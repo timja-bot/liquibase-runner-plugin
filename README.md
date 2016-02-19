@@ -8,8 +8,6 @@ Adds Liquibase as an available build step.  See Liquibase documentation at http:
 # Installation
 
 *  Install the liquibase-runner plugin.
-*  Create an empty version of your database on the target server (if applicable).
-
 
 # Configuration
 
@@ -35,10 +33,11 @@ Your liquibase installation should include the driver for your database (for exa
 
 **Invoke**
 
-The "Invoke Liquibase" build step runs liquibase 3.4.2 internally and doesn't require an existing installation.  In addition,
+The "Invoke Liquibase" build step runs liquibase internally and doesn't require an existing installation.  In addition,
 build summaries include additional reporting features, like a list of changesets executed.
  
-However, you'll be restricted to which database engine you can use.
+However, using this mode does not allow you to choose what liquibase command to run.  Furthermore, you'll be restricted
+to using one of the included database drivers. 
  
 # The Future
   
