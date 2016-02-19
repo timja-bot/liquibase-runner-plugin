@@ -92,6 +92,10 @@ public class BuildChangeExecListener implements ChangeExecListener {
         }
     }
 
+    public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {
+
+    }
+
     public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
         String changeSetLogMsg = Util.formatChangeset(changeSet);
         return changeSetLogMsg + ": " + msg;

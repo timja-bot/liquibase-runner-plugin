@@ -60,9 +60,6 @@ public class ExecutionPublisherTest {
             	LOG.debug("changeSetAction:[" + changeSetAction + "]");
             }
         }
-
-
-
     }
 
 }

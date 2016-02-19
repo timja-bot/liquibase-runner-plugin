@@ -10,31 +10,26 @@ import static org.junit.Assert.assertEquals;
 public class ChangeSetDetailTest {
     private static final Logger LOG = LoggerFactory.getLogger(ChangeSetDetailTest.class);
 
-
     @Test
     public void testTruncate() {
-        StringBuilder stringBuilder = new StringBuilder();
-
+        StringBuilder longString = new StringBuilder();
         StringBuilder expected = new StringBuilder();
-        for(int i = 0; i < 25; i++) {
+        for(int i = 0; i < ChangeSetDetail.MAX_LINES+1; i++) {
             String random = RandomStringUtils.randomAlphabetic(5) + "\n";
-            stringBuilder.append(random);
+            longString.append(random);
             if(i< ChangeSetDetail.MAX_LINES) {
                 expected.append(random);
             }
         }
 
-        String result = ChangeSetDetail.truncateString(stringBuilder.toString());
+        String result = ChangeSetDetail.truncateString(longString.toString());
+
+        LOG.debug("result:{}", result);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("result[" + result + "] ");
         }
-
         assertEquals(expected.substring(0, expected.length() - 1), result);
-
-
-
-
     }
 
 }
