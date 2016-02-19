@@ -89,6 +89,8 @@ public class BuildChangeExecListener implements ChangeExecListener {
                 statementSqls.addAll(Arrays.asList(sqls));
             }
             action.addChangesetWithSql(changeSet, statementSqls);
+        } else {
+            action.addChangeset(changeSet);
         }
     }
 

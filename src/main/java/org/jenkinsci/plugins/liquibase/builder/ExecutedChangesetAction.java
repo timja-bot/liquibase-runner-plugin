@@ -63,8 +63,18 @@ public class ExecutedChangesetAction implements Action {
     public void addChangeSetAction(ChangeSetAction changeSetAction) {
         changeSetActions.add(changeSetAction);
     }
+
+    public void addChangeset(ChangeSet changeSet) {
+        addChangeSetDetail(new ChangeSetDetail(changeSet));
+
+    }
     public void addChangesetWithSql(ChangeSet changeSet, List<Sql> statementSqls) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.createWithSql(changeSet, statementSqls);
+        addChangeSetDetail(changeSetDetail);
+
+    }
+
+    protected void addChangeSetDetail(ChangeSetDetail changeSetDetail) {
         // since testing rollbacks executes changesets twice, only add changeset if it isn't already present.
         if (!changeSetDetails.contains(changeSetDetail)) {
             changeSetDetails.add(changeSetDetail);

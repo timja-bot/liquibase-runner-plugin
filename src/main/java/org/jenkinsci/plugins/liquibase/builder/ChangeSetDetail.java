@@ -28,12 +28,26 @@ public class ChangeSetDetail {
 
     }
 
+    public static ChangeSetDetail createWithSql(ChangeSet changeSet, Sql[] sqls) {
+        List<Sql> sqlList = Arrays.asList(sqls);
+        return createWithSql(changeSet, sqlList);
+    }
+
+    public static ChangeSetDetail createWithSql(ChangeSet changeSet, List<Sql> sqlList) {
+        return new ChangeSetDetail(changeSet, sqlList);
+    }
+
+    public static ChangeSetDetail create(ChangeSet changeSet) {
+        return new ChangeSetDetail(changeSet);
+    }
+
+
     private ChangeSetDetail(ChangeSet changeSet, List<Sql> sqls) {
         this.sqls = sqls;
         this.changeSet = changeSet;
     }
 
-    private ChangeSetDetail(ChangeSet changeSet) {
+    public ChangeSetDetail(ChangeSet changeSet) {
         this.changeSet = changeSet;
     }
 
@@ -78,19 +92,6 @@ public class ChangeSetDetail {
         if (!sqls.contains(sql)) {
             sqls.add(sql);
         }
-
-    }
-    public static ChangeSetDetail createWithSql(ChangeSet changeSet, Sql[] sqls) {
-        List<Sql> sqlList = Arrays.asList(sqls);
-        return createWithSql(changeSet, sqlList);
-    }
-
-    public static ChangeSetDetail createWithSql(ChangeSet changeSet, List<Sql> sqlList) {
-        return new ChangeSetDetail(changeSet, sqlList);
-    }
-
-    public static ChangeSetDetail create(ChangeSet changeSet) {
-        return new ChangeSetDetail(changeSet);
     }
 
     @Override
