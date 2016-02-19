@@ -55,12 +55,6 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
     protected static final String OPTION_HYPHENS = "--";
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseBuilder.class);
 
-    protected static List<EmbeddedDriver> embeddedDrivers =
-            Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
-                    new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
-                    new EmbeddedDriver("Hypersonic SQL", "org.hsqldb.jdbc.JDBCDriver"),
-                    new EmbeddedDriver("H2", "org.h2.Driver"));
-
     protected String databaseEngine;
     private boolean invokeExternal;
     private boolean dropAll;
@@ -284,6 +278,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
         private void initDriverList() {
             embeddedDrivers = Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
                     new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
+                    new EmbeddedDriver("Derby", "org.apache.derby.jdbc.EmbeddedDriver"),
                     new EmbeddedDriver("Hypersonic", "org.hsqldb.jdbcDriver"),
                     new EmbeddedDriver("H2", "org.h2.Driver"));
         }
