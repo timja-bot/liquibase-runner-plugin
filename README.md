@@ -11,7 +11,7 @@ Adds Liquibase as an available build step.  See Liquibase documentation at http:
 
 # Configuration
 
-## "Execute" versus "Invoke"
+## Build steps: "Execute" versus "Evaluate changesets"
 
 This plugin has two modes for running liquibase.  The first evaluates liquibase changesets internally, and requires 
 no existing liquibase installation.  The second invokes an existing liquibase installation.  Details about each are given
