@@ -7,7 +7,7 @@ Adds Liquibase as an available build step.  See Liquibase documentation at http:
 
 # Installation
 
-*  Install the liquibase-runner plugin.
+*  Install the liquibase-runner plugin using Jenkins' plugin manager.
 
 # Configuration
 
@@ -33,8 +33,8 @@ Each build's console log will contain the stdout/stderr output of liquibase exec
 
 **Evaluate changesets**
 
-The "Evaluate liquibase changesets" build step runs liquibase internally and doesn't require an existing installation.  In addition,
-build summaries include additional reporting features, like a list of changesets executed.
+The "Evaluate liquibase changesets" build step runs liquibase internally and doesn't require liquibase to be installed.  
+In addition, build summaries include a list of changesets executed.
  
 However, using this mode contains a few restrictions:
   * You cannot choose what liquibase command to run; only "update" and "updateTestingRollback" are used.
