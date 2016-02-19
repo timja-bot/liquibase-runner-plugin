@@ -24,12 +24,10 @@ public class BuildChangeExecListenerTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(BuildChangeExecListenerTest.class);
 
-
     @Mock
     BuildListener buildListener;
 
     @Test
-
     public void shouldContainExpectedChangesetAction() {
         ExecutedChangesetAction changesetAction = new ExecutedChangesetAction();
         BuildChangeExecListener listener = new BuildChangeExecListener(changesetAction, buildListener);
