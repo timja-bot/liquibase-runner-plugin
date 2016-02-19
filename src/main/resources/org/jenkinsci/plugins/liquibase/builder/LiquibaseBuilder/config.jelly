@@ -46,7 +46,10 @@
              description="Executes any included rollback statements in addition to the changeset.">
         <f:checkbox checked="${instance.testRollbacks}"/>
     </f:entry>
-
+    <f:entry title="Drop All" field="dropAll"
+             description="Runs 'dropAll' prior to evaluating.">
+        <f:checkbox checked="${instance.dropAll}"/>
+    </f:entry>
 
 </j:jelly>
 

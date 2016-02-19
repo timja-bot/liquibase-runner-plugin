@@ -51,6 +51,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     protected static final String DEFAULT_LOGLEVEL = "info";
+
     protected static final String OPTION_HYPHENS = "--";
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseBuilder.class);
 
@@ -62,6 +63,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
 
     protected String databaseEngine;
     private boolean invokeExternal;
+    private boolean dropAll;
 
     @DataBoundConstructor
     public LiquibaseBuilder(String url,
@@ -73,10 +75,12 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
                             boolean testRollbacks,
                             String contexts,
                             String databaseEngine,
-                            String installationName) {
+                            String installationName,
+                            boolean dropAll) {
         super(url, password, changeLogFile, username, defaultSchemaName, liquibasePropertiesPath, testRollbacks,
                 contexts);
         this.databaseEngine = databaseEngine;
+        this.dropAll = dropAll;
     }
 
     @Override
@@ -92,6 +96,9 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
 
         try {
+            if (dropAll) {
+                liquibase.dropAll();
+            }
             if (testRollbacks) {
                 liquibase.updateTestingRollback(liqContexts);
             } else {
@@ -135,6 +142,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
 
             liquibase = new Liquibase(configProperties.getProperty(LiquibaseProperty.CHANGELOG_FILE.getOption()),
                     new FilePathAccessor(build), database);
+
 
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
@@ -222,6 +230,14 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
 
     public boolean isInvokeExternal() {
         return invokeExternal;
+    }
+
+    public boolean isDropAll() {
+        return dropAll;
+    }
+
+    public void setDropAll(boolean dropAll) {
+        this.dropAll = dropAll;
     }
 
     public String getDatabaseEngine() {
