@@ -42,7 +42,7 @@ However, using this mode contains a few restrictions:
  
 # The Future
   
-I'd like to minimize the difference between "Invoke" and "Execute" and have changesets be reported in both types of
+I'd like to minimize the difference between "Execute" and "Evaluate" and have changesets be reported in both types of
 build steps.
  
 
