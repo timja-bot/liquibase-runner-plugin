@@ -16,11 +16,7 @@ public class ExecutedChangesetAction implements Action {
 
     private AbstractBuild<?,?> build;
 
-    private List<ChangeSetDetail> failedChangeSets = Lists.newArrayList();
-
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
-
-    private List<ChangeSetAction> changeSetActions = Lists.newArrayList();
 
     public ExecutedChangesetAction() {
     }
@@ -37,10 +33,6 @@ public class ExecutedChangesetAction implements Action {
         return "Changesets";
     }
 
-    public List<ChangeSetAction> getChangeSetActions() {
-        return changeSetActions;
-    }
-
     public String getUrlName() {
         return "executedChangeSets";
     }
@@ -52,17 +44,8 @@ public class ExecutedChangesetAction implements Action {
         return changeSetDetails;
     }
 
-    public List<ChangeSetDetail> getFailedChangeSets() {
-
-        return changeSetDetails.stream().filter(changeSetDetail -> !changeSetDetail.isSuccessfullyExecuted()).collect(Collectors.toList());
-    }
-
     public void setBuild(AbstractBuild<?, ?> build) {
         this.build = build;
-    }
-
-    public void addChangeSetAction(ChangeSetAction changeSetAction) {
-        changeSetActions.add(changeSetAction);
     }
 
     public void addChangeset(ChangeSet changeSet) {
