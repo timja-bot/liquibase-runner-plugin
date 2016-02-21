@@ -3,9 +3,9 @@ package org.jenkinsci.plugins.liquibase.builder;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
-import liquibase.sql.Sql;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
@@ -14,13 +14,9 @@ import com.google.common.collect.Lists;
  */
 public class ExecutedChangesetAction implements Action {
 
-    private AbstractBuild<?,?> build;
-
-    private List<ChangeSet> failed = Lists.newArrayList();
+    private AbstractBuild<?, ?> build;
 
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
-
-    private List<ChangeSetAction> changeSetActions = Lists.newArrayList();
 
     public ExecutedChangesetAction() {
     }
@@ -37,41 +33,35 @@ public class ExecutedChangesetAction implements Action {
         return "Changesets";
     }
 
-    public List<ChangeSetAction> getChangeSetActions() {
-        return changeSetActions;
-    }
-
     public String getUrlName() {
         return "executedChangeSets";
-    }
-
-    public void addFailed(ChangeSet changeSet) {
-        failed.add(changeSet);
     }
 
     public AbstractBuild<?, ?> getBuild() {
         return build;
     }
+
     public List<ChangeSetDetail> getChangeSetDetails() {
         return changeSetDetails;
+    }
+
+    public List<ChangeSetDetail> getFailedChangeSets() {
+        return changeSetDetails.stream().filter(changeSetDetail -> !changeSetDetail.isSuccessfullyExecuted())
+                               .collect(Collectors.toList());
     }
 
     public void setBuild(AbstractBuild<?, ?> build) {
         this.build = build;
     }
 
-    public void addChangeSetAction(ChangeSetAction changeSetAction) {
-        changeSetActions.add(changeSetAction);
-    }
-
     public void addChangeset(ChangeSet changeSet) {
         addChangeSetDetail(new ChangeSetDetail(changeSet));
 
     }
-    public void addChangesetWithSql(ChangeSet changeSet, List<Sql> statementSqls) {
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.createWithSql(changeSet, statementSqls);
-        addChangeSetDetail(changeSetDetail);
 
+    public List<ChangeSetDetail> getSuccessfulChangeSets() {
+        return changeSetDetails.stream().filter(changeSetDetail -> changeSetDetail.isSuccessfullyExecuted()).collect(
+                Collectors.toList());
     }
 
     protected void addChangeSetDetail(ChangeSetDetail changeSetDetail) {

@@ -23,20 +23,26 @@ public class ChangeSetDetail {
     private List<Sql> sqls;
     private Sql sql;
     private ChangeSet changeSet;
+    private boolean successfullyExecuted = true;
 
     public ChangeSetDetail() {
 
     }
 
-    public static ChangeSetDetail createWithSql(ChangeSet changeSet, Sql[] sqls) {
+    public static ChangeSetDetail create(ChangeSet changeSet, Sql[] sqls) {
         List<Sql> sqlList = Arrays.asList(sqls);
-        return createWithSql(changeSet, sqlList);
+        return create(changeSet, sqlList);
     }
 
-    public static ChangeSetDetail createWithSql(ChangeSet changeSet, List<Sql> sqlList) {
+    public static ChangeSetDetail create(ChangeSet changeSet, List<Sql> sqlList) {
         return new ChangeSetDetail(changeSet, sqlList);
     }
 
+    public static ChangeSetDetail createFailed(ChangeSet changeSet) {
+        ChangeSetDetail failedChangeset = new ChangeSetDetail(changeSet);
+        failedChangeset.setSuccessfullyExecuted(false);
+        return failedChangeset;
+    }
     public static ChangeSetDetail create(ChangeSet changeSet) {
         return new ChangeSetDetail(changeSet);
     }
@@ -86,6 +92,14 @@ public class ChangeSetDetail {
 
     public ChangeSet getChangeSet() {
         return changeSet;
+    }
+
+    public boolean isSuccessfullyExecuted() {
+        return successfullyExecuted;
+    }
+
+    public void setSuccessfullyExecuted(boolean successfullyExecuted) {
+        this.successfullyExecuted = successfullyExecuted;
     }
 
     public void addSql(Sql sql) {

@@ -6,14 +6,13 @@
         <l:main-panel>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-            <j:set var="executedChangeSets" value="${it.changeSetDetails}"/>
 
             <h1>Executed changesets</h1>
-            <j:if test="${it.getChangeSetDetails().isEmpty()}">
-                No changesets were executed.
+            <j:if test="${it.getSuccessfulChangeSets().isEmpty()}">
+                No changesets were successfully executed.
             </j:if>
             <ol>
-                <j:forEach items="${it.getChangeSetDetails()}" var="detail">
+                <j:forEach items="${it.getSuccessfulChangeSets()}" var="detail">
                     <j:set var="ch" value="${detail.getChangeSet()}"/>
                     <a id="${ch.id}"/>
                     <li class="changeSetItem">

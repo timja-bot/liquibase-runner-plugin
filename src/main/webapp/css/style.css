@@ -7,3 +7,6 @@
     font-weight: bold;
     margin-right: 2px;
 }
+.failed {
+    color: red;
+}
