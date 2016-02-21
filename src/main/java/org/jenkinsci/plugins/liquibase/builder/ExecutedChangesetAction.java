@@ -14,7 +14,7 @@ import com.google.common.collect.Lists;
  */
 public class ExecutedChangesetAction implements Action {
 
-    private AbstractBuild<?,?> build;
+    private AbstractBuild<?, ?> build;
 
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
 
@@ -40,8 +40,14 @@ public class ExecutedChangesetAction implements Action {
     public AbstractBuild<?, ?> getBuild() {
         return build;
     }
+
     public List<ChangeSetDetail> getChangeSetDetails() {
         return changeSetDetails;
+    }
+
+    public List<ChangeSetDetail> getFailedChangeSets() {
+        return changeSetDetails.stream().filter(changeSetDetail -> !changeSetDetail.isSuccessfullyExecuted())
+                               .collect(Collectors.toList());
     }
 
     public void setBuild(AbstractBuild<?, ?> build) {
@@ -57,6 +63,7 @@ public class ExecutedChangesetAction implements Action {
         return changeSetDetails.stream().filter(changeSetDetail -> changeSetDetail.isSuccessfullyExecuted()).collect(
                 Collectors.toList());
     }
+
     protected void addChangeSetDetail(ChangeSetDetail changeSetDetail) {
         // since testing rollbacks executes changesets twice, only add changeset if it isn't already present.
         if (!changeSetDetails.contains(changeSetDetail)) {
