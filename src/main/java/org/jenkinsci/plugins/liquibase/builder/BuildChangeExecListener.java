@@ -29,6 +29,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
     private final ExecutedChangesetAction action;
     private static final Logger LOG = LoggerFactory.getLogger(BuildChangeExecListener.class);
     private BuildListener buildListener;
+    private static final String RAN_CHANGESET_MSG = "Ran changeset: ";
 
     public BuildChangeExecListener(ExecutedChangesetAction action) {
         this.action = action;
@@ -73,14 +74,15 @@ public class BuildChangeExecListener implements ChangeExecListener {
     }
 
     public void ran(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("in 'ran' of listener, attempting to get sql.");
-        }
+        printConsoleLogMessage(changeSet);
+        ChangeSetDetail changeSetDetail = createChangeSetDetail(change, changeSet, database);
+        action.addChangeSetDetail(changeSetDetail);
+
+    }
+
+    protected ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
         SqlStatement[] sqlStatements = change.generateStatements(database);
 
-        String msg = "Ran changeset: ";
-        String logMessage = Util.formatChangeset(changeSet);
-        buildListener.getLogger().println(msg + logMessage);
 
         List<Sql> statementSqls = Lists.newArrayList();
         if (sqlStatements != null && sqlStatements.length > 0) {
@@ -88,15 +90,25 @@ public class BuildChangeExecListener implements ChangeExecListener {
                 Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
                 statementSqls.addAll(Arrays.asList(sqls));
             }
-            action.addChangesetWithSql(changeSet, statementSqls);
-        } else {
-            action.addChangeset(changeSet);
+
+        }
+        return ChangeSetDetail.create(changeSet, statementSqls);
+    }
+
+    protected void printConsoleLogMessage(ChangeSet changeSet) {
+        String logMessage = Util.formatChangeset(changeSet);
+        buildListener.getLogger().println(RAN_CHANGESET_MSG + logMessage);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("in 'ran' of listener, attempting to get sql.");
         }
     }
 
     public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {
-        action.addFailed(changeSet);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.createFailed(changeSet);
+        action.addChangeSetDetail(changeSetDetail);
     }
+
 
     public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
         String changeSetLogMsg = Util.formatChangeset(changeSet);

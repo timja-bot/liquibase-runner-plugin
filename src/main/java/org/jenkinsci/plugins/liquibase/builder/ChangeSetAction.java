@@ -11,6 +11,7 @@ public class ChangeSetAction {
     private String executionTime;
     private String result;
 
+
     private List<String> sqls;
 
     public String getId() {
@@ -45,6 +46,9 @@ public class ChangeSetAction {
         this.sqls = sqls;
     }
 
+    public boolean hasSql() {
+        return !sqls.isEmpty();
+    }
     @Override
     public String toString() {
         return "ChangeSetAction{" +

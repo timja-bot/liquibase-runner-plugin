@@ -98,7 +98,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
             } else {
                 liquibase.update(new Contexts(liqContexts));
             }
-            build.addAction(action);
+
         } catch (MigrationFailedException migrationException) {
             migrationException.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
@@ -117,6 +117,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
                 }
             }
         }
+        build.addAction(action);
         return true;
     }
 
