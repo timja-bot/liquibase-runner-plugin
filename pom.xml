@@ -12,7 +12,13 @@
     <name>Jenkins Liquibase Runner</name>
 
     <packaging>hpi</packaging>
-    <scm>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>    <scm>
         <connection>scm:git:ssh://github.com/jenkinsci/liquibase-runner-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/liquibase-runner-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/liqiubase-runner-plugin</url>
@@ -125,7 +131,7 @@
                             <systemProperties>
                                 <systemProperty>
                                     <name>logback.configurationFile</name>
-                                    <value>${logback.test.config}</value>
+                                    <value>${logback.config}</value>
                                 </systemProperty>
                             </systemProperties>
                         </configuration>
@@ -133,7 +139,7 @@
                 </plugins>
             </build>
             <properties>
-                <logback.test.config>${project.build.testOutputDirectory}/logback.xml</logback.test.config>
+                <logback.config>${project.build.testOutputDirectory}/logback.xml</logback.config>
             </properties>
         </profile>
     </profiles>
