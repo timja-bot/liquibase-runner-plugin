@@ -33,6 +33,8 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
 
     private String installationName;
     private String classpath;
+    private String miscellaneousArguments;
+
 
 
     @Extension
@@ -55,7 +57,7 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
                              String installationName,
                              String command,
                              String logLevel,
-                             String driverName
+                             String driverName, String classpath, String miscellaneousArguments
 
     ) {
         super(url, password, changeLogFile, username, defaultSchemaName, liquibasePropertiesPath, testRollbacks,
@@ -64,6 +66,8 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         this.installationName = installationName;
         this.command = command;
         this.logLevel = logLevel;
+        this.classpath = classpath;
+        this.miscellaneousArguments = miscellaneousArguments;
     }
 
     @Override
@@ -115,6 +119,9 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         addOptionIfPresent(cliCommand, LiquibaseProperty.CLASSPATH, classpath);
         addOptionIfPresent(cliCommand, LiquibaseProperty.URL, url);
         addOptionIfPresent(cliCommand, LiquibaseProperty.CHANGELOG_FILE, changeLogFile);
+        if (!Strings.isNullOrEmpty(miscellaneousArguments)) {
+            cliCommand.add(miscellaneousArguments);
+        }
         String useLogLevel;
         if (Strings.isNullOrEmpty(logLevel)) {
             useLogLevel = DEFAULT_LOG_LEVEL;

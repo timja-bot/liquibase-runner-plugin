@@ -48,7 +48,14 @@
              description="Properties file defining liquibase configuration.  You can use this instead of defining above configuration.">
         <f:textbox value="${instance.liquibasePropertiesPath}"/>
     </f:entry>
-
+    <f:entry title="Classpath" field="classpath"
+             description="Classpath containing migration files and JDBC Driver">
+        <f:textbox value="${instance.classpath}"/>
+    </f:entry>
+    <f:entry title="Misc Arguments" field="miscellaneousArguments"
+             description="Catch-all for any additional arguments supplied to the liquibase command">
+        <f:textbox value="${instance.miscellaneousArguments}"/>
+    </f:entry>
 
 
 
