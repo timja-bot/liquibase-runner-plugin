@@ -12,13 +12,7 @@ import java.util.Properties;
  * Common configuration for each type of liquibase builder.
  */
 public abstract class AbstractLiquibaseBuildStep extends Builder {
-    /**
-     * Root changeset file.
-     */
     protected String changeLogFile;
-    /**
-     * Username with which to connect to database.
-     */
     protected String username;
     /**
      * Password with which to connect to database.
@@ -36,6 +30,10 @@ public abstract class AbstractLiquibaseBuildStep extends Builder {
     protected boolean testRollbacks;
     protected String liquibasePropertiesPath;
 
+
+    public AbstractLiquibaseBuildStep() {
+
+    }
 
     public AbstractLiquibaseBuildStep(String url,
                                       String password,

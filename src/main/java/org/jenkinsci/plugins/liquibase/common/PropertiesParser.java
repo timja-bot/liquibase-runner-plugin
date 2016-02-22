@@ -4,8 +4,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.jenkinsci.plugins.liquibase.builder.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.builder.EmbeddedDriver;
-import org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ public class PropertiesParser {
 
     /**
      * Creates a properties instance representing liquibase configuration elements.  Will first attempt to load
-     * based on {@link org.jenkinsci.plugins.liquibase.builder.LiquibaseBuilder#liquibasePropertiesPath}, then
+     * based on {@link ChangesetEvaluator#liquibasePropertiesPath}, then
      * on any elements set directly on the builder.  Therefore, those set "manually" take precedence over those
      * defined in the external file.
      * @param liquibaseBuilder
@@ -61,10 +61,10 @@ public class PropertiesParser {
 
     }
 
-    public static void setDriverFromDBEngine(LiquibaseBuilder liquibaseBuilder, Properties properties) {
-        if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
-            for (EmbeddedDriver embeddedDriver : liquibaseBuilder.getDrivers()) {
-                if (embeddedDriver.getDisplayName().equals(liquibaseBuilder.getDatabaseEngine())) {
+    public static void setDriverFromDBEngine(ChangesetEvaluator changesetEvaluator, Properties properties) {
+        if (!Strings.isNullOrEmpty(changesetEvaluator.getDatabaseEngine())) {
+            for (EmbeddedDriver embeddedDriver : changesetEvaluator.getDrivers()) {
+                if (embeddedDriver.getDisplayName().equals(changesetEvaluator.getDatabaseEngine())) {
                     properties.setProperty(LiquibaseProperty.DRIVER.getOption(), embeddedDriver.getDriverClassName());
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("using db driver class[" + embeddedDriver.getDriverClassName() + "] ");

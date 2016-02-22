@@ -28,9 +28,6 @@ public class UtilTest {
 
         withoutError = testFolder.newFile();
         Files.write("I'm just a build log", withoutError, Charsets.UTF_8);
-
-
-
     }
 
     @Test

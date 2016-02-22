@@ -1,4 +1,0 @@
-{"id":"createtable","result":"success","sqls":[" CREATE TABLE PUBLIC.shape (id INT AUTO_INCREMENT NOT NULL, CONSTRAINT PK_SHAPE PRIMARY KEY (id))"],"executionTime":"5ms","comment":null,"changeLog":"changeset.xml"}
-{"id":"createTable-child-example","result":"success","sqls":[" CREATE TABLE PUBLIC.color (id INT AUTO_INCREMENT NOT NULL, CONSTRAINT PK_COLOR PRIMARY KEY (id))"],"executionTime":"2ms","comment":null,"changeLog":"changeset.xml"}
-{"id":"createtable","result":"success","sqls":[" CREATE TABLE PUBLIC.shape (id INT AUTO_INCREMENT NOT NULL, CONSTRAINT PK_SHAPE PRIMARY KEY (id))"],"executionTime":"7ms","comment":null,"changeLog":"changeset.xml"}
-{"id":"createTable-child-example","result":"success","sqls":[" CREATE TABLE PUBLIC.color (id INT AUTO_INCREMENT NOT NULL, CONSTRAINT PK_COLOR PRIMARY KEY (id))"],"executionTime":"2ms","comment":null,"changeLog":"changeset.xml"}

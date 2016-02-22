@@ -21,6 +21,7 @@ import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -46,36 +47,53 @@ import com.google.common.collect.Lists;
  * Jenkins builder which runs liquibase.
  */
 @SuppressWarnings("ProhibitedExceptionThrown")
-public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
+public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     protected static final String DEFAULT_LOGLEVEL = "info";
 
     protected static final String OPTION_HYPHENS = "--";
-    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluator.class);
 
     protected String databaseEngine;
     private boolean invokeExternal;
     private boolean dropAll;
 
+
+
     @DataBoundConstructor
-    public LiquibaseBuilder(String url,
-                            String password,
-                            String changeLogFile,
-                            String username,
-                            String defaultSchemaName,
-                            String liquibasePropertiesPath,
-                            boolean testRollbacks,
-                            String contexts,
-                            String databaseEngine,
-                            String installationName,
-                            boolean dropAll) {
+    public ChangesetEvaluator(String url,
+                              String password,
+                              String changeLogFile,
+                              String username,
+                              String defaultSchemaName,
+                              String liquibasePropertiesPath,
+                              boolean testRollbacks,
+                              String contexts,
+                              String databaseEngine,
+                              String installationName,
+                              boolean dropAll) {
         super(url, password, changeLogFile, username, defaultSchemaName, liquibasePropertiesPath, testRollbacks,
                 contexts);
         this.databaseEngine = databaseEngine;
         this.dropAll = dropAll;
     }
+
+    private ChangesetEvaluator(ChangesetEvaluatorBuilder changesetEvaluatorBuilder) {
+        databaseEngine = changesetEvaluatorBuilder.databaseEngine;
+        setInvokeExternal(changesetEvaluatorBuilder.invokeExternal);
+        setDropAll(changesetEvaluatorBuilder.dropAll);
+        setChangeLogFile(changesetEvaluatorBuilder.changeLogFile);
+        setUsername(changesetEvaluatorBuilder.username);
+        setPassword(changesetEvaluatorBuilder.password);
+        setUrl(changesetEvaluatorBuilder.url);
+        setDefaultSchemaName(changesetEvaluatorBuilder.defaultSchemaName);
+        setContexts(changesetEvaluatorBuilder.contexts);
+        setTestRollbacks(changesetEvaluatorBuilder.testRollbacks);
+        setLiquibasePropertiesPath(changesetEvaluatorBuilder.liquibasePropertiesPath);
+    }
+
 
     @Override
     public boolean doPerform(final AbstractBuild<?, ?> build,
@@ -102,9 +120,6 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
         } catch (MigrationFailedException migrationException) {
             migrationException.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
-        } catch (DatabaseException e) {
-            e.printStackTrace(listener.getLogger());
-            build.setResult(Result.FAILURE);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.FAILURE);
@@ -158,13 +173,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
         } catch (SQLException e) {
             throw new RuntimeException(
                     "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        } catch (ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new RuntimeException(
                     "Error registering database driver " + driverName, e);
         }
@@ -180,7 +189,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
     }
 
     /**
-     * Reflection necessary because failedChangeset has private access on {@link liquibase.exception.MigrationFailedException}.
+     * Reflection necessary because failedChangeset has private access on {@link MigrationFailedException}.
      *
      * @param me
      * @return
@@ -195,9 +204,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
                 LOG.debug("retrieved reference to failed changeset[" + failed + "] ");
             }
 
-        } catch (NoSuchFieldException ignored) {
-        } catch (IllegalAccessException ignored) {
-
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
         return Optional.fromNullable(failed);
     }
@@ -211,7 +218,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
     }
 
     @Override
-    public Descriptor<Builder> getDescriptor() {
+    public Descriptor<Builder > getDescriptor() {
         return DESCRIPTOR;
     }
 
@@ -251,7 +258,7 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
             load();
         }
 
-        public DescriptorImpl(Class<? extends LiquibaseBuilder> clazz) {
+        public DescriptorImpl(Class<? extends ChangesetEvaluator> clazz) {
             super(clazz);
         }
 
@@ -294,4 +301,85 @@ public class LiquibaseBuilder extends AbstractLiquibaseBuildStep {
         }
     }
 
+    public static final class ChangesetEvaluatorBuilder {
+        private String databaseEngine;
+        private boolean invokeExternal;
+        private boolean dropAll;
+        private String changeLogFile;
+        private String username;
+        private String password;
+        private String url;
+        private String defaultSchemaName;
+        private String contexts;
+        private boolean testRollbacks;
+        private String liquibasePropertiesPath;
+
+        public ChangesetEvaluatorBuilder() {
+        }
+
+        public ChangesetEvaluatorBuilder withDatabaseEngine(String val) {
+            databaseEngine = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withInvokeExternal(boolean val) {
+            invokeExternal = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withDropAll(boolean val) {
+            dropAll = val;
+            return this;
+        }
+
+
+        public ChangesetEvaluatorBuilder withChangeLogFile(File val) {
+            changeLogFile = val.getAbsolutePath();
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withChangeLogFile(String val) {
+            changeLogFile = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withUsername(String val) {
+            username = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withPassword(String val) {
+            password = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withUrl(String val) {
+            url = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withDefaultSchemaName(String val) {
+            defaultSchemaName = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withContexts(String val) {
+            contexts = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withTestRollbacks(boolean val) {
+            testRollbacks = val;
+            return this;
+        }
+
+        public ChangesetEvaluatorBuilder withLiquibasePropertiesPath(String val) {
+            liquibasePropertiesPath = val;
+            return this;
+        }
+
+        public ChangesetEvaluator build() {
+            return new ChangesetEvaluator(this);
+        }
+    }
 }
