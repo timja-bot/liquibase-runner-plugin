@@ -32,6 +32,8 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
     private String driverName;
 
     private String installationName;
+    private String classpath;
+
 
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
@@ -110,6 +112,7 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         addOptionIfPresent(cliCommand, LiquibaseProperty.USERNAME, username);
         addOptionIfPresent(cliCommand, LiquibaseProperty.PASSWORD, password);
         addOptionIfPresent(cliCommand, LiquibaseProperty.DRIVER, driverName);
+        addOptionIfPresent(cliCommand, LiquibaseProperty.CLASSPATH, classpath);
         addOptionIfPresent(cliCommand, LiquibaseProperty.URL, url);
         addOptionIfPresent(cliCommand, LiquibaseProperty.CHANGELOG_FILE, changeLogFile);
         String useLogLevel;
