@@ -1,3 +1,7 @@
+.idea
+data/
+*.log
+*.iml
 work/
 ### Maven template
 target/
