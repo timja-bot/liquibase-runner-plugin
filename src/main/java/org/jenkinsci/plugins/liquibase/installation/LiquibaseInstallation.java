@@ -10,13 +10,14 @@ import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolProperty;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jenkinsci.plugins.liquibase.external.LiquibaseExecutor;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Describes details of liquibase installation.
@@ -40,23 +41,48 @@ public class LiquibaseInstallation extends ToolInstallation
         return new LiquibaseInstallation(getName(), getHome(), getProperties().toList());
     }
 
+    public static LiquibaseInstallation[] allInstallations() {
+        LiquibaseInstallation.DescriptorImpl descriptorByType = Jenkins.getInstance().getDescriptorByType(LiquibaseInstallation.DescriptorImpl.class);
+        return descriptorByType.getInstallations();
+    }
+
+    public static LiquibaseInstallation getInstallation(String name) {
+        LiquibaseInstallation[] liquibaseInstallations = allInstallations();
+        LiquibaseInstallation found = null;
+        for (int i = 0; i < liquibaseInstallations.length; i++) {
+            LiquibaseInstallation liquibaseInstallation = liquibaseInstallations[i];
+            boolean equals = liquibaseInstallation.getName().equals(name);
+            if (equals) {
+                found = liquibaseInstallation;
+                break;
+            }
+        }
+        if (found == null) {
+            throw new RuntimeException("Liquibase installation with name '" + name + "' was not found");
+        }
+
+        return found;
+    }
+
 
     @Extension
     public static class DescriptorImpl extends ToolDescriptor<LiquibaseInstallation> {
+        public DescriptorImpl() {
+            load();
+        }
+
         @Override
         public String getDisplayName() {
             return "Liquibase";
         }
 
-        @Override
-        public LiquibaseInstallation[] getInstallations() {
-            return Jenkins.getInstance().getDescriptorByType(LiquibaseExecutor.DESCRIPTOR.getClass()).getInstallations();
-        }
 
         @Override
-        public void setInstallations(LiquibaseInstallation... installations) {
-            Jenkins.getInstance().getDescriptorByType(LiquibaseExecutor.DESCRIPTOR.getClass())
-                   .setInstallations(installations);
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            super.configure(req, json);
+            save();
+            return true;
         }
+
     }
 }
