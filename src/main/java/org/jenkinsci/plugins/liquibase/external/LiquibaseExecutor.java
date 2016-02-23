@@ -21,6 +21,7 @@ import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.jenkinsci.plugins.liquibase.common.Util;
 import org.jenkinsci.plugins.liquibase.installation.LiquibaseInstallation;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import com.google.common.base.Strings;
 
@@ -30,8 +31,11 @@ import com.google.common.base.Strings;
 public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
     public static final String DEFAULT_LOG_LEVEL = "info";
     private String driverName;
-
     private String installationName;
+    private String classpath;
+    private String miscellaneousArguments;
+
+
 
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
@@ -53,7 +57,7 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
                              String installationName,
                              String command,
                              String logLevel,
-                             String driverName
+                             String driverName, String classpath, String miscellaneousArguments
 
     ) {
         super(url, password, changeLogFile, username, defaultSchemaName, liquibasePropertiesPath, testRollbacks,
@@ -62,6 +66,8 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         this.installationName = installationName;
         this.command = command;
         this.logLevel = logLevel;
+        this.classpath = classpath;
+        this.miscellaneousArguments = miscellaneousArguments;
     }
 
     @Override
@@ -110,8 +116,12 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         addOptionIfPresent(cliCommand, LiquibaseProperty.USERNAME, username);
         addOptionIfPresent(cliCommand, LiquibaseProperty.PASSWORD, password);
         addOptionIfPresent(cliCommand, LiquibaseProperty.DRIVER, driverName);
+        addOptionIfPresent(cliCommand, LiquibaseProperty.CLASSPATH, classpath);
         addOptionIfPresent(cliCommand, LiquibaseProperty.URL, url);
         addOptionIfPresent(cliCommand, LiquibaseProperty.CHANGELOG_FILE, changeLogFile);
+        if (!Strings.isNullOrEmpty(miscellaneousArguments)) {
+            cliCommand.add(miscellaneousArguments);
+        }
         String useLogLevel;
         if (Strings.isNullOrEmpty(logLevel)) {
             useLogLevel = DEFAULT_LOG_LEVEL;
@@ -144,16 +154,7 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
     }
 
     public LiquibaseInstallation getInstallation() {
-        LiquibaseInstallation found = null;
-        if (installationName != null) {
-            for (LiquibaseInstallation i : DESCRIPTOR.getInstallations()) {
-                if (installationName.equals(i.getName())) {
-                    found = i;
-                    break;
-                }
-            }
-        }
-        return found;
+        return LiquibaseInstallation.getInstallation(installationName);
     }
 
 
@@ -193,21 +194,25 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         public LiquibaseInstallation.DescriptorImpl getToolDescriptor() {
             return ToolInstallation.all().get(LiquibaseInstallation.DescriptorImpl.class);
         }
-
         public LiquibaseInstallation[] getInstallations() {
-            return installations;
+            return LiquibaseInstallation.allInstallations();
         }
+    }
 
-        public void setInstallations(LiquibaseInstallation... installations) {
-            this.installations = installations;
-            save();
-        }
+    public String getClasspath() {
+        return classpath;
+    }
+
+    @DataBoundSetter
+    public void setClasspath(String classpath) {
+        this.classpath = classpath;
     }
 
     public String getDriverName() {
         return driverName;
     }
 
+    @DataBoundSetter
     public void setDriverName(String driverName) {
         this.driverName = driverName;
     }
@@ -216,6 +221,7 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         return command;
     }
 
+    @DataBoundSetter
     public void setCommand(String command) {
         this.command = command;
     }
@@ -224,8 +230,17 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         return installationName;
     }
 
+    @DataBoundSetter
     public void setInstallationName(String installationName) {
         this.installationName = installationName;
     }
 
+    public String getMiscellaneousArguments() {
+        return miscellaneousArguments;
+    }
+
+    @DataBoundSetter
+    public void setMiscellaneousArguments(String miscellaneousArguments) {
+        this.miscellaneousArguments = miscellaneousArguments;
+    }
 }
