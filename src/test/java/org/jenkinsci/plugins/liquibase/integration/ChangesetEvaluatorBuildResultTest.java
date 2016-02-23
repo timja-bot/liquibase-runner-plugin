@@ -28,9 +28,8 @@ import static org.junit.Assert.assertThat;
 public class ChangesetEvaluatorBuildResultTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluatorBuildResultTest.class);
-    private static final String CHANGESET_FILENAME = "changeset.xml";
-    private static final String SUNNY_DAY_CHANGESET_XML = "/sunny-day-changeset.xml";
-    private static final String CHANGESET_WITH_ERROR_XML = "/changeset-with-error.xml";
+    private static final String SUNNY_DAY_CHANGESET_XML = "/example-changesets/sunny-day-changeset.xml";
+    private static final String CHANGESET_WITH_ERROR_XML = "/example-changesets/changeset-with-error.xml";
     private static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
 
     @Rule
@@ -64,15 +63,23 @@ public class ChangesetEvaluatorBuildResultTest {
     @Test
     public void should_indicate_success_with_yaml_formatted_changeset()
             throws IOException, ExecutionException, InterruptedException {
-        File changesetFile1 = temporaryFolder.newFile("changeset.yml");
-        InputStream resourceAsStream = getClass().getResourceAsStream("/yaml-changeset-sunnyday.yml");
-        String changeset = IOUtils.toString(resourceAsStream);
-        FileUtils.write(changesetFile1, changeset);
-        File changesetFile = changesetFile1;
-        FreeStyleProject project = createProjectWithChangelogFile(changesetFile);
-        FreeStyleBuild build = launchBuildForProject(project);
+        FreeStyleBuild build = createAndBuildLiquibaseProject("/example-changesets/yaml-changeset-sunnyday.yml");
         assertThat(build.getResult(), is(Result.SUCCESS));
+    }
 
+
+    @Test
+    public void should_executed_json_changeset_sucessfully()
+            throws InterruptedException, ExecutionException, IOException {
+        FreeStyleBuild build = createAndBuildLiquibaseProject("/example-changesets/json-changeset-sunnyday.json");
+        assertThat(build.getResult(), is(Result.SUCCESS));
+    }
+
+    protected FreeStyleBuild createAndBuildLiquibaseProject(String changesetResourcePath)
+            throws IOException, InterruptedException, ExecutionException {
+        File yamlChangeset = createChangesetFile(temporaryFolder, changesetResourcePath);
+        FreeStyleProject project = createProjectWithChangelogFile(yamlChangeset);
+        return launchBuildForProject(project);
     }
 
     @Test
@@ -118,7 +125,8 @@ public class ChangesetEvaluatorBuildResultTest {
 
     private File createChangesetFile(TemporaryFolder temporaryFolder,
                                      String changesetResourcePath) throws IOException {
-        File changesetFile = temporaryFolder.newFile(CHANGESET_FILENAME);
+        String changesetFilename = changesetResourcePath.substring(changesetResourcePath.lastIndexOf("/")+1, changesetResourcePath.length());
+        File changesetFile = temporaryFolder.newFile(changesetFilename);
         InputStream resourceAsStream = getClass().getResourceAsStream(changesetResourcePath);
         String changeset = IOUtils.toString(resourceAsStream);
         FileUtils.write(changesetFile, changeset);
