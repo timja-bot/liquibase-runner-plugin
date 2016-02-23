@@ -15,8 +15,6 @@ import com.google.common.base.Strings;
 public class PropertiesParser {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesParser.class);
 
-
-
     /**
      * Creates a properties instance representing liquibase configuration elements.  Will first attempt to load
      * based on {@link ChangesetEvaluator#liquibasePropertiesPath}, then
