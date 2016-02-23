@@ -24,13 +24,15 @@ Further details are provided below.
 **Execute Liquibase**
 
 Use this build step if you have an existing liquibase installation and wish to have it run just as if you were doing so 
-from command line.  This mode provides the most flexibility for your liquibase configuration and execution, but provides fewer 
-reporting features.
+from command line.  This mode provides the most flexibility for your liquibase configuration and execution, but provides 
+fewer reporting features.
 
 Use "Manage Jenkins" to add your liquibase installation to Jenkins.  It will then be available for selection in the
-build step.  Your liquibase installation should include the driver for your database (for example, by having the the driver jar in LIQUIBASE_HOME/lib directory).
+build step.  Your liquibase installation should include the driver for your database (for example, by having the
+driver jar in LIQUIBASE_HOME/lib directory).
 
-Each build's console log will contain the stdout/stderr output of liquibase execution.
+Each build's console log will contain the stdout/stderr output of liquibase execution.  Furthermore, each type
+of build step will indicate build instability when liquibase is unable to apply a changeset.
 
 **Evaluate changesets**
 
