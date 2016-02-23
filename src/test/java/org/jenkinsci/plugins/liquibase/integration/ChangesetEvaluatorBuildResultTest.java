@@ -31,6 +31,7 @@ public class ChangesetEvaluatorBuildResultTest {
     private static final String CHANGESET_FILENAME = "changeset.xml";
     private static final String SUNNY_DAY_CHANGESET_XML = "/sunny-day-changeset.xml";
     private static final String CHANGESET_WITH_ERROR_XML = "/changeset-with-error.xml";
+    private static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -81,10 +82,9 @@ public class ChangesetEvaluatorBuildResultTest {
     protected FreeStyleProject createProjectWithChangelogFile(File changelogFile) throws IOException {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
 
-        ChangesetEvaluator.ChangesetEvaluatorBuilder builder =
-                new ChangesetEvaluator.ChangesetEvaluatorBuilder();
+        ChangesetEvaluator.ChangesetEvaluatorBuilder builder = new ChangesetEvaluator.ChangesetEvaluatorBuilder();
 
-        builder.withChangeLogFile(changelogFile).withUrl("jdbc:h2:mem:test").withDatabaseEngine("H2");
+        builder.withChangeLogFile(changelogFile).withUrl(IN_MEMORY_JDBC_URL).withDatabaseEngine("H2");
         project.getBuildersList().add(builder.build());
         return project;
     }
@@ -95,13 +95,11 @@ public class ChangesetEvaluatorBuildResultTest {
     }
 
     private File createErrorFreeChangeset(TemporaryFolder temporaryFolder) throws IOException {
-        String changesetResourcePath = SUNNY_DAY_CHANGESET_XML;
-        return createChangesetFile(temporaryFolder, changesetResourcePath);
+        return createChangesetFile(temporaryFolder, SUNNY_DAY_CHANGESET_XML);
     }
 
     private File createChangesetFileWithError(TemporaryFolder temporaryFolder) throws IOException {
-        String changesetResourcePath = CHANGESET_WITH_ERROR_XML;
-        return createChangesetFile(temporaryFolder, changesetResourcePath);
+        return createChangesetFile(temporaryFolder, CHANGESET_WITH_ERROR_XML);
     }
 
     private File createChangesetFile(TemporaryFolder temporaryFolder,

@@ -30,18 +30,14 @@ import com.google.common.base.Strings;
  */
 public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
     public static final String DEFAULT_LOG_LEVEL = "info";
-    private String driverName;
-    private String installationName;
-    private String classpath;
-    private String miscellaneousArguments;
-
-
-
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
+    private String driverName;
+    private String installationName;
+    private String classpath;
+    private String extraArguments;
     private String logLevel;
-
     private String command;
 
     @DataBoundConstructor
@@ -57,7 +53,7 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
                              String installationName,
                              String command,
                              String logLevel,
-                             String driverName, String classpath, String miscellaneousArguments
+                             String driverName, String classpath, String extraArguments
 
     ) {
         super(url, password, changeLogFile, username, defaultSchemaName, liquibasePropertiesPath, testRollbacks,
@@ -67,7 +63,7 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         this.command = command;
         this.logLevel = logLevel;
         this.classpath = classpath;
-        this.miscellaneousArguments = miscellaneousArguments;
+        this.extraArguments = extraArguments;
     }
 
     @Override
@@ -119,8 +115,8 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         addOptionIfPresent(cliCommand, LiquibaseProperty.CLASSPATH, classpath);
         addOptionIfPresent(cliCommand, LiquibaseProperty.URL, url);
         addOptionIfPresent(cliCommand, LiquibaseProperty.CHANGELOG_FILE, changeLogFile);
-        if (!Strings.isNullOrEmpty(miscellaneousArguments)) {
-            cliCommand.add(miscellaneousArguments);
+        if (!Strings.isNullOrEmpty(extraArguments)) {
+            cliCommand.add(extraArguments);
         }
         String useLogLevel;
         if (Strings.isNullOrEmpty(logLevel)) {
@@ -235,12 +231,12 @@ public class LiquibaseExecutor extends AbstractLiquibaseBuildStep {
         this.installationName = installationName;
     }
 
-    public String getMiscellaneousArguments() {
-        return miscellaneousArguments;
+    public String getExtraArguments() {
+        return extraArguments;
     }
 
     @DataBoundSetter
-    public void setMiscellaneousArguments(String miscellaneousArguments) {
-        this.miscellaneousArguments = miscellaneousArguments;
+    public void setExtraArguments(String extraArguments) {
+        this.extraArguments = extraArguments;
     }
 }

@@ -51,9 +51,9 @@
              description="Classpath containing migration files and JDBC Driver">
         <f:textbox value="${instance.classpath}"/>
     </f:entry>
-    <f:entry title="Misc Arguments" field="miscellaneousArguments"
+    <f:entry title="Extra Arguments" field="extraArguments"
              description="Catch-all for any additional arguments supplied to the liquibase command">
-        <f:textbox value="${instance.miscellaneousArguments}"/>
+        <f:textbox value="${instance.extraArguments}"/>
     </f:entry>
 </j:jelly>
 
