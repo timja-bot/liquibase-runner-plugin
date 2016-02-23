@@ -45,12 +45,12 @@ public class ChangesetEvaluatorBuildResultTest {
     }
 
     @Test
-    public void should_report_success_with_error_free_changeset() throws IOException, ExecutionException, InterruptedException {
+    public void should_report_success_with_error_free_changeset()
+            throws IOException, ExecutionException, InterruptedException {
 
         FreeStyleBuild freeStyleBuild = createAndBuildErrorFreeProject();
-
         assertThat(freeStyleBuild.getResult(), is(Result.SUCCESS));
-}
+    }
 
     @Test
     public void should_indicate_unstable_build_when_changeset_has_error()
@@ -59,6 +59,20 @@ public class ChangesetEvaluatorBuildResultTest {
         FreeStyleProject project = createProjectWithChangelogFile(changesetFileWithError);
         FreeStyleBuild build = launchBuildForProject(project);
         assertThat(build.getResult(), is(Result.UNSTABLE));
+    }
+
+    @Test
+    public void should_indicate_success_with_yaml_formatted_changeset()
+            throws IOException, ExecutionException, InterruptedException {
+        File changesetFile1 = temporaryFolder.newFile("changeset.yml");
+        InputStream resourceAsStream = getClass().getResourceAsStream("/yaml-changeset-sunnyday.yml");
+        String changeset = IOUtils.toString(resourceAsStream);
+        FileUtils.write(changesetFile1, changeset);
+        File changesetFile = changesetFile1;
+        FreeStyleProject project = createProjectWithChangelogFile(changesetFile);
+        FreeStyleBuild build = launchBuildForProject(project);
+        assertThat(build.getResult(), is(Result.SUCCESS));
+
     }
 
     @Test
