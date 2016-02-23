@@ -37,10 +37,10 @@ of build step will indicate build instability when liquibase is unable to apply 
 **Evaluate changesets**
 
 The "Evaluate liquibase changesets" build step runs liquibase internally and doesn't require liquibase to be installed.  
-In addition, build summaries include a list of changesets executed.
+In addition, build summaries include a list of changesets executed and the SQL statements that were generated.
  
 However, using this mode contains a few restrictions:
-  * You cannot choose what liquibase command to run; only "update" and "updateTestingRollback" are used.
+  * You cannot choose what liquibase command to run; only "update" (or "updateTestingRollback") are used.
   * You are restricted to one of the database engines available in the build step's dropdown.
  
 # Usage Tips
