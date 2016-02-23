@@ -18,8 +18,8 @@ public class PropertiesParser {
     /**
      * Creates a properties instance representing liquibase configuration elements.  Will first attempt to load
      * based on {@link ChangesetEvaluator#liquibasePropertiesPath}, then
-     * on any elements set directly on the builder.  Therefore, those set "manually" take precedence over those
-     * defined in the external file.
+     * on any elements set directly on the builder.  Therefore, those set within the project configuration take precedence
+     * over those defined in the external file.
      * @param liquibaseBuilder
      * @return
      */
