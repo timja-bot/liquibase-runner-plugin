@@ -4,9 +4,15 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 /**
@@ -46,8 +52,19 @@ public class ExecutedChangesetAction implements Action {
     }
 
     public List<ChangeSetDetail> getFailedChangeSets() {
-        return changeSetDetails.stream().filter(changeSetDetail -> !changeSetDetail.isSuccessfullyExecuted())
-                               .collect(Collectors.toList());
+        Collection<ChangeSetDetail> filtered = Collections2.filter(changeSetDetails, new Predicate<ChangeSetDetail>() {
+            @Override
+            public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
+
+                boolean include = false;
+                if (changeSetDetail != null) {
+                    include = !changeSetDetail.isSuccessfullyExecuted();
+
+                }
+                return include;
+            }
+        });
+        return new ArrayList<ChangeSetDetail>(filtered);
     }
 
     public void setBuild(AbstractBuild<?, ?> build) {
@@ -60,8 +77,17 @@ public class ExecutedChangesetAction implements Action {
     }
 
     public List<ChangeSetDetail> getSuccessfulChangeSets() {
-        return changeSetDetails.stream().filter(changeSetDetail -> changeSetDetail.isSuccessfullyExecuted()).collect(
-                Collectors.toList());
+        Collection<ChangeSetDetail> successful = Collections2.filter(changeSetDetails, new Predicate<ChangeSetDetail>() {
+            @Override
+            public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
+                boolean include = false;
+                if (changeSetDetail != null) {
+                    include = changeSetDetail.isSuccessfullyExecuted();
+                }
+                return include;
+            }
+        });
+        return new ArrayList<ChangeSetDetail>(successful);
     }
 
     protected void addChangeSetDetail(ChangeSetDetail changeSetDetail) {

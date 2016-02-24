@@ -173,7 +173,13 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
         } catch (SQLException e) {
             throw new RuntimeException(
                     "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (InstantiationException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(
                     "Error registering database driver " + driverName, e);
         }
@@ -204,7 +210,8 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
                 LOG.debug("retrieved reference to failed changeset[" + failed + "] ");
             }
 
-        } catch (NoSuchFieldException | IllegalAccessException ignored) {
+        } catch (NoSuchFieldException ignored) {
+        } catch (IllegalAccessException ignored) {
         }
         return Optional.fromNullable(failed);
     }
