@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.evaluator;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;

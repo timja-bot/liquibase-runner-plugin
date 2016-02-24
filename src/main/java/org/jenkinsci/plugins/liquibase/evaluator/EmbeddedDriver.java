@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.evaluator;
 
 /**
  * Describes database drivers that are included with the plugin.

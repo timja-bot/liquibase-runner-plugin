@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.external;
+package org.jenkinsci.plugins.liquibase.executor;
 
 import hudson.console.LineTransformationOutputStream;
 

@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Action;

@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.evaluator;
 
 import liquibase.changelog.ChangeSet;
 import liquibase.sql.Sql;

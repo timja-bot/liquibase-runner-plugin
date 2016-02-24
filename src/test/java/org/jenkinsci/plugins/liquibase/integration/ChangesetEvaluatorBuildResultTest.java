@@ -11,8 +11,8 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.jenkinsci.plugins.liquibase.builder.ChangesetEvaluator;
-import org.jenkinsci.plugins.liquibase.builder.ExecutedChangesetAction;
+import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
+import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

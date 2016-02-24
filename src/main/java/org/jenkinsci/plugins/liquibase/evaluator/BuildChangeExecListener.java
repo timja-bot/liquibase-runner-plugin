@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.builder;
+package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.model.BuildListener;
 import liquibase.change.Change;
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 /**
- * Listens for changeset execution to add them to {@link org.jenkinsci.plugins.liquibase.builder.ExecutedChangesetAction}.
+ * Listens for changeset execution to add them to {@link org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction}.
  */
 public class BuildChangeExecListener implements ChangeExecListener {
     private final ExecutedChangesetAction action;

@@ -4,8 +4,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.jenkinsci.plugins.liquibase.builder.ChangesetEvaluator;
-import org.jenkinsci.plugins.liquibase.builder.EmbeddedDriver;
+import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
+import org.jenkinsci.plugins.liquibase.evaluator.EmbeddedDriver;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
