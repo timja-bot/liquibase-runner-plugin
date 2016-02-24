@@ -28,7 +28,7 @@ public class FilePathAccessor implements ResourceAccessor {
 
     public InputStream getResourceAsStream(String s) throws IOException {
         FilePath child = build.getWorkspace().child(s);
-        InputStream inputStream=null;
+        InputStream inputStream = null;
         try {
             if (child.exists()) {
                 inputStream = child.read();
@@ -55,7 +55,7 @@ public class FilePathAccessor implements ResourceAccessor {
         Set<String> result = Sets.newHashSet();
 
         FilePath child;
-        if (relativeTo==null) {
+        if (relativeTo == null) {
             child = build.getWorkspace().child(path);
         } else {
             child = build.getWorkspace().child(relativeTo).child(path);
@@ -69,7 +69,7 @@ public class FilePathAccessor implements ResourceAccessor {
                 if (recursive) {
                     List<FilePath> dirs = child.listDirectories();
                     for (FilePath dir : dirs) {
-                        result.addAll(list(null, dir.getRemote(),includeFiles, true, true));
+                        result.addAll(list(null, dir.getRemote(), includeFiles, true, true));
                     }
                 }
                 if (includeFiles) {
