@@ -44,7 +44,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
- * Jenkins builder which runs liquibase.
+ * Jenkins builder which evaluates liquibase changesets.
  */
 @SuppressWarnings("ProhibitedExceptionThrown")
 public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
