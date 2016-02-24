@@ -20,13 +20,6 @@ public class LiquibaseRuntimeException extends RuntimeException {
         super(cause);
     }
 
-    protected LiquibaseRuntimeException(String message,
-                                        Throwable cause,
-                                        boolean enableSuppression,
-                                        boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
     public LiquibaseRuntimeException(String s, Exception e) {
         super(s, e);
     }
