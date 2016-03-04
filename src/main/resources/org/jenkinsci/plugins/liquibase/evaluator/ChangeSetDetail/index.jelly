@@ -58,8 +58,20 @@
                         </td>
                     </tr>
                 </j:if>
-            </table>
 
+                <j:if test="${it.exceptionMessage != ''}">
+                    <tr>
+                        <td colspan="2" class="bold">Error</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <pre>
+                                <j:out  value="${it.exceptionMessage}"/>
+                            </pre>
+                        </td>
+                    </tr>
+                </j:if>
+            </table>
             <style type="text/css">
                 .bold {
                     font-weight:bold;

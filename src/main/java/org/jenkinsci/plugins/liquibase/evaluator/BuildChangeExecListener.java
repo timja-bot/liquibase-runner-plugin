@@ -104,7 +104,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
     }
 
     public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.createFailed(changeSet);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.createFailed(changeSet, e);
         action.addChangeSetDetail(changeSetDetail);
     }
 

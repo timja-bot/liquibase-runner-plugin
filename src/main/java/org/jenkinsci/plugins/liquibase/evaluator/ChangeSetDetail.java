@@ -32,6 +32,8 @@ public class ChangeSetDetail implements Action {
     private String comments;
     private String description;
     private String filePath;
+    private String exceptionMessage;
+
 
     public ChangeSetDetail() {
 
@@ -57,9 +59,10 @@ public class ChangeSetDetail implements Action {
         changeSetDetail.setSqls(sqlList);
         return changeSetDetail;
     }
-    public static ChangeSetDetail createFailed(ChangeSet changeSet) {
+    public static ChangeSetDetail createFailed(ChangeSet changeSet, Exception e) {
         ChangeSetDetail failedChangeset = ChangeSetDetail.create(changeSet);
         failedChangeset.setSuccessfullyExecuted(false);
+        failedChangeset.setExceptionMessage(e.getMessage());
         return failedChangeset;
     }
 
@@ -226,5 +229,13 @@ public class ChangeSetDetail implements Action {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getExceptionMessage() {
+        return exceptionMessage;
+    }
+
+    public void setExceptionMessage(String exceptionMessage) {
+        this.exceptionMessage = exceptionMessage;
     }
 }
