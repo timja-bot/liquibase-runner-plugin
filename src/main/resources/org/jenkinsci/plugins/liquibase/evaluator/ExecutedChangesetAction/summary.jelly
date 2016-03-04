@@ -18,7 +18,7 @@
                         <j:set var="changeCss" value="changeSetId"/>
                     </j:if>
                     <j:if test="${!changeSetDetail.successfullyExecuted}">
-                        <j:set var="changeCss" value="failed changeSetId"/>
+                        <j:set var="changeCss" value="result-failed"/>
                     </j:if>
                     <li class="changeSetItem">
 
