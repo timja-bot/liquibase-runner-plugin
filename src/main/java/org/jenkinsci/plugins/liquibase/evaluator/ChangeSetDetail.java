@@ -16,6 +16,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
+/**
+ * A shallow copy of @{link Changest} for use to display in jenkins.
+ */
 public class ChangeSetDetail implements Action {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangeSetDetail.class);
@@ -26,9 +29,25 @@ public class ChangeSetDetail implements Action {
     private ChangeSet changeSet;
     private boolean successfullyExecuted = true;
     private ExecutedChangesetAction parent;
+    private String author;
+    private String id;
+    private String comments;
+    private String description;
+    private String filePath;
 
     public ChangeSetDetail() {
 
+    }
+
+    public static ChangeSetDetail create(ChangeSet changeSet) {
+        ChangeSetDetail changeSetDetail = new ChangeSetDetail();
+        changeSetDetail.setChangeSet(changeSet);
+        changeSetDetail.setFilePath(changeSet.getFilePath());
+        changeSetDetail.setId(changeSet.getId());
+        changeSetDetail.setAuthor(changeSet.getAuthor());
+        changeSetDetail.setComments(changeSet.getComments());
+        changeSetDetail.setDescription(changeSet.getDescription());
+        return changeSetDetail;
     }
 
     public static ChangeSetDetail create(ChangeSet changeSet, Sql[] sqls) {
@@ -37,27 +56,16 @@ public class ChangeSetDetail implements Action {
     }
 
     public static ChangeSetDetail create(ChangeSet changeSet, List<Sql> sqlList) {
-        return new ChangeSetDetail(changeSet, sqlList);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
+        changeSetDetail.setSqls(sqlList);
+        return changeSetDetail;
     }
-
     public static ChangeSetDetail createFailed(ChangeSet changeSet) {
-        ChangeSetDetail failedChangeset = new ChangeSetDetail(changeSet);
+        ChangeSetDetail failedChangeset = ChangeSetDetail.create(changeSet);
         failedChangeset.setSuccessfullyExecuted(false);
         return failedChangeset;
     }
-    public static ChangeSetDetail create(ChangeSet changeSet) {
-        return new ChangeSetDetail(changeSet);
-    }
 
-
-    private ChangeSetDetail(ChangeSet changeSet, List<Sql> sqls) {
-        this.sqls = sqls;
-        this.changeSet = changeSet;
-    }
-
-    public ChangeSetDetail(ChangeSet changeSet) {
-        this.changeSet = changeSet;
-    }
 
     public String getExecutedSql() {
         StringBuilder sb = new StringBuilder();
@@ -165,5 +173,49 @@ public class ChangeSetDetail implements Action {
 
     public void setParent(ExecutedChangesetAction parent) {
         this.parent = parent;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setChangeSet(ChangeSet changeSet) {
+        this.changeSet = changeSet;
+    }
+
+    public void setSqls(List<Sql> sqls) {
+        this.sqls = sqls;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 }
