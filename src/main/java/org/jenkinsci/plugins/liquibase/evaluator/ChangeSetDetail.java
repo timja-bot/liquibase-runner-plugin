@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.liquibase.common.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,6 @@ public class ChangeSetDetail implements Action {
     public static final int MAX_LINES = 15;
     private List<Sql> sqls;
     private Sql sql;
-    private ChangeSet changeSet;
     private boolean successfullyExecuted = true;
     private ExecutedChangesetAction parent;
     private String author;
@@ -41,7 +39,6 @@ public class ChangeSetDetail implements Action {
 
     public static ChangeSetDetail create(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = new ChangeSetDetail();
-        changeSetDetail.setChangeSet(changeSet);
         changeSetDetail.setFilePath(changeSet.getFilePath());
         changeSetDetail.setId(changeSet.getId());
         changeSetDetail.setAuthor(changeSet.getAuthor());
@@ -88,6 +85,42 @@ public class ChangeSetDetail implements Action {
         return truncateString(executedSql);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChangeSetDetail)) {
+            return false;
+        }
+
+        ChangeSetDetail that = (ChangeSetDetail) o;
+
+        if (!parent.equals(that.parent)) {
+            return false;
+        }
+        if (author != null ? !author.equals(that.author) : that.author != null) {
+            return false;
+        }
+        if (id != null ? !id.equals(that.id) : that.id != null) {
+            return false;
+        }
+        if (filePath != null ? !filePath.equals(that.filePath) : that.filePath != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = parent.hashCode();
+        result = 31 * result + (author != null ? author.hashCode() : 0);
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        result = 31 * result + (filePath != null ? filePath.hashCode() : 0);
+        return result;
+    }
+
     protected static String truncateString(String executedSql) {
         Iterable<String> strings = Splitter.on('\n').split(executedSql);
         Iterable<String> truncated = Iterables.limit(strings, MAX_LINES);
@@ -101,10 +134,6 @@ public class ChangeSetDetail implements Action {
 
     public List<Sql> getSqls() {
         return sqls;
-    }
-
-    public ChangeSet getChangeSet() {
-        return changeSet;
     }
 
     public boolean isSuccessfullyExecuted() {
@@ -125,31 +154,15 @@ public class ChangeSetDetail implements Action {
     @Override
     public String toString() {
         return "ChangeSetDetail{" +
-                "changeSet=" + Util.formatChangeset(changeSet) +
+                "sqls=" + sqls +
+                ", sql=" + sql +
+                ", successfullyExecuted=" + successfullyExecuted +
+                ", author='" + author + '\'' +
+                ", id='" + id + '\'' +
+                ", comments='" + comments + '\'' +
+                ", description='" + description + '\'' +
+                ", filePath='" + filePath + '\'' +
                 '}';
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ChangeSetDetail)) {
-            return false;
-        }
-
-        ChangeSetDetail that = (ChangeSetDetail) o;
-
-        if (!changeSet.equals(that.changeSet)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return changeSet.hashCode();
     }
 
     @Override
@@ -159,12 +172,12 @@ public class ChangeSetDetail implements Action {
 
     @Override
     public String getDisplayName() {
-        return changeSet.getId();
+        return id;
     }
 
     @Override
     public String getUrlName() {
-        return changeSet.getId();
+        return id;
     }
 
     public ExecutedChangesetAction getParent() {
@@ -205,10 +218,6 @@ public class ChangeSetDetail implements Action {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public void setChangeSet(ChangeSet changeSet) {
-        this.changeSet = changeSet;
     }
 
     public void setSqls(List<Sql> sqls) {

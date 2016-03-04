@@ -4,22 +4,17 @@
     <l:layout title="${it.id}" css="/plugin/liquibase-runner/css/style.css">
         <st:include it="${it.parent.build}" page="sidepanel.jelly"/>
         <l:main-panel>
-            <j:set var="ch" value="${it.getChangeSet()}"/>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
             <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-
-
-            <h1>${it.changeSet.id}</h1>
-
-
+            <h1>${it.id}</h1>
             <table id="changesetResult">
                 <tr>
-                    <td class="detail-field">ID</td>
-                    <td>${ch.id}</td>
+                    <td class="bold single-row">ID</td>
+                    <td>${it.id}</td>
                 </tr>
 
                 <tr>
-                    <td class="detail-field">Status</td>
+                    <td class="bold single-row">Status</td>
                     <td>
                         <j:if test="${it.successfullyExecuted}">
                             Success
@@ -30,12 +25,27 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="detail-field">Author</td>
-                    <td>${ch.author}</td>
+                    <td class="bold single-row">Author</td>
+                    <td>${it.author}</td>
                 </tr>
+                <j:if test="${!it.description == ''}">
+                    <tr>
+                        <td class="bold single-row">Description</td>
+                        <td>${it.description}</td>
+                    </tr>
+                </j:if>
+                <j:if test="${!it.comments == ''}">
+                    <tr>
+                        <td class="bold single-row">Comments</td>
+                        <td>${it.comments}</td>
+                    </tr>
+
+
+                </j:if>
+
                 <j:if test="${it.hasSql()}">
                     <tr>
-                        <td colspan="2" class="detail-field">SQL</td>
+                        <td colspan="2" class="bold">SQL</td>
                     </tr>
                     <tr>
                         <td colspan="2">
@@ -51,10 +61,13 @@
             </table>
 
             <style type="text/css">
-                .detail-field {
-                    width:60px;
+                .bold {
                     font-weight:bold;
                 }
+                .single-row {
+                    width:80px;
+                }
+                
                 /* some css hacking to tailor display */
                 .CodeMirror {
                 height:auto ;

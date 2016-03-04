@@ -101,7 +101,7 @@ public class ExecutedChangesetAction implements Action {
     public ChangeSetDetail getChangeset(final String id) {
         ChangeSetDetail found = null;
         for (ChangeSetDetail changeSetDetail : changeSetDetails) {
-            if (changeSetDetail.getChangeSet().getId().equals(id)) {
+            if (changeSetDetail.getId().equals(id)) {
                 found=changeSetDetail;
                 break;
             }

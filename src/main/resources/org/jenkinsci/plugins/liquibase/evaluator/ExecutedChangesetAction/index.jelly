@@ -4,7 +4,9 @@
     <l:layout title="${it.name}" css="/plugin/liquibase-runner/css/style.css">
         <st:include it="${it.build}" page="sidepanel.jelly"/>
         <l:main-panel>
+            <img style="float: left;vertical-align:bottom;" src="${rootURL}/plugin/liquibase-runner/liquibase_icon48x48.png"/>
             <h1>Executed changesets</h1>
+            <br/>
             <j:if test="${it.getSuccessfulChangeSets().isEmpty()}">
                 No changesets were successfully executed.
             </j:if>
@@ -13,6 +15,7 @@
                     <th class="theader">ID</th>
                     <th class="theader">Status</th>
                     <th class="theader">Author</th>
+                    <th class="theader">Description</th>
                     <th class="theader">Comments</th>
                 </tr>
                 <tbody>
@@ -21,7 +24,7 @@
                         <tr>
                             <td class="pane">
                                 <a href="changeset/${detail.urlName}" class="model-link inside">
-                                        <st:out value="${ch.id}"/>
+                                        <st:out value="${detail.id}"/>
                                 </a>
                             </td>
                             <td class="pane">
@@ -32,14 +35,14 @@
                                     Failed
                                 </j:if>
                             </td>
-                            <td class="pane">${ch.author}</td>
-                            <td class="pane">${ch.comments}</td>
+                            <td class="pane">${detail.author}</td>
+                            <td class="pane">${detail.description}</td>
+                            <td class="pane">${detail.comments}</td>
 
                         </tr>
                     </j:forEach>
                 </tbody>
             </table>
-
         </l:main-panel>
     </l:layout>
 </j:jelly>

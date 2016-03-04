@@ -14,7 +14,6 @@
 
                 <j:forEach items="${allChangeSets}" end="8" var="changeSetDetail">
                     <j:set var="displayedCount" value="${displayedCount + 1}"/>
-                    <j:set var="ch" value="${changeSetDetail.changeSet}"/>
                     <j:if test="${changeSetDetail.successfullyExecuted}">
                         <j:set var="changeCss" value="changeSetId"/>
                     </j:if>
@@ -23,11 +22,11 @@
                     </j:if>
                     <li class="changeSetItem">
 
-                        <a href="${it.urlName}/changeset/${ch.id}" style="font-weight: bold;">
-                            <span class="${changeCss}">${ch.id}</span>
+                        <a href="${it.urlName}/changeset/${changeSetDetail.id}" style="font-weight: bold;">
+                            <span class="${changeCss}">${changeSetDetail.id}</span>
                         </a>
                         by
-                        <span class="changeSetAuthor">${ch.author}</span>
+                        <span class="changeSetAuthor">${changeSetDetail.author}</span>
 
                         <br/>
                     </li>
