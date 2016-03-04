@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
+import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
 import liquibase.sql.Sql;
 
@@ -15,7 +16,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
-public class ChangeSetDetail {
+public class ChangeSetDetail implements Action {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangeSetDetail.class);
 
@@ -24,6 +25,7 @@ public class ChangeSetDetail {
     private Sql sql;
     private ChangeSet changeSet;
     private boolean successfullyExecuted = true;
+    private ExecutedChangesetAction parent;
 
     public ChangeSetDetail() {
 
@@ -70,6 +72,9 @@ public class ChangeSetDetail {
         return StringUtils.countMatches(getExecutedSql(), "\n") > MAX_LINES;
     }
 
+    public boolean hasSql() {
+        return !getExecutedSql().isEmpty();
+    }
     public String getTruncatedSql() {
         String executedSql = getExecutedSql();
         return truncateString(executedSql);
@@ -108,12 +113,14 @@ public class ChangeSetDetail {
         }
     }
 
+
     @Override
     public String toString() {
         return "ChangeSetDetail{" +
                 "changeSet=" + Util.formatChangeset(changeSet) +
                 '}';
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -135,5 +142,28 @@ public class ChangeSetDetail {
     @Override
     public int hashCode() {
         return changeSet.hashCode();
+    }
+
+    @Override
+    public String getIconFileName() {
+        return null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return changeSet.getId();
+    }
+
+    @Override
+    public String getUrlName() {
+        return changeSet.getId();
+    }
+
+    public ExecutedChangesetAction getParent() {
+        return parent;
+    }
+
+    public void setParent(ExecutedChangesetAction parent) {
+        this.parent = parent;
     }
 }

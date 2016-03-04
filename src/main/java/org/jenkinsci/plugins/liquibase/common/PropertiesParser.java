@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
-import org.jenkinsci.plugins.liquibase.evaluator.EmbeddedDriver;
+import org.jenkinsci.plugins.liquibase.evaluator.IncludedDatabaseDriver;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class PropertiesParser {
      * @param liquibaseBuilder
      * @return
      */
-    public static Properties createConfigProperties(AbstractLiquibaseBuildStep liquibaseBuilder) {
+    public static Properties createConfigProperties(ChangesetEvaluator liquibaseBuilder) {
         Properties properties = new Properties();
 
         String liquibasePropertiesPath = liquibaseBuilder.getLiquibasePropertiesPath();
@@ -35,12 +35,18 @@ public class PropertiesParser {
                         "Unable to load properties file at[" + liquibasePropertiesPath + "] ", e);
             }
         }
-        setBasedOnConfiguration(liquibaseBuilder, properties);
+        resolveFromProjectConfiguration(liquibaseBuilder, properties);
+
+        if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
+            PropertiesParser.setDriverFromDBEngine(liquibaseBuilder, properties);
+        } else {
+            properties.setProperty(LiquibaseProperty.DRIVER.getOption(), liquibaseBuilder.getDriverClassname());
+        }
 
         return properties;
     }
 
-    private static void setBasedOnConfiguration(AbstractLiquibaseBuildStep liquibaseBuilder, Properties properties) {
+    private static void resolveFromProjectConfiguration(ChangesetEvaluator liquibaseBuilder, Properties properties) {
 
         setIfNotNull(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername());
         setIfNotNull(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName());
@@ -61,11 +67,11 @@ public class PropertiesParser {
 
     public static void setDriverFromDBEngine(ChangesetEvaluator changesetEvaluator, Properties properties) {
         if (!Strings.isNullOrEmpty(changesetEvaluator.getDatabaseEngine())) {
-            for (EmbeddedDriver embeddedDriver : changesetEvaluator.getDrivers()) {
-                if (embeddedDriver.getDisplayName().equals(changesetEvaluator.getDatabaseEngine())) {
-                    properties.setProperty(LiquibaseProperty.DRIVER.getOption(), embeddedDriver.getDriverClassName());
+            for (IncludedDatabaseDriver includedDatabaseDriver : changesetEvaluator.getDrivers()) {
+                if (includedDatabaseDriver.getDisplayName().equals(changesetEvaluator.getDatabaseEngine())) {
+                    properties.setProperty(LiquibaseProperty.DRIVER.getOption(), includedDatabaseDriver.getDriverClassName());
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("using db driver class[" + embeddedDriver.getDriverClassName() + "] ");
+                        LOG.debug("using db driver class[" + includedDatabaseDriver.getDriverClassName() + "] ");
                     }
                     break;
                 }

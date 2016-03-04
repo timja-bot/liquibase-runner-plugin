@@ -1,4 +1,9 @@
 
+.theader {
+    text-align: left;
+    background-color: lightgray;
+    padding:4px;
+}
 .changeSetItem {
     margin:13px;
 }

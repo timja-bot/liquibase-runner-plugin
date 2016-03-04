@@ -71,6 +71,7 @@ public class ExecutedChangesetAction implements Action {
     }
 
     public void addChangeset(ChangeSet changeSet) {
+
         addChangeSetDetail(new ChangeSetDetail(changeSet));
 
     }
@@ -90,9 +91,22 @@ public class ExecutedChangesetAction implements Action {
     }
 
     protected void addChangeSetDetail(ChangeSetDetail changeSetDetail) {
+        changeSetDetail.setParent(this);
         // since testing rollbacks executes changesets twice, only add changeset if it isn't already present.
         if (!changeSetDetails.contains(changeSetDetail)) {
+
             changeSetDetails.add(changeSetDetail);
         }
+    }
+
+    public ChangeSetDetail getChangeset(final String id) {
+        ChangeSetDetail found = null;
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            if (changeSetDetail.getChangeSet().getId().equals(id)) {
+                found=changeSetDetail;
+                break;
+            }
+        }
+        return found;
     }
 }

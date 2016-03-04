@@ -19,7 +19,7 @@
                     <j:set var="displayedCount" value="${displayedCount + 1}"/>
                     <j:set var="ch" value="${changeSetDetail.changeSet}"/>
                     <li class="changeSetItem">
-                        <a href="${it.urlName}#${ch.id}" style="font-weight: bold;">
+                        <a href="${it.urlName}/changeset/${ch.id}" style="font-weight: bold;">
                             <span class="changeSetId">${ch.id}</span>
                         </a>
                         by
@@ -39,9 +39,12 @@
 
             <j:forEach items="${failedChangeSets}" end="8" var="changeSetDetail">
                 <j:set var="ch" value="${changeSetDetail.changeSet}"/>
+
                 <ul class="changeSetList">
                     <li class="changeSetItem">
-                        <span class="failed changeSetId">${ch.id}</span>
+                        <a href="${it.urlName}/changeset/${ch.id}" style="font-weight: bold;">
+                            <span class="failed changeSetId">${ch.id}</span>
+                        </a>
                         by
                         <span class="changeSetAuthor">${ch.author}</span>
                         <br/>

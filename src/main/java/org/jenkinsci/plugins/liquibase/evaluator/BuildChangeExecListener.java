@@ -75,15 +75,15 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
     public void ran(Change change, ChangeSet changeSet, DatabaseChangeLog changeLog, Database database) {
         printConsoleLogMessage(changeSet);
+
         ChangeSetDetail changeSetDetail = createChangeSetDetail(change, changeSet, database);
+
         action.addChangeSetDetail(changeSetDetail);
 
     }
 
     protected ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
         SqlStatement[] sqlStatements = change.generateStatements(database);
-
-
         List<Sql> statementSqls = Lists.newArrayList();
         if (sqlStatements != null && sqlStatements.length > 0) {
             for (SqlStatement sqlStatement : sqlStatements) {
@@ -92,16 +92,15 @@ public class BuildChangeExecListener implements ChangeExecListener {
             }
 
         }
-        return ChangeSetDetail.create(changeSet, statementSqls);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet, statementSqls);
+
+
+        return changeSetDetail;
     }
 
     protected void printConsoleLogMessage(ChangeSet changeSet) {
         String logMessage = Util.formatChangeset(changeSet);
         buildListener.getLogger().println(RAN_CHANGESET_MSG + logMessage);
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("in 'ran' of listener, attempting to get sql.");
-        }
     }
 
     public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {

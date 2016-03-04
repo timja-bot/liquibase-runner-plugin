@@ -7,41 +7,19 @@ Adds Liquibase as an available build step.  See Liquibase documentation at http:
 
 # Installation
 
-*  Install the liquibase-runner plugin using Jenkins' plugin manager.  If you intend to use the "Execute" build step,
-you'll also need to install liquibase (the two types of build steps are explained below).
+*  Install the liquibase-runner plugin using Jenkins' plugin manager.  Depending on how you use and configure the plugin,
+you may need to install a database server, and potentially your target schema.
 
 # Configuration
 
-## Build steps: "Execute Liquibase" versus "Evaluate changesets"
-
-This plugin has two modes for running liquibase.  The first invokes an liquibase installation just as you would via command-line.
-The second evaluates liquibase changesets internally, and requires no existing liquibase installation.    
-
-In each mode, basic liquibase options, such as contexts and jdbc URL, are provided as configuration options.
-
-Further details are provided below.
-
-**Execute Liquibase**
-
-Use this build step if you have an existing liquibase installation and wish to have it run just as if you were doing so 
-from command line.  This mode provides the most flexibility for your liquibase configuration and execution, but provides 
-fewer reporting features.
-
-Use "Manage Jenkins" to add your liquibase installation to Jenkins.  It will then be available for selection in the
-build step.  Your liquibase installation should include the driver for your database (for example, by having the
-driver jar in LIQUIBASE_HOME/lib directory).
-
-Each build's console log will contain the stdout/stderr output of liquibase execution.  Furthermore, each type
-of build step will indicate build instability when liquibase is unable to apply a changeset.
-
 **Evaluate changesets**
 
-The "Evaluate liquibase changesets" build step runs liquibase internally and doesn't require liquibase to be installed.  
-In addition, build summaries include a list of changesets executed and the SQL statements that were generated.
+Once installed, a new build step is available, "Evaluate liquibase changesets".  Just like it says, once you've
+defined the path to your root changeset file, this step will run liquibase update against it.
+
+Once a build has complete, a list of which changesets were executed are listed on the build's page.  When possible,
+the generated SQL for each changeset is provided as well.
  
-However, using this mode contains a few restrictions:
-  * You cannot choose what liquibase command to run; only "update" (or "updateTestingRollback") are used.
-  * You are restricted to one of the database engines available in the build step's dropdown.
  
 # Usage Tips
 
@@ -52,10 +30,7 @@ with each execution.  If you'd like to have the schema persist between builds, u
 * If you'd like to use a database engine like MySQL or postgres, you'll have to ensure the schema exists and is 
 accessible to Jenkins.  Consider having your Jenkins job execute an initialize script to do so.
 
-# The Future
-  
-I'd like to minimize the difference between "Execute" and "Evaluate" and have changesets be reported in both types of
-build steps.
+
  
 
 
