@@ -135,7 +135,7 @@ public class ChangesetEvaluator extends Builder {
                 addClassloader(launcher.isUnix(), build.getWorkspace());
             }
 
-            Connection connection = getDatabaseConnection(configProperties, driverName);
+            Connection connection = retrieveConnection(configProperties, driverName);
             JdbcConnection jdbcConnection = new JdbcConnection(connection);
             Database database =
                     DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
@@ -196,16 +196,11 @@ public class ChangesetEvaluator extends Builder {
 
     }
 
-    protected static Connection getDatabaseConnection(Properties configProperties, String driverName) {
+    protected Connection retrieveConnection(Properties configProperties, String driverName) {
         Connection connection;
         String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
         try {
-            Driver actualDriver =
-                    (Driver) Class.forName(driverName, true, Thread.currentThread().getContextClassLoader())
-                                  .newInstance();
-            Driver driverShim = new DriverShim(actualDriver);
-
-            DriverManager.registerDriver(driverShim);
+            registerDatabaseDriver(driverName);
             connection = DriverManager.getConnection(dbUrl, getProperty(configProperties, LiquibaseProperty.USERNAME),
                     getProperty(configProperties,
                             LiquibaseProperty.PASSWORD));
@@ -223,6 +218,21 @@ public class ChangesetEvaluator extends Builder {
                     "Error registering database driver " + driverName, e);
         }
         return connection;
+    }
+
+    private void registerDatabaseDriver(String driverName)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+        Driver driver;
+        if (!Strings.isNullOrEmpty(classpath)) {
+            Driver actualDriver =
+                    (Driver) Class.forName(driverName, true, Thread.currentThread().getContextClassLoader())
+                                  .newInstance();
+            driver = new DriverShim(actualDriver);
+        } else {
+            driver = (Driver) Class.forName(driverName).newInstance();
+        }
+
+        DriverManager.registerDriver(driver);
     }
 
     protected static String getProperty(Properties configProperties, LiquibaseProperty property) {

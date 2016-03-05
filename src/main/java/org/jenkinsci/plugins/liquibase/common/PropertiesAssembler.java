@@ -44,7 +44,9 @@ public class PropertiesAssembler {
         if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
             PropertiesAssembler.setDriverFromDBEngine(liquibaseBuilder, properties);
         } else {
-            setProperty(properties, LiquibaseProperty.DRIVER, liquibaseBuilder.getDriverClassname());
+            if (!Strings.isNullOrEmpty(liquibaseBuilder.getDriverClassname())) {
+                setProperty(properties, LiquibaseProperty.DRIVER, liquibaseBuilder.getDriverClassname());
+            }
         }
     }
 
