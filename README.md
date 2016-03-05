@@ -6,6 +6,8 @@
 Adds liquibase changeset evaluation as an available build step.  See Liquibase documentation at http://www.liquibase.org/.
 Any evaluated changesets are listed on the build's summary page, as well as details about each changeset.
 
+Uses liquibase version 3.4.2.
+
 # Installation
 
 *  Install the liquibase-runner plugin using Jenkins' plugin manager.  Depending on how you use and configure the plugin,
