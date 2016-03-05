@@ -39,8 +39,3 @@ also define the classpath where a database driver may be loaded.
   
 * Advance options and simple configuration are not mutually exclusive; you may, for example, select "Test Rollbacks"
   in the advance section and still use the in-memory H2 database. 
-
-
-
-
-
