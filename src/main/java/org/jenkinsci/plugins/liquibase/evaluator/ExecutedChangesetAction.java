@@ -70,6 +70,17 @@ public class ExecutedChangesetAction implements Action {
         this.build = build;
     }
 
+    public boolean areErrorsPresent() {
+        boolean exceptionMessagesExist = false;
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            exceptionMessagesExist = changeSetDetail.hasExceptionMessage();
+            if (exceptionMessagesExist) {
+                break;
+            }
+        }
+        return exceptionMessagesExist;
+    }
+
     public void addChangeset(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
         addChangeSetDetail(changeSetDetail);

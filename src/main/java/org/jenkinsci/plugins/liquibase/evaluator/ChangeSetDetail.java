@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 /**
@@ -33,6 +34,7 @@ public class ChangeSetDetail implements Action {
     private String description;
     private String filePath;
     private String exceptionMessage;
+
 
 
     public ChangeSetDetail() {
@@ -168,6 +170,7 @@ public class ChangeSetDetail implements Action {
                 '}';
     }
 
+
     @Override
     public String getIconFileName() {
         return null;
@@ -191,6 +194,9 @@ public class ChangeSetDetail implements Action {
         this.parent = parent;
     }
 
+    public boolean hasExceptionMessage() {
+        return !Strings.isNullOrEmpty(exceptionMessage);
+    }
     public String getAuthor() {
         return author;
     }

@@ -12,15 +12,14 @@
                     <td class="bold single-row">ID</td>
                     <td>${it.id}</td>
                 </tr>
-
                 <tr>
                     <td class="bold single-row">Status</td>
                     <td>
                         <j:if test="${it.successfullyExecuted}">
-                            Success
+                            <span class="result-passed">Success</span>
                         </j:if>
                         <j:if test="${!it.successfullyExecuted}">
-                            Failed
+                            <span class="result-failed">Failed</span>
                         </j:if>
                     </td>
                 </tr>
@@ -28,19 +27,17 @@
                     <td class="bold single-row">Author</td>
                     <td>${it.author}</td>
                 </tr>
-                <j:if test="${!it.description == ''}">
+                <j:if test="${!empty(it.description)}">
                     <tr>
                         <td class="bold single-row">Description</td>
                         <td>${it.description}</td>
                     </tr>
                 </j:if>
-                <j:if test="${!it.comments == ''}">
+                <j:if test="${!empty(it.comments)}">
                     <tr>
                         <td class="bold single-row">Comments</td>
                         <td>${it.comments}</td>
                     </tr>
-
-
                 </j:if>
 
                 <j:if test="${it.hasSql()}">
@@ -54,12 +51,10 @@
                                             codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
                                             value="${it.getExecutedSql()}"/>
                             </span>
-
                         </td>
                     </tr>
                 </j:if>
-
-                <j:if test="${it.exceptionMessage != ''}">
+                <j:if test="${!empty(it.exceptionMessage)}">
                     <tr>
                         <td colspan="2" class="bold">Error</td>
                     </tr>

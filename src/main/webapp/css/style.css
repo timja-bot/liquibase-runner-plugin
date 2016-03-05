@@ -8,6 +8,9 @@
     margin:13px;
 }
 
+#changesetResult TD {
+    vertical-align: top;
+}
 .changeSetId {
     font-weight: bold;
     margin-right: 2px;

@@ -108,7 +108,6 @@ public class BuildChangeExecListener implements ChangeExecListener {
         action.addChangeSetDetail(changeSetDetail);
     }
 
-
     public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
         String changeSetLogMsg = Util.formatChangeset(changeSet);
         return changeSetLogMsg + ": " + msg;

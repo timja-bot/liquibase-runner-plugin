@@ -4,16 +4,16 @@
     <j:set var="successfulChangeSets" value="${it.successfulChangeSets}"/>
     <j:set var="failedChangeSets" value="${it.failedChangeSets}"/>
     <j:set var="allChangeSets" value="${it.changeSetDetails}"/>
+    <j:set var="maxDisplay" value="5"/>
 
     <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
         <j:if test="${allChangeSets.isEmpty()}">No Changesets Executed.</j:if>
         <j:if test="${allChangeSets.size()>0}">
-            <a href="${it.urlName}">Executed ${allChangeSets.size()} changeSets:</a>
+            <a href="${it.urlName}">Evaluated ${allChangeSets.size()} changeSets:</a>
             <ul class="changeSetList">
-                <j:set var="displayedCount" value="${1}"/>
+                <j:set var="displayedCount" value="${0}"/>
 
-                <j:forEach items="${allChangeSets}" end="8" var="changeSetDetail">
-                    <j:set var="displayedCount" value="${displayedCount + 1}"/>
+                <j:forEach items="${allChangeSets}" end="${maxDisplay-1}" var="changeSetDetail">
                     <j:if test="${changeSetDetail.successfullyExecuted}">
                         <j:set var="changeCss" value="changeSetId"/>
                     </j:if>
@@ -21,7 +21,6 @@
                         <j:set var="changeCss" value="result-failed"/>
                     </j:if>
                     <li class="changeSetItem">
-
                         <a href="${it.urlName}/changeset/${changeSetDetail.id}" style="font-weight: bold;">
                             <span class="${changeCss}">${changeSetDetail.id}</span>
                         </a>
@@ -30,8 +29,9 @@
 
                         <br/>
                     </li>
+                    <j:set var="displayedCount" value="${displayedCount + 1}"/>
                 </j:forEach>
-                <j:if test="${displayedCount &lt; it.allChangeSets().size() }">
+                <j:if test="${maxDisplay &lt; it.getChangeSetDetails().size() }">
                     <a href="${it.urlName}">View All ${">>>"}</a>
                 </j:if>
 
