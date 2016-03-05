@@ -70,8 +70,20 @@ public class ExecutedChangesetAction implements Action {
         this.build = build;
     }
 
+    public boolean areErrorsPresent() {
+        boolean exceptionMessagesExist = false;
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            exceptionMessagesExist = changeSetDetail.hasExceptionMessage();
+            if (exceptionMessagesExist) {
+                break;
+            }
+        }
+        return exceptionMessagesExist;
+    }
+
     public void addChangeset(ChangeSet changeSet) {
-        addChangeSetDetail(new ChangeSetDetail(changeSet));
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
+        addChangeSetDetail(changeSetDetail);
 
     }
 
@@ -90,9 +102,21 @@ public class ExecutedChangesetAction implements Action {
     }
 
     protected void addChangeSetDetail(ChangeSetDetail changeSetDetail) {
+        changeSetDetail.setParent(this);
         // since testing rollbacks executes changesets twice, only add changeset if it isn't already present.
         if (!changeSetDetails.contains(changeSetDetail)) {
             changeSetDetails.add(changeSetDetail);
         }
+    }
+
+    public ChangeSetDetail getChangeset(final String id) {
+        ChangeSetDetail found = null;
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            if (changeSetDetail.getId().equals(id)) {
+                found=changeSetDetail;
+                break;
+            }
+        }
+        return found;
     }
 }

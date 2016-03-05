@@ -1,62 +1,74 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
-         xmlns:f="/lib/form">
+>
 
     <l:layout title="${it.name}" css="/plugin/liquibase-runner/css/style.css">
         <st:include it="${it.build}" page="sidepanel.jelly"/>
         <l:main-panel>
-            <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
-            <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-
-            <h1>Executed changesets</h1>
-            <j:if test="${it.getSuccessfulChangeSets().isEmpty()}">
+            <img style="float: left;vertical-align:bottom;"
+                 src="${rootURL}/plugin/liquibase-runner/liquibase_icon48x48.png"/>
+            <h1>Changesets</h1>
+            <br/>
+            <j:if test="${it.getChangeSetDetails().isEmpty()}">
                 No changesets were successfully executed.
             </j:if>
-            <ol>
-                <j:forEach items="${it.getSuccessfulChangeSets()}" var="detail">
-                    <j:set var="ch" value="${detail.getChangeSet()}"/>
-                    <a id="${ch.id}"/>
-                    <li class="changeSetItem">
-                        <span class="changeSetId">${ch.id}</span> by <span class="changeSetAuthor">${ch.author}</span>
-                        <br/>
-                        <j:if test="${ch.comments !=null}">
-                            Comment: <span class="changeSetComment">${ch.comments}</span><br/>
-                        </j:if>
-                        <j:if test="${detail.isInNeedOfTruncate()}">
-                            <em>...SQL below has been truncated...</em>
-                        </j:if>
+            <j:if test="${!it.getChangeSetDetails().isEmpty()}">
+                <table id="changesetResult">
+                    <tr>
+                        <th class="theader">ID</th>
+                        <th class="theader">Status</th>
+                        <th class="theader">Author</th>
+                        <th class="theader">Description</th>
+                        <th class="theader">Comments</th>
+                    </tr>
+                    <tbody>
+                        <j:forEach var="detail" items="${it.getChangeSetDetails()}" varStatus="status">
+                            <j:set var="ch" value="${detail.getChangeSet()}"/>
+                            <tr>
+                                <td class="pane">
+                                    <a href="changeset/${detail.urlName}" class="model-link inside">
+                                        <st:out value="${detail.id}"/>
+                                    </a>
+                                </td>
+                                <td class="pane">
+                                    <j:if test="${detail.successfullyExecuted}">
+                                        <span class="result-passed">Success</span>
+                                    </j:if>
+                                    <j:if test="${!detail.successfullyExecuted}">
+                                        <span class="result-failed">Failed</span>
+                                    </j:if>
+                                </td>
+                                <td class="pane">${detail.author}</td>
+                                <td class="pane">${detail.description}</td>
+                                <td class="pane">${detail.comments}</td>
+                            </tr>
+                        </j:forEach>
+                    </tbody>
+                </table>
 
-                        <span class="sql">
-                            <f:textarea codemirror-mode="sql"
-                                        codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
-                                        value="${detail.getTruncatedSql()}"/>
-                        </span>
-                    </li>
+                <j:if test="${it.areErrorsPresent()}">
+                    <h3>Liquibase Changeset Errors</h3>
+                    Full stacktraces are available in the console.
+                    <table id="changesetErrors">
+                        <j:forEach var="detail" items="${it.getChangeSetDetails()}" varStatus="status">
+                            <j:if test="${detail.hasExceptionMessage()}">
+                                <tr>
+                                    <td>
+                                        <b>${detail.id}</b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">
+                                        <pre class="console-output">
+                                            ${detail.exceptionMessage}
+                                        </pre>
+                                    </td>
+                                </tr>
+                            </j:if>
+                        </j:forEach>
+                    </table>
+                </j:if>
+            </j:if>
 
-
-                </j:forEach>
-            </ol>
-            <style type="text/css">
-                /* some css hacking to tailor display */
-                .CodeMirror {
-                    height:auto ;
-                    line-height:130%;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
-                }
-                .CodeMirror-scroll {
-                    border:1px solid rgba(30, 30, 30, 0.15) !important;
-                    height:auto !important ;
-                    overflow-y: hidden;
-                    overflow-x: hidden;
-                }
-                .changeSetComment {
-                    font-style: italic;
-                    font-weight: lighter;
-                }
-                .textarea-handle {
-                    display:none;
-                }
-            </style>
         </l:main-panel>
     </l:layout>
 </j:jelly>

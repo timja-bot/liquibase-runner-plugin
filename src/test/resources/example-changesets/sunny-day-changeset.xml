@@ -14,6 +14,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
+        <comment>This is a simple create table</comment>
     </changeSet>
     <changeSet author="keith" id="create-color-table">
         <createTable

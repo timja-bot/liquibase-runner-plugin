@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -9,21 +10,25 @@ import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.tools.ToolInstallation;
-import hudson.util.ArgumentListBuilder;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.changelog.ChangeSet;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
+import liquibase.resource.ResourceAccessor;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -31,58 +36,81 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
-import org.jenkinsci.plugins.liquibase.common.AbstractLiquibaseBuildStep;
+import javax.annotation.Nullable;
+
+import org.jenkinsci.plugins.liquibase.common.DriverShim;
+import org.jenkinsci.plugins.liquibase.common.LiquibaseCommand;
 import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
-import org.jenkinsci.plugins.liquibase.common.PropertiesParser;
-import org.jenkinsci.plugins.liquibase.installation.LiquibaseInstallation;
+import org.jenkinsci.plugins.liquibase.common.PropertiesAssembler;
+import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
+import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
  * Jenkins builder which evaluates liquibase changesets.
  */
 @SuppressWarnings("ProhibitedExceptionThrown")
-public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
+public class ChangesetEvaluator extends Builder {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    protected static final String DEFAULT_LOGLEVEL = "info";
-
-    protected static final String OPTION_HYPHENS = "--";
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluator.class);
 
     protected String databaseEngine;
-    private boolean invokeExternal;
+    protected String changeLogFile;
+    protected String username;
+    protected String password;
+    protected String url;
+    protected String defaultSchemaName;
+    protected String contexts;
+    protected boolean testRollbacks;
+    protected String liquibasePropertiesPath;
     private boolean dropAll;
+    private String classpath;
+    private String driverClassname;
 
-
+    private String labels;
 
     @DataBoundConstructor
-    public ChangesetEvaluator(String url,
-                              String password,
+    public ChangesetEvaluator(String databaseEngine,
                               String changeLogFile,
                               String username,
+                              String password,
+                              String url,
                               String defaultSchemaName,
-                              String liquibasePropertiesPath,
-                              boolean testRollbacks,
                               String contexts,
-                              String databaseEngine,
-                              String installationName,
-                              boolean dropAll) {
-        super(url, password, changeLogFile, username, defaultSchemaName, liquibasePropertiesPath, testRollbacks,
-                contexts);
+                              boolean testRollbacks,
+                              String liquibasePropertiesPath,
+                              boolean dropAll,
+                              String command,
+                              String classpath,
+                              String driverClassname, String labels) {
         this.databaseEngine = databaseEngine;
+        this.changeLogFile = changeLogFile;
+        this.username = username;
+        this.password = password;
+        this.url = url;
+        this.defaultSchemaName = defaultSchemaName;
+        this.contexts = contexts;
+        this.testRollbacks = testRollbacks;
+        this.liquibasePropertiesPath = liquibasePropertiesPath;
         this.dropAll = dropAll;
+        this.classpath = classpath;
+        this.driverClassname = driverClassname;
+        this.labels = labels;
     }
 
     private ChangesetEvaluator(ChangesetEvaluatorBuilder changesetEvaluatorBuilder) {
         databaseEngine = changesetEvaluatorBuilder.databaseEngine;
-        setInvokeExternal(changesetEvaluatorBuilder.invokeExternal);
+
         setDropAll(changesetEvaluatorBuilder.dropAll);
         setChangeLogFile(changesetEvaluatorBuilder.changeLogFile);
         setUsername(changesetEvaluatorBuilder.username);
@@ -95,26 +123,187 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
     }
 
 
-    @Override
-    public boolean doPerform(final AbstractBuild<?, ?> build,
-                             Launcher launcher,
-                             BuildListener listener,
-                             Properties configProperties)
-            throws InterruptedException, IOException {
+    public Liquibase createLiquibase(AbstractBuild<?, ?> build,
+                                     BuildListener listener,
+                                     ExecutedChangesetAction action,
+                                     Properties configProperties, Launcher launcher) {
+        Liquibase liquibase;
+        String driverName = getProperty(configProperties, LiquibaseProperty.DRIVER);
 
-        PropertiesParser.setDriverFromDBEngine(this, configProperties);
+        try {
+            if (!Strings.isNullOrEmpty(classpath)) {
+                addClassloader(launcher.isUnix(), build.getWorkspace());
+            }
+
+            Connection connection = getDatabaseConnection(configProperties, driverName);
+            JdbcConnection jdbcConnection = new JdbcConnection(connection);
+            Database database =
+                    DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
+
+            ResourceAccessor resourceAccessor = new FilePathAccessor(build);
+            liquibase = new Liquibase(configProperties.getProperty(LiquibaseProperty.CHANGELOG_FILE.propertyName()),
+                    resourceAccessor, database);
+
+
+        } catch (LiquibaseException e) {
+            throw new RuntimeException("Error creating liquibase database.", e);
+        }
+        liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
+        return liquibase;
+    }
+
+    private void addClassloader(boolean isUnix, final FilePath workspace) {
+        String separator;
+        if (isUnix) {
+            separator = ":";
+        } else {
+            separator = ";";
+        }
+        Iterable<String> classPathElements = Splitter.on(separator).trimResults().split(classpath);
+        final Iterable<URL> urlIterable = Iterables.transform(classPathElements, new Function<String, URL>() {
+            @Override
+            public URL apply(@Nullable String filePath) {
+                URL url = null;
+                if (filePath != null) {
+                    try {
+                        if (Paths.get(filePath).isAbsolute()) {
+                            url = new File(filePath).toURI().toURL();
+                        } else {
+                            URI workspaceUri = workspace.toURI();
+                            File workspace = new File(workspaceUri);
+                            url = new File(workspace, filePath).toURI().toURL();
+                        }
+                    } catch (MalformedURLException e) {
+                        LOG.warn("Unable to transform classpath element " + filePath, e);
+                    } catch (InterruptedException e) {
+                        throw new LiquibaseRuntimeException("Error during database driver resolution", e);
+                    } catch (IOException e) {
+                        throw new LiquibaseRuntimeException("Error during database driver resolution", e);
+                    }
+                }
+                return url;
+            }
+        });
+
+        URLClassLoader urlClassLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+            @Override
+            public URLClassLoader run() {
+                return new URLClassLoader(Iterables.toArray(urlIterable, URL.class),
+                        Thread.currentThread().getContextClassLoader());
+            }
+        });
+        Thread.currentThread().setContextClassLoader(urlClassLoader);
+
+    }
+
+    protected static Connection getDatabaseConnection(Properties configProperties, String driverName) {
+        Connection connection;
+        String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
+        try {
+            Driver actualDriver =
+                    (Driver) Class.forName(driverName, true, Thread.currentThread().getContextClassLoader())
+                                  .newInstance();
+            Driver driverShim = new DriverShim(actualDriver);
+
+            DriverManager.registerDriver(driverShim);
+            connection = DriverManager.getConnection(dbUrl, getProperty(configProperties, LiquibaseProperty.USERNAME),
+                    getProperty(configProperties,
+                            LiquibaseProperty.PASSWORD));
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(
+                    "Error registering database driver " + driverName, e);
+        }
+        return connection;
+    }
+
+    protected static String getProperty(Properties configProperties, LiquibaseProperty property) {
+        return configProperties.getProperty(property.propertyName());
+    }
+
+    public List<IncludedDatabaseDriver> getDrivers() {
+        return DESCRIPTOR.getIncludedDatabaseDrivers();
+    }
+
+    public Descriptor<Builder> getDescriptor() {
+        return DESCRIPTOR;
+    }
+
+    public boolean isTestRollbacks() {
+        return testRollbacks;
+    }
+
+    public boolean isDropAll() {
+        return dropAll;
+    }
+
+    public String getLabels() {
+        return labels;
+    }
+
+    @DataBoundSetter
+    public void setLabels(String labels) {
+        this.labels = labels;
+    }
+
+    @DataBoundSetter
+    public void setDropAll(boolean dropAll) {
+        this.dropAll = dropAll;
+    }
+
+    public String getDatabaseEngine() {
+        return databaseEngine;
+    }
+
+    @DataBoundSetter
+    public void setTestRollbacks(boolean testRollbacks) {
+        this.testRollbacks = testRollbacks;
+    }
+
+    public String getDriverClassname() {
+        return driverClassname;
+    }
+
+    @DataBoundSetter
+    public void setDriverClassname(String driverClassname) {
+        this.driverClassname = driverClassname;
+    }
+
+    @Override
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+            throws InterruptedException, IOException {
+        Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this);
         ExecutedChangesetAction action = new ExecutedChangesetAction(build);
-        Liquibase liquibase = createLiquibase(build, listener, action, configProperties);
+        Liquibase liquibase = createLiquibase(build, listener, action, configProperties, launcher);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
 
         try {
+            String resolvedCommand;
+            if (isTestRollbacks()) {
+                resolvedCommand = LiquibaseCommand.UPDATE_TESTING_ROLLBACKS.getCommand();
+            } else {
+                resolvedCommand = LiquibaseCommand.UPDATE.getCommand();
+            }
+
             if (dropAll) {
                 liquibase.dropAll();
             }
-            if (testRollbacks) {
-                liquibase.updateTestingRollback(liqContexts);
-            } else {
-                liquibase.update(new Contexts(liqContexts));
+            listener.getLogger().println("Running liquibase command '" + resolvedCommand + "'");
+
+            if (LiquibaseCommand.UPDATE_TESTING_ROLLBACKS.isCommand(resolvedCommand)) {
+                liquibase.updateTestingRollback(new Contexts(contexts), new liquibase.LabelExpression(labels));
+            }
+
+            if (LiquibaseCommand.UPDATE.isCommand(resolvedCommand)) {
+                liquibase.update(new Contexts(liqContexts), new liquibase.LabelExpression(labels));
             }
 
         } catch (MigrationFailedException migrationException) {
@@ -136,130 +325,81 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
         return true;
     }
 
-    public static Liquibase createLiquibase(AbstractBuild<?, ?> build,
-                                            BuildListener listener,
-                                            ExecutedChangesetAction action,
-                                            Properties configProperties) {
-        Liquibase liquibase;
-
-        LiquibaseProperty property = LiquibaseProperty.DRIVER;
-        String driverName = getProperty(configProperties, property);
-        try {
-            Connection connection = getDatabaseConnection(configProperties, driverName);
-            JdbcConnection jdbcConnection = new JdbcConnection(connection);
-            Database database =
-                    DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-
-            liquibase = new Liquibase(configProperties.getProperty(LiquibaseProperty.CHANGELOG_FILE.getOption()),
-                    new FilePathAccessor(build), database);
-
-
-        } catch (LiquibaseException e) {
-            throw new RuntimeException("Error creating liquibase database.", e);
-        }
-        liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
-        return liquibase;
+    public String getChangeLogFile() {
+        return changeLogFile;
     }
 
-    protected static Connection getDatabaseConnection(Properties configProperties, String driverName) {
-        Connection connection;
-        String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
-        try {
-            DriverManager.registerDriver((Driver) Class.forName(driverName).newInstance());
-            connection = DriverManager
-                    .getConnection(dbUrl, getProperty(configProperties, LiquibaseProperty.USERNAME),
-                            getProperty(configProperties,
-                                    LiquibaseProperty.PASSWORD));
-        } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        }
-        return connection;
+    public String getContexts() {
+        return contexts;
     }
 
-    protected static String getProperty(Properties configProperties, LiquibaseProperty property) {
-        return configProperties.getProperty(property.getOption());
+    public String getUsername() {
+        return username;
     }
 
-    public List<EmbeddedDriver> getDrivers() {
-        return DESCRIPTOR.getEmbeddedDrivers();
+    public String getPassword() {
+        return password;
     }
 
-    /**
-     * Reflection necessary because failedChangeset has private access on {@link MigrationFailedException}.
-     *
-     * @param me
-     * @return
-     */
-    private static Optional<ChangeSet> reflectFailed(MigrationFailedException me) {
-        ChangeSet failed = null;
-        try {
-            Field field = me.getClass().getDeclaredField("failedChangeSet");
-            field.setAccessible(true);
-            failed = (ChangeSet) field.get(me);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("retrieved reference to failed changeset[" + failed + "] ");
-            }
-
-        } catch (NoSuchFieldException ignored) {
-        } catch (IllegalAccessException ignored) {
-        }
-        return Optional.fromNullable(failed);
+    public String getUrl() {
+        return url;
     }
 
-    protected static void addOptionIfPresent(ArgumentListBuilder cmdExecArgs,
-                                             LiquibaseProperty liquibaseProperty,
-                                             String value) {
-        if (!Strings.isNullOrEmpty(value)) {
-            cmdExecArgs.add(OPTION_HYPHENS + liquibaseProperty.getOption(), value);
-        }
+    public String getDefaultSchemaName() {
+        return defaultSchemaName;
     }
 
-    @Override
-    public Descriptor<Builder > getDescriptor() {
-        return DESCRIPTOR;
+    public String getLiquibasePropertiesPath() {
+        return liquibasePropertiesPath;
     }
 
-    public boolean isTestRollbacks() {
-        return testRollbacks;
+    public void setLiquibasePropertiesPath(String liquibasePropertiesPath) {
+        this.liquibasePropertiesPath = liquibasePropertiesPath;
     }
 
-    public void setInvokeExternal(boolean invokeExternal) {
-        this.invokeExternal = invokeExternal;
+    public String getClasspath() {
+        return classpath;
     }
 
-    public boolean isInvokeExternal() {
-        return invokeExternal;
+    @DataBoundSetter
+    public void setClasspath(String classpath) {
+        this.classpath = classpath;
     }
 
-    public boolean isDropAll() {
-        return dropAll;
+    @DataBoundSetter
+    public void setChangeLogFile(String changeLogFile) {
+        this.changeLogFile = changeLogFile;
     }
 
-    public void setDropAll(boolean dropAll) {
-        this.dropAll = dropAll;
+    @DataBoundSetter
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getDatabaseEngine() {
-        return databaseEngine;
+    @DataBoundSetter
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public void setTestRollbacks(boolean testRollbacks) {
-        this.testRollbacks = testRollbacks;
+    @DataBoundSetter
+    public void setUrl(String url) {
+        this.url = url;
     }
+
+    @DataBoundSetter
+    public void setDefaultSchemaName(String defaultSchemaName) {
+        this.defaultSchemaName = defaultSchemaName;
+    }
+
+    @DataBoundSetter
+    public void setContexts(String contexts) {
+        this.contexts = contexts;
+    }
+
 
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-        private List<EmbeddedDriver> embeddedDrivers;
-        private LiquibaseInstallation[] installations;
+        private List<IncludedDatabaseDriver> includedDatabaseDrivers;
+
 
         public DescriptorImpl() {
             load();
@@ -279,38 +419,25 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
             return "Evaluate liquibase changesets";
         }
 
-        public List<EmbeddedDriver> getEmbeddedDrivers() {
-            if (embeddedDrivers == null) {
+        public List<IncludedDatabaseDriver> getIncludedDatabaseDrivers() {
+            if (includedDatabaseDrivers == null) {
                 initDriverList();
             }
-            return embeddedDrivers;
-        }
-
-        public LiquibaseInstallation.DescriptorImpl getToolDescriptor() {
-            return ToolInstallation.all().get(LiquibaseInstallation.DescriptorImpl.class);
+            return includedDatabaseDrivers;
         }
 
         private void initDriverList() {
-            embeddedDrivers = Lists.newArrayList(new EmbeddedDriver("MySQL", "com.mysql.jdbc.Driver"),
-                    new EmbeddedDriver("PostgreSQL", "org.postgresql.Driver"),
-                    new EmbeddedDriver("Derby", "org.apache.derby.jdbc.EmbeddedDriver"),
-                    new EmbeddedDriver("Hypersonic", "org.hsqldb.jdbcDriver"),
-                    new EmbeddedDriver("H2", "org.h2.Driver"));
-        }
-
-        public LiquibaseInstallation[] getInstallations() {
-            return installations;
-        }
-
-        public void setInstallations(LiquibaseInstallation... installations) {
-            this.installations = installations;
-            save();
+            includedDatabaseDrivers = Lists.newArrayList(new IncludedDatabaseDriver("MySQL", "com.mysql.jdbc.Driver"),
+                    new IncludedDatabaseDriver("PostgreSQL", "org.postgresql.Driver"),
+                    new IncludedDatabaseDriver("Derby", "org.apache.derby.jdbc.EmbeddedDriver"),
+                    new IncludedDatabaseDriver("Hypersonic", "org.hsqldb.jdbcDriver"),
+                    new IncludedDatabaseDriver("H2", "org.h2.Driver"));
         }
     }
 
+
     public static final class ChangesetEvaluatorBuilder {
         private String databaseEngine;
-        private boolean invokeExternal;
         private boolean dropAll;
         private String changeLogFile;
         private String username;
@@ -326,11 +453,6 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuildStep {
 
         public ChangesetEvaluatorBuilder withDatabaseEngine(String val) {
             databaseEngine = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withInvokeExternal(boolean val) {
-            invokeExternal = val;
             return this;
         }
 

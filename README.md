@@ -3,60 +3,42 @@
 
 # About
 
-Adds Liquibase as an available build step.  See Liquibase documentation at http://www.liquibase.org/.
+Adds liquibase changeset evaluation as an available build step.  See Liquibase documentation at http://www.liquibase.org/.
+Any evaluated changesets are listed on the build's summary page, as well as details about each changeset.
 
 # Installation
 
-*  Install the liquibase-runner plugin using Jenkins' plugin manager.  If you intend to use the "Execute" build step,
-you'll also need to install liquibase (the two types of build steps are explained below).
+*  Install the liquibase-runner plugin using Jenkins' plugin manager.  Depending on how you use and configure the plugin,
+you may need to install a database server, and potentially your target schema.
+
+* Once installed, the "Evaluate liquibase changesets" is made available.
 
 # Configuration
 
-## Build steps: "Execute Liquibase" versus "Evaluate changesets"
 
-This plugin has two modes for running liquibase.  The first invokes an liquibase installation just as you would via command-line.
-The second evaluates liquibase changesets internally, and requires no existing liquibase installation.    
+## Simplest
 
-In each mode, basic liquibase options, such as contexts and jdbc URL, are provided as configuration options.
+You need only to define the location of your changeset file for the simplest configuration.  Liquibase's
+"update" will run using an [H2](http://www.h2database.com) in-memory database.  Changes aren't persisted across builds, so 
+each changeset will be listed in each build summary.
 
-Further details are provided below.
+## Advanced
 
-**Execute Liquibase**
+Those who would like more control over liquibase exexcution may do so using options presented when using the "advanced"
+section of the builder configuration.  Here you'll find most of liquibase's configuration exposed, including contexts and 
+the JDBC URL used to access the database.
 
-Use this build step if you have an existing liquibase installation and wish to have it run just as if you were doing so 
-from command line.  This mode provides the most flexibility for your liquibase configuration and execution, but provides 
-fewer reporting features.
+For convenience, the plugin includes a few database drivers for use here.  Alternatively, you may
+also define the classpath where a database driver may be loaded.
 
-Use "Manage Jenkins" to add your liquibase installation to Jenkins.  It will then be available for selection in the
-build step.  Your liquibase installation should include the driver for your database (for example, by having the
-driver jar in LIQUIBASE_HOME/lib directory).
-
-Each build's console log will contain the stdout/stderr output of liquibase execution.  Furthermore, each type
-of build step will indicate build instability when liquibase is unable to apply a changeset.
-
-**Evaluate changesets**
-
-The "Evaluate liquibase changesets" build step runs liquibase internally and doesn't require liquibase to be installed.  
-In addition, build summaries include a list of changesets executed and the SQL statements that were generated.
- 
-However, using this mode contains a few restrictions:
-  * You cannot choose what liquibase command to run; only "update" (or "updateTestingRollback") are used.
-  * You are restricted to one of the database engines available in the build step's dropdown.
- 
 # Usage Tips
 
-* If you're using the H2 database engine, you can use JDBC url like "jdbc:h2:mem:test" to create a in-memory database
-with each execution.  If you'd like to have the schema persist between builds, use a jdbc url like 
-"jdbc:h2:file:./data/sample", so that the schema is persisted on disk.  No username/password needed. 
-
-* If you'd like to use a database engine like MySQL or postgres, you'll have to ensure the schema exists and is 
-accessible to Jenkins.  Consider having your Jenkins job execute an initialize script to do so.
-
-# The Future
+* If you'd like to have only new changesets evaluated, consider using an H2 JDBC url like 
+"jdbc:h2:file:./data/sample".  This instructs H2 to persist the database to a file.  Note, however, if a different
+  build slave runs your project, that file will no longer be available, and all changesets will again be executed.
   
-I'd like to minimize the difference between "Execute" and "Evaluate" and have changesets be reported in both types of
-build steps.
- 
+* Advance options and simple configuration are not mutually exclusive; you may, for example, select "Test Rollbacks"
+  in the advance section and still use the in-memory H2 database. 
 
 
 
