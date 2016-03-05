@@ -108,18 +108,9 @@ public class ChangesetEvaluator extends Builder {
         this.labels = labels;
     }
 
-    private ChangesetEvaluator(ChangesetEvaluatorBuilder changesetEvaluatorBuilder) {
-        databaseEngine = changesetEvaluatorBuilder.databaseEngine;
+    public ChangesetEvaluator() {
 
-        setDropAll(changesetEvaluatorBuilder.dropAll);
-        setChangeLogFile(changesetEvaluatorBuilder.changeLogFile);
-        setUsername(changesetEvaluatorBuilder.username);
-        setPassword(changesetEvaluatorBuilder.password);
-        setUrl(changesetEvaluatorBuilder.url);
-        setDefaultSchemaName(changesetEvaluatorBuilder.defaultSchemaName);
-        setContexts(changesetEvaluatorBuilder.contexts);
-        setTestRollbacks(changesetEvaluatorBuilder.testRollbacks);
-        setLiquibasePropertiesPath(changesetEvaluatorBuilder.liquibasePropertiesPath);
+
     }
 
 
@@ -262,6 +253,11 @@ public class ChangesetEvaluator extends Builder {
     @DataBoundSetter
     public void setLabels(String labels) {
         this.labels = labels;
+    }
+
+    @DataBoundSetter
+    public void setDatabaseEngine(String databaseEngine) {
+        this.databaseEngine = databaseEngine;
     }
 
     @DataBoundSetter
@@ -445,80 +441,4 @@ public class ChangesetEvaluator extends Builder {
         }
     }
 
-
-    public static final class ChangesetEvaluatorBuilder {
-        private String databaseEngine;
-        private boolean dropAll;
-        private String changeLogFile;
-        private String username;
-        private String password;
-        private String url;
-        private String defaultSchemaName;
-        private String contexts;
-        private boolean testRollbacks;
-        private String liquibasePropertiesPath;
-
-        public ChangesetEvaluatorBuilder() {
-        }
-
-        public ChangesetEvaluatorBuilder withDatabaseEngine(String val) {
-            databaseEngine = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withDropAll(boolean val) {
-            dropAll = val;
-            return this;
-        }
-
-
-        public ChangesetEvaluatorBuilder withChangeLogFile(File val) {
-            changeLogFile = val.getAbsolutePath();
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withChangeLogFile(String val) {
-            changeLogFile = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withUsername(String val) {
-            username = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withPassword(String val) {
-            password = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withUrl(String val) {
-            url = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withDefaultSchemaName(String val) {
-            defaultSchemaName = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withContexts(String val) {
-            contexts = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withTestRollbacks(boolean val) {
-            testRollbacks = val;
-            return this;
-        }
-
-        public ChangesetEvaluatorBuilder withLiquibasePropertiesPath(String val) {
-            liquibasePropertiesPath = val;
-            return this;
-        }
-
-        public ChangesetEvaluator build() {
-            return new ChangesetEvaluator(this);
-        }
-    }
 }

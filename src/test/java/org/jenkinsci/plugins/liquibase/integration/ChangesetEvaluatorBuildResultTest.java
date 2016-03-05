@@ -102,11 +102,11 @@ public class ChangesetEvaluatorBuildResultTest {
 
     protected FreeStyleProject createProjectWithChangelogFile(File changelogFile) throws IOException {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-
-        ChangesetEvaluator.ChangesetEvaluatorBuilder builder = new ChangesetEvaluator.ChangesetEvaluatorBuilder();
-
-        builder.withChangeLogFile(changelogFile).withUrl(IN_MEMORY_JDBC_URL).withDatabaseEngine("H2");
-        project.getBuildersList().add(builder.build());
+        ChangesetEvaluator evaluator = new ChangesetEvaluator();
+        evaluator.setChangeLogFile(changelogFile.getAbsolutePath());
+        evaluator.setUrl(IN_MEMORY_JDBC_URL);
+        evaluator.setDatabaseEngine("H2");
+        project.getBuildersList().add(evaluator);
         return project;
     }
 
