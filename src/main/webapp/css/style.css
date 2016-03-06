@@ -1,9 +1,20 @@
 
+.theader {
+    text-align: left;
+    background-color: lightgray;
+    padding:4px;
+}
 .changeSetItem {
     margin:13px;
 }
 
+#changesetResult TD {
+    vertical-align: top;
+}
 .changeSetId {
     font-weight: bold;
     margin-right: 2px;
+}
+.failed {
+    color: red;
 }

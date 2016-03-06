@@ -1,45 +1,43 @@
-# Jenkins Liquibase Plugin
+# Jenkins Liquibase Runner Plugin
 ---
 
 # About
 
-Adds Liquibase as an available build step.  See Liquibase documentation at http://www.liquibase.org/.
+Adds liquibase changeset evaluation as an available build step.  See Liquibase documentation at http://www.liquibase.org/.
+Any evaluated changesets are listed on the build's summary page, as well as details about each changeset.
+
+Uses liquibase version 3.4.2.
 
 # Installation
 
-*  Install the liquibase-runner plugin.
-*  Create an empty version of your database on the target server (if applicable).
+*  Install the liquibase-runner plugin using Jenkins' plugin manager.  Depending on how you use and configure the plugin,
+you may need to install a database server, and potentially your target schema.
 
+* Once installed, the "Evaluate liquibase changesets" is made available.
 
 # Configuration
 
-## "Execute" versus "Invoke"
 
-There are two ways of using this plugin, distinguished by "Execute Liquibase" versus "Invoke Liquibase"
+## Simplest
 
-**Execute**
+You need only to define the location of your changeset file for the simplest configuration.  Liquibase's
+"update" will run using an [H2](http://www.h2database.com) in-memory database.  Changes aren't persisted across builds, so 
+each changeset will be listed in each build summary.
 
-Use this build step if you have an existing liquibase installation and wish to have it run just as if you were doing so 
-from command line.  The build's console log will contain the stdout/stderr output of liquibase.
+## Advanced
 
-Once you've created your installation in Jenkins's configuration, it will be available for selection in this build step. 
+Those who would like more control over liquibase exexcution may do so using options presented when using the "advanced"
+section of the builder configuration.  Here you'll find most of liquibase's configuration exposed, including contexts and 
+the JDBC URL used to access the database.
 
-Your liquibase installation should include the driver for your database.
+For convenience, the plugin includes a few database drivers for use here.  Alternatively, you may
+also define the classpath where a database driver may be loaded.
 
-**Invoke**
+# Usage Tips
 
-The "Invoke Liquibase" build step runs liquibase internally and doesn't require an existing installation.  Furthermore, 
-any changesets executed during the build are reported.
-
-The types of databases you can use is restricted by those in the drop-down list. 
+* If you'd like to have only new changesets evaluated, consider using an H2 JDBC url like 
+"jdbc:h2:file:./data/sample".  This instructs H2 to persist the database to a file.  Note, however, if a different
+  build slave runs your project, that file will no longer be available, and all changesets will again be executed.
   
-# The Future
-  
-I'd like to minimize the difference between "Invoke" and "Execute" and have changesets be reported in both types of
-build steps.
- 
-
-
-
-
-
+* Advance options and simple configuration are not mutually exclusive; you may, for example, select "Test Rollbacks"
+  in the advance section and still use the in-memory H2 database. 

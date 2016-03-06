@@ -1,17 +1,26 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.573</version>
+        <version>2.2</version>
+        <relativePath />
     </parent>
-
     <artifactId>liquibase-runner</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <name>Jenkins Liquibase Runner</name>
+    <version>1.0.0</version>
+    <name>Liquibase Runner</name>
 
     <packaging>hpi</packaging>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Liquibase+Runner</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
     <scm>
         <connection>scm:git:ssh://github.com/jenkinsci/liquibase-runner-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/liquibase-runner-plugin.git</developerConnection>
@@ -39,11 +48,14 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <properties>
+        <jenkins.version>1.580.1</jenkins.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>3.2.2</version>
+            <version>3.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -80,42 +92,40 @@
             <artifactId>commons-dbutils</artifactId>
             <version>1.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
 
-
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>2.0.2-beta</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.12.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.13</version>
+        </dependency>
     </dependencies>
-    <profiles>
-        <profile>
-            <id>logback</id>
-            <dependencies>
-                <dependency>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-core</artifactId>
-                    <version>1.1.2</version>
-                </dependency>
-                <dependency>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                    <version>1.1.2</version>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.mortbay.jetty</groupId>
-                        <artifactId>maven-jetty-plugin</artifactId>
-                        <version>${maven-jetty-plugin.version}</version>
-                        <configuration>
-                            <systemProperties>
-                                <systemProperty>
-                                    <name>logback.configurationFile</name>
-                                    <value>/home/keith/config/java/logback.xml</value>
-                                </systemProperty>
-                            </systemProperties>
-                        </configuration>
-                    </plugin>
-
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>1.0-m5.1</version>
+                <configuration>
+                    <enableSshAgent>true</enableSshAgent>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

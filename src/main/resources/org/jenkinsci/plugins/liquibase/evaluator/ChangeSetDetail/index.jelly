@@ -1,0 +1,102 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
+         xmlns:f="/lib/form">
+
+    <l:layout title="${it.id}" css="/plugin/liquibase-runner/css/style.css">
+        <st:include it="${it.parent.build}" page="sidepanel.jelly"/>
+        <l:main-panel>
+            <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.plsql.plsql"/>
+            <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
+            <h1>Changeset Details: ${it.id}</h1>
+            <table id="changesetResult">
+                <tr>
+                    <td class="bold single-row">ID</td>
+                    <td>${it.id}</td>
+                </tr>
+                <tr>
+                    <td class="bold single-row">Status</td>
+                    <td>
+                        <j:if test="${it.successfullyExecuted}">
+                            <span class="result-passed">Success</span>
+                        </j:if>
+                        <j:if test="${!it.successfullyExecuted}">
+                            <span class="result-failed">Failed</span>
+                        </j:if>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bold single-row">Author</td>
+                    <td>${it.author}</td>
+                </tr>
+                <j:if test="${!empty(it.description)}">
+                    <tr>
+                        <td class="bold single-row">Description</td>
+                        <td>${it.description}</td>
+                    </tr>
+                </j:if>
+                <j:if test="${!empty(it.comments)}">
+                    <tr>
+                        <td class="bold single-row">Comments</td>
+                        <td>${it.comments}</td>
+                    </tr>
+                </j:if>
+
+                <j:if test="${it.hasSql()}">
+                    <tr>
+                        <td colspan="2" class="bold">SQL</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <span class="sql">
+                                <f:textarea codemirror-mode="sql"
+                                            codemirror-config="mode:'text/x-plsql',readOnly:true,lineWrapping:true,viewportMargin:'Infinity'"
+                                            value="${it.getExecutedSql()}"/>
+                            </span>
+                        </td>
+                    </tr>
+                </j:if>
+                <j:if test="${!empty(it.exceptionMessage)}">
+                    <tr>
+                        <td colspan="2" class="bold">Error</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <pre>
+                                <j:out  value="${it.exceptionMessage}"/>
+                            </pre>
+                        </td>
+                    </tr>
+                </j:if>
+            </table>
+            <style type="text/css">
+                .bold {
+                    font-weight:bold;
+                }
+                .single-row {
+                    width:80px;
+                }
+                
+                /* some css hacking to tailor display */
+                .CodeMirror {
+                height:auto ;
+                line-height:130%;
+                overflow-y: hidden;
+                overflow-x: hidden;
+                }
+                .CodeMirror-scroll {
+                border:1px solid rgba(30, 30, 30, 0.15) !important;
+                height:auto !important ;
+                overflow-y: hidden;
+                overflow-x: hidden;
+                }
+                .changeSetComment {
+                font-style: italic;
+                font-weight: lighter;
+                }
+                .textarea-handle {
+                display:none;
+                }
+            </style>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
