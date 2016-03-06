@@ -61,7 +61,9 @@
                  description="Classpath containing migration files and JDBC Driver">
             <f:textbox value="${instance.classpath}"/>
         </f:entry>
-
+        <f:entry title="Changelog Parameters" field="changeLogParameters">
+            <f:textarea value="${instance.changeLogProperties}"/>
+        </f:entry>
     </f:advanced>
 </j:jelly>
 

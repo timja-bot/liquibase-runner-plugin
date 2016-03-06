@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jenkinsci.plugins.liquibase.common.LiquibaseCommand;
@@ -35,6 +36,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
@@ -61,6 +63,8 @@ public class ChangesetEvaluator extends Builder {
     private String classpath;
     private String driverClassname;
     private String labels;
+    private String changeLogParameters;
+
 
     @DataBoundConstructor
     public ChangesetEvaluator(String databaseEngine,
@@ -168,6 +172,13 @@ public class ChangesetEvaluator extends Builder {
             throw new RuntimeException("Error creating liquibase database.", e);
         }
         liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
+        if (!Strings.isNullOrEmpty(changeLogParameters)) {
+            Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
+            for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
+                liquibase.setChangeLogParameter(entry.getKey(), entry.getValue());
+
+            }
+        }
         return liquibase;
     }
 
@@ -322,6 +333,15 @@ public class ChangesetEvaluator extends Builder {
     @DataBoundSetter
     public void setLabels(String labels) {
         this.labels = labels;
+    }
+
+    public String getChangeLogParameters() {
+        return changeLogParameters;
+    }
+
+    @DataBoundSetter
+    public void setChangeLogParameters(String changeLogParameters) {
+        this.changeLogParameters = changeLogParameters;
     }
 
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
