@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Set;
 
@@ -27,14 +29,17 @@ public class FilePathAccessor implements ResourceAccessor {
     }
 
     public InputStream getResourceAsStream(String s) throws IOException {
-        FilePath child = build.getWorkspace().child(s);
         InputStream inputStream = null;
-        try {
-            if (child.exists()) {
-                inputStream = child.read();
+        final FilePath workspace = build.getWorkspace();
+        if (workspace !=null) {
+            FilePath child = workspace.child(s);
+            try {
+                if (child.exists()) {
+                    inputStream = child.read();
+                }
+            } catch (InterruptedException e) {
+                throw new IOException("Error reading resource[" + s + "] ", e);
             }
-        } catch (InterruptedException e) {
-            throw new IOException("Error reading resource[" + s + "] ", e);
         }
 
         return inputStream;
@@ -54,47 +59,62 @@ public class FilePathAccessor implements ResourceAccessor {
 
         Set<String> result = Sets.newHashSet();
 
-        FilePath child;
-        if (relativeTo == null) {
-            child = build.getWorkspace().child(path);
-        } else {
-            child = build.getWorkspace().child(relativeTo).child(path);
-        }
-
-        try {
-            if (child.isDirectory()) {
-                if (includeDirectories) {
-                    result.add(child.toURI().toURL().toString());
-                }
-                if (recursive) {
-                    List<FilePath> dirs = child.listDirectories();
-                    for (FilePath dir : dirs) {
-                        result.addAll(list(null, dir.getRemote(), includeFiles, true, true));
-                    }
-                }
-                if (includeFiles) {
-                    List<FilePath> files = child.list(FileFileFilter.FILE);
-                    for (FilePath filePath : files) {
-                        result.add(filePath.toURI().toURL().toString());
-                    }
-                }
+        final FilePath workspace = build.getWorkspace();
+        if (workspace !=null) {
+            FilePath child;
+            if (relativeTo == null) {
+                child = workspace.child(path);
+            } else {
+                child = workspace.child(relativeTo).child(path);
             }
 
-            if (!child.isDirectory() && includeFiles) {
-                result.add(child.getName());
+            try {
+                if (child.isDirectory()) {
+                    if (includeDirectories) {
+                        result.add(child.toURI().toURL().toString());
+                    }
+                    if (recursive) {
+                        List<FilePath> dirs = child.listDirectories();
+                        for (FilePath dir : dirs) {
+                            result.addAll(list(null, dir.getRemote(), includeFiles, true, true));
+                        }
+                    }
+                    if (includeFiles) {
+                        List<FilePath> files = child.list(FileFileFilter.FILE);
+                        for (FilePath filePath : files) {
+                            result.add(filePath.toURI().toURL().toString());
+                        }
+                    }
+                }
+
+                if (!child.isDirectory() && includeFiles) {
+                    result.add(child.getName());
+                }
+            } catch (InterruptedException e) {
+                throw new IOException("Error getting resource '" + path + ".", e);
             }
-        } catch (InterruptedException e) {
-            throw new IOException("Error getting resource '" + path + ".", e);
         }
 
         return result;
     }
 
     public ClassLoader toClassLoader() {
-        try {
-            return new URLClassLoader(new URL[]{new URL("file://" + build.getWorkspace().getBaseName())});
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        URLClassLoader urlClassLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+            @Override
+            public URLClassLoader run() {
+                URLClassLoader urlClassLoader = null;
+                if (build.getWorkspace() != null) {
+                    try {
+                        urlClassLoader =
+                                new URLClassLoader(new URL[]{new URL("file://" + build.getWorkspace().getBaseName())});
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException("Unable to construct classloader.");
+                    }
+                }
+                return urlClassLoader;
+            }
+        });
+
+        return urlClassLoader;
     }
 }

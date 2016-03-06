@@ -1,9 +1,12 @@
 package org.jenkinsci.plugins.liquibase.common;
 
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.evaluator.IncludedDatabaseDriver;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
@@ -52,11 +55,16 @@ public class PropertiesAssembler {
 
     private static void readFromExternalProperties(Properties properties, String liquibasePropertiesPath) {
         if (!Strings.isNullOrEmpty(liquibasePropertiesPath)) {
+            InputStreamReader streamReader = null;
             try {
-                properties.load(new FileReader(liquibasePropertiesPath));
+                streamReader = new InputStreamReader(new FileInputStream(liquibasePropertiesPath),
+                        StandardCharsets.UTF_8);
+                properties.load(streamReader);
             } catch (IOException e) {
                 throw new LiquibaseRuntimeException(
                         "Unable to load properties file at '" + liquibasePropertiesPath + "'", e);
+            } finally {
+                IOUtils.closeQuietly(streamReader);
             }
         }
     }
