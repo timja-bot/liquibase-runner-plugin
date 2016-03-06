@@ -7,7 +7,7 @@
         <version>2.2</version>
         <relativePath />
     </parent>
-    <artifactId>liquibase-runner-plugin</artifactId>
+    <artifactId>liquibase-runner</artifactId>
     <version>1.1.0-SNAPSHOT</version>
     <name>Liquibase Runner</name>
 
