@@ -103,10 +103,11 @@ public class FilePathAccessor implements ResourceAccessor {
             @Override
             public URLClassLoader run() {
                 URLClassLoader urlClassLoader = null;
-                if (build.getWorkspace() != null) {
+                final FilePath workspace = build.getWorkspace();
+                if (workspace != null) {
                     try {
                         urlClassLoader =
-                                new URLClassLoader(new URL[]{new URL("file://" + build.getWorkspace().getBaseName())});
+                                new URLClassLoader(new URL[]{new URL("file://" + workspace.getBaseName())});
                     } catch (MalformedURLException e) {
                         throw new RuntimeException("Unable to construct classloader.");
                     }
