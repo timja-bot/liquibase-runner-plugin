@@ -1,5 +1,5 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
 
     <l:layout title="${it.name}" css="/plugin/liquibase-runner/css/style.css">
         <st:include it="${it.build}" page="sidepanel.jelly"/>
