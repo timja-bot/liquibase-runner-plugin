@@ -4,16 +4,19 @@
     <l:layout title="${it.name}" css="/plugin/liquibase-runner/css/style.css">
         <st:include it="${it.build}" page="sidepanel.jelly"/>
         <l:main-panel>
-            <img style="float: left;vertical-align:bottom;"
+            <div><img
                  src="${rootURL}/plugin/liquibase-runner/liquibase_icon48x48.png"/>
-            <h1>Changesets</h1>
-            <br/>
+                <h1 style="display:inline;vertical-align: bottom;">Changesets</h1>
+            </div>
+            <br style="clear:both"/>
+
             <j:if test="${it.getChangeSetDetails().isEmpty()}">
                 No changesets were successfully executed.
             </j:if>
             <j:if test="${!it.getChangeSetDetails().isEmpty()}">
                 <table id="changesetResult">
                     <tr>
+                        <th class="theader">Order</th>
                         <th class="theader">ID</th>
                         <th class="theader">Status</th>
                         <th class="theader">Author</th>
@@ -24,8 +27,9 @@
                         <j:forEach var="detail" items="${it.getChangeSetDetails()}" varStatus="status">
                             <j:set var="ch" value="${detail.getChangeSet()}"/>
                             <tr>
+                                <td class="pane">${status.index+1}</td>
                                 <td class="pane">
-                                    <a href="changeset/${detail.urlName}" class="model-link inside">
+                                    <a href="changeset/${detail.urlName}">
                                         <st:out value="${detail.id}"/>
                                     </a>
                                 </td>
