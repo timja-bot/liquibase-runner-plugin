@@ -7,7 +7,7 @@
     </f:entry>
     <f:advanced>
         <f:entry title="Database Engine">
-            <select class="setting-input" name="LiquibaseBuilder.databaseEngine">
+            <select class="setting-input"  name="LiquibaseBuilder.databaseEngine">
                 <option value="">Select included driver</option>
                 <j:forEach var="engine" items="${descriptor.getIncludedDatabaseDrivers()}">
                     <f:option selected="${instance.databaseEngine==engine.displayName}" value="${engine.displayName}">
@@ -17,7 +17,7 @@
             </select>
         </f:entry>
         <f:entry title="Driver classname" field="driverClassname"
-                 description="Database driver classname, if not using one of the included drivers.">
+                 description="Database driver classname.">
             <f:textbox value="${instance.driverClassname}"/>
         </f:entry>
 
