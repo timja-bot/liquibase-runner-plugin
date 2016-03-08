@@ -12,7 +12,7 @@
     <name>Liquibase Runner</name>
 
     <packaging>hpi</packaging>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/Liquibase+Runner+Plugin</url>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Liquibase+Runner</url>
 
     <licenses>
         <license>
@@ -124,7 +124,6 @@
                 <version>1.0-m5.1</version>
                 <configuration>
                     <enableSshAgent>true</enableSshAgent>
-                    <pushReleases>true</pushReleases>
                 </configuration>
             </plugin>
         </plugins>
