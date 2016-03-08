@@ -8,7 +8,7 @@
                  src="${rootURL}/plugin/liquibase-runner/liquibase_icon48x48.png"/>
                 <h1 style="display:inline;vertical-align: bottom;">Changesets</h1>
             </div>
-            <br style="clear:both"/>
+            <br/>
 
             <j:if test="${it.getChangeSetDetails().isEmpty()}">
                 No changesets were successfully executed.
