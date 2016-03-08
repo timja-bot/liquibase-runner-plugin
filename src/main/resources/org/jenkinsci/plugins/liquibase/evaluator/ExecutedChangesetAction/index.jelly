@@ -9,7 +9,6 @@
                 <h1 style="display:inline;vertical-align: bottom;">Changesets</h1>
             </div>
             <br/>
-
             <j:if test="${it.getChangeSetDetails().isEmpty()}">
                 No changesets were successfully executed.
             </j:if>
