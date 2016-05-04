@@ -102,7 +102,7 @@ public class ChangesetEvaluator extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
-        Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this);
+        Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build);
         ExecutedChangesetAction action = new ExecutedChangesetAction(build);
         Liquibase liquibase = createLiquibase(build, listener, action, configProperties, launcher);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
