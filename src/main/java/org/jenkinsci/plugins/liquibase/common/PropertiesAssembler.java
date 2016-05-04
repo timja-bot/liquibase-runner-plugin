@@ -41,14 +41,14 @@ public class PropertiesAssembler {
 
         String liquibasePropertiesPath = liquibaseBuilder.getLiquibasePropertiesPath();
         readFromExternalProperties(properties, liquibasePropertiesPath, build);
-        setIfNotNull(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
-        setIfNotNull(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername());
-        setIfNotNull(properties, LiquibaseProperty.PASSWORD, liquibaseBuilder.getPassword());
-        setIfNotNull(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName());
-        setIfNotNull(properties, LiquibaseProperty.URL, liquibaseBuilder.getUrl());
-        setIfNotNull(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
-        setIfNotNull(properties, LiquibaseProperty.LABELS, liquibaseBuilder.getLabels());
-        setIfNotNull(properties, LiquibaseProperty.CONTEXTS, liquibaseBuilder.getContexts());
+        addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
+        addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername());
+        addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, liquibaseBuilder.getPassword());
+        addPropertyIfDefined(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName());
+        addPropertyIfDefined(properties, LiquibaseProperty.URL, liquibaseBuilder.getUrl());
+        addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
+        addPropertyIfDefined(properties, LiquibaseProperty.LABELS, liquibaseBuilder.getLabels());
+        addPropertyIfDefined(properties, LiquibaseProperty.CONTEXTS, liquibaseBuilder.getContexts());
         resolveDatabaseDriver(liquibaseBuilder, properties);
     }
 
@@ -93,9 +93,9 @@ public class PropertiesAssembler {
         properties.setProperty(liquibaseProperty.propertyName(), value);
     }
 
-    private static void setIfNotNull(Properties properties,
-                                     LiquibaseProperty liquibaseProperty,
-                                     String value) {
+    private static void addPropertyIfDefined(Properties properties,
+                                             LiquibaseProperty liquibaseProperty,
+                                             String value) {
         if (!Strings.isNullOrEmpty(value)) {
             setProperty(properties, liquibaseProperty, value);
         }
