@@ -69,7 +69,6 @@ public class PropertiesAssembler {
             InputStreamReader streamReader = null;
             try {
                 FilePath liquibaseProperties = build.getWorkspace().child(liquibasePropertiesPath);
-
                 streamReader = new InputStreamReader(liquibaseProperties.read());
                 properties.load(streamReader);
             } catch (IOException e) {
