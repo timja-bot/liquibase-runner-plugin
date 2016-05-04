@@ -1,9 +1,10 @@
 package org.jenkinsci.plugins.liquibase.common;
 
-import java.io.FileInputStream;
+import hudson.FilePath;
+import hudson.model.AbstractBuild;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
@@ -17,22 +18,30 @@ import com.google.common.base.Strings;
 
 public class PropertiesAssembler {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesAssembler.class);
+    private static final String DEFAULT_JDBC_URL = "jdbc:h2:mem:builder-db";
+    private static final String DEFAULT_DB_DRIVER = "org.h2.Driver";
 
     /**
      * Creates a properties instance for use with liquibase execution.
      * @param liquibaseBuilder
+     * @param build
      * @return
      */
-    public static Properties createLiquibaseProperties(ChangesetEvaluator liquibaseBuilder) {
+    public static Properties createLiquibaseProperties(ChangesetEvaluator liquibaseBuilder, AbstractBuild<?, ?> build) {
         Properties properties = new Properties();
-        assembleDefaults(liquibaseBuilder, properties);
-        assembleFromProjectConfiguration(liquibaseBuilder, properties);
+        assembleDefaults(properties);
+        assembleFromProjectConfiguration(liquibaseBuilder, properties, build);
         return properties;
     }
 
-    protected static void assembleFromProjectConfiguration(ChangesetEvaluator liquibaseBuilder, Properties properties) {
+    protected static void assembleFromProjectConfiguration(ChangesetEvaluator liquibaseBuilder,
+                                                           Properties properties,
+                                                           AbstractBuild<?, ?> build) {
+
+
         String liquibasePropertiesPath = liquibaseBuilder.getLiquibasePropertiesPath();
-        readFromExternalProperties(properties, liquibasePropertiesPath);
+        readFromExternalProperties(properties, liquibasePropertiesPath, build);
+        setIfNotNull(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
         setIfNotNull(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername());
         setIfNotNull(properties, LiquibaseProperty.PASSWORD, liquibaseBuilder.getPassword());
         setIfNotNull(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName());
@@ -53,26 +62,32 @@ public class PropertiesAssembler {
         }
     }
 
-    private static void readFromExternalProperties(Properties properties, String liquibasePropertiesPath) {
+    private static void readFromExternalProperties(Properties properties,
+                                                   String liquibasePropertiesPath,
+                                                   AbstractBuild<?, ?> build) {
         if (!Strings.isNullOrEmpty(liquibasePropertiesPath)) {
             InputStreamReader streamReader = null;
             try {
-                streamReader = new InputStreamReader(new FileInputStream(liquibasePropertiesPath),
-                        StandardCharsets.UTF_8);
+                FilePath liquibaseProperties = build.getWorkspace().child(liquibasePropertiesPath);
+
+                streamReader = new InputStreamReader(liquibaseProperties.read());
                 properties.load(streamReader);
             } catch (IOException e) {
                 throw new LiquibaseRuntimeException(
                         "Unable to load properties file at '" + liquibasePropertiesPath + "'", e);
+            } catch (InterruptedException e) {
+                throw new LiquibaseRuntimeException(
+                        "Unable to load properties file at '" + liquibasePropertiesPath + "'", e);
+
             } finally {
                 IOUtils.closeQuietly(streamReader);
             }
         }
     }
 
-    private static void assembleDefaults(ChangesetEvaluator liquibaseBuilder, Properties properties) {
-        setProperty(properties, LiquibaseProperty.DRIVER, "org.h2.Driver");
-        setProperty(properties, LiquibaseProperty.URL, "jdbc:h2:mem:builder-db");
-        setProperty(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
+    private static void assembleDefaults(Properties properties) {
+        setProperty(properties, LiquibaseProperty.DRIVER, DEFAULT_DB_DRIVER);
+        setProperty(properties, LiquibaseProperty.URL, DEFAULT_JDBC_URL);
     }
 
     private static void setProperty(Properties properties, LiquibaseProperty liquibaseProperty, String value) {

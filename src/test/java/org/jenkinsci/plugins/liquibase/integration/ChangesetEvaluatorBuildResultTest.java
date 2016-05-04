@@ -31,6 +31,7 @@ public class ChangesetEvaluatorBuildResultTest {
     private static final String SUNNY_DAY_CHANGESET_XML = "/example-changesets/sunny-day-changeset.xml";
     private static final String CHANGESET_WITH_ERROR_XML = "/example-changesets/changeset-with-error.xml";
     private static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
+    private static final String LIQUIBASE_PROPERTIES = "/example-changesets/h2.liquibase.properties";
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -67,6 +68,22 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(build.getResult(), is(Result.SUCCESS));
     }
 
+    /**
+     * Covers https://github.com/jenkinsci/liquibase-runner-plugin/issues/8
+     */
+    @Test
+    public void should_use_liquibase_defaults_file() throws InterruptedException, ExecutionException, IOException {
+
+        createProjectFiles(temporaryFolder, SUNNY_DAY_CHANGESET_XML, LIQUIBASE_PROPERTIES);
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        project.setCustomWorkspace(temporaryFolder.getRoot().getAbsolutePath());
+        ChangesetEvaluator evaluator = new ChangesetEvaluator();
+        evaluator.setLiquibasePropertiesPath(extractFilenameFromResourcePath(LIQUIBASE_PROPERTIES));
+        project.getBuildersList().add(evaluator);
+        FreeStyleBuild build = launchBuildForProject(project);
+        assertThat(build.getResult(), is(Result.SUCCESS));
+    }
+
 
     @Test
     public void should_executed_json_changeset_sucessfully()
@@ -77,7 +94,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
     protected FreeStyleBuild createAndBuildLiquibaseProject(String changesetResourcePath)
             throws IOException, InterruptedException, ExecutionException {
-        File yamlChangeset = createChangesetFile(temporaryFolder, changesetResourcePath);
+        File yamlChangeset = createProjectFile(temporaryFolder, changesetResourcePath);
         FreeStyleProject project = createProjectWithChangelogFile(yamlChangeset);
         return launchBuildForProject(project);
     }
@@ -116,20 +133,30 @@ public class ChangesetEvaluatorBuildResultTest {
     }
 
     private File createErrorFreeChangeset(TemporaryFolder temporaryFolder) throws IOException {
-        return createChangesetFile(temporaryFolder, SUNNY_DAY_CHANGESET_XML);
+        return createProjectFile(temporaryFolder, SUNNY_DAY_CHANGESET_XML);
     }
 
     private File createChangesetFileWithError(TemporaryFolder temporaryFolder) throws IOException {
-        return createChangesetFile(temporaryFolder, CHANGESET_WITH_ERROR_XML);
+        return createProjectFile(temporaryFolder, CHANGESET_WITH_ERROR_XML);
     }
 
-    private File createChangesetFile(TemporaryFolder temporaryFolder,
-                                     String changesetResourcePath) throws IOException {
-        String changesetFilename = changesetResourcePath.substring(changesetResourcePath.lastIndexOf("/")+1, changesetResourcePath.length());
-        File changesetFile = temporaryFolder.newFile(changesetFilename);
-        InputStream resourceAsStream = getClass().getResourceAsStream(changesetResourcePath);
+    private void createProjectFiles(TemporaryFolder temporaryFolder, String... resourcePaths) throws IOException {
+        for (int i = 0; i < resourcePaths.length; i++) {
+            String resourcePath = resourcePaths[i];
+            createProjectFile(temporaryFolder, resourcePath);
+        }
+    }
+    private File createProjectFile(TemporaryFolder temporaryFolder,
+                                   String sourceResourcePath) throws IOException {
+        String filename = extractFilenameFromResourcePath(sourceResourcePath);
+        File changesetFile = temporaryFolder.newFile(filename);
+        InputStream resourceAsStream = getClass().getResourceAsStream(sourceResourcePath);
         String changeset = IOUtils.toString(resourceAsStream);
         FileUtils.write(changesetFile, changeset);
         return changesetFile;
+    }
+
+    private String extractFilenameFromResourcePath(String sourceResourcePath) {
+        return sourceResourcePath.substring(sourceResourcePath.lastIndexOf("/")+1, sourceResourcePath.length());
     }
 }
