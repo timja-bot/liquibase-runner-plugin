@@ -5,6 +5,7 @@ import hudson.model.AbstractBuild;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
@@ -66,20 +67,25 @@ public class PropertiesAssembler {
                                                    String liquibasePropertiesPath,
                                                    AbstractBuild<?, ?> build) {
         if (!Strings.isNullOrEmpty(liquibasePropertiesPath)) {
-            InputStreamReader streamReader = null;
-            try {
-                FilePath liquibaseProperties = build.getWorkspace().child(liquibasePropertiesPath);
-                streamReader = new InputStreamReader(liquibaseProperties.read());
-                properties.load(streamReader);
-            } catch (IOException e) {
-                throw new LiquibaseRuntimeException(
-                        "Unable to load properties file at '" + liquibasePropertiesPath + "'", e);
-            } catch (InterruptedException e) {
-                throw new LiquibaseRuntimeException(
-                        "Unable to load properties file at '" + liquibasePropertiesPath + "'", e);
+            FilePath workspace = build.getWorkspace();
+            if (workspace!=null) {
+                InputStreamReader streamReader = null;
+                try {
+                    FilePath liquibaseProperties = workspace.child(liquibasePropertiesPath);
+                    streamReader = new InputStreamReader(liquibaseProperties.read(), StandardCharsets.UTF_8);
+                    properties.load(streamReader);
+                } catch (IOException e) {
+                    throw new LiquibaseRuntimeException(
+                            "Unable to load properties file at '" + liquibasePropertiesPath + "'", e);
+                } catch (InterruptedException e) {
+                    throw new LiquibaseRuntimeException(
+                            "Unable to load properties file at '" + liquibasePropertiesPath + "'", e);
 
-            } finally {
-                IOUtils.closeQuietly(streamReader);
+                } finally {
+                    IOUtils.closeQuietly(streamReader);
+                }
+            } else {
+                throw new LiquibaseRuntimeException("Project workspace was found to be null when attempting to load liquibase properties file at '" + liquibasePropertiesPath + '.');
             }
         }
     }
