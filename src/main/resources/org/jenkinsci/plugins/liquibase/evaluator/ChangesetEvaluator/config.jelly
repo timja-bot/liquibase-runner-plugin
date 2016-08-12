@@ -38,9 +38,19 @@
         <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
             <f:textbox value="${instance.contexts}"/>
         </f:entry>
+        <f:entry title="Operation" field="liquibaseOperation" description="Liquibase operation to execute">
+            <select class="setting-input" name="liquibaseOperation">
+                <option value="update">update</option>
+                <option value="rollback">rollback</option>
+            </select>
+        </f:entry>
         <f:entry title="Test Rollbacks" field="testRollbacks"
                  description="Executes any included rollback statements in addition to the changeset.">
             <f:checkbox checked="${instance.testRollbacks}"/>
+        </f:entry>
+
+        <f:entry title="Changes to Rollback" field="changesToRollback" description="Number of changesets to rollback">
+            <f:textbox value="${instance.changesToRollback}"/>
         </f:entry>
         <f:entry title="Drop All" field="dropAll"
                  description="Runs 'dropAll' prior to executing changesets.">

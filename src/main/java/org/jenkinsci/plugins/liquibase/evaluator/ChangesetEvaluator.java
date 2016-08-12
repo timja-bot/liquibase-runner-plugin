@@ -64,6 +64,8 @@ public class ChangesetEvaluator extends Builder {
     private String driverClassname;
     private String labels;
     private String changeLogParameters;
+    private String liquibaseOperation;
+    protected int changesToRollback = 1;
 
 
     @DataBoundConstructor
@@ -107,11 +109,20 @@ public class ChangesetEvaluator extends Builder {
         Liquibase liquibase = createLiquibase(build, listener, action, configProperties, launcher);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
         try {
-            String resolvedCommand;
+            String resolvedCommand = LiquibaseCommand.UPDATE.getCommand();
             if (isTestRollbacks()) {
                 resolvedCommand = LiquibaseCommand.UPDATE_TESTING_ROLLBACKS.getCommand();
             } else {
-                resolvedCommand = LiquibaseCommand.UPDATE.getCommand();
+                if(Strings.isNullOrEmpty(liquibaseOperation)) {
+                    resolvedCommand = LiquibaseCommand.UPDATE.getCommand();
+                } else {
+                    if (LiquibaseCommand.ROLLBACK.getCommand().equals(liquibaseOperation)) {
+                        resolvedCommand = LiquibaseCommand.ROLLBACK.getCommand();
+                    }
+                    if (LiquibaseCommand.UPDATE.getCommand().equals(liquibaseOperation)) {
+                        resolvedCommand = LiquibaseCommand.UPDATE.getCommand();
+                    }
+                }
             }
 
             if (dropAll) {
@@ -126,6 +137,10 @@ public class ChangesetEvaluator extends Builder {
 
             if (LiquibaseCommand.UPDATE.isCommand(resolvedCommand)) {
                 liquibase.update(new Contexts(liqContexts), new liquibase.LabelExpression(labels));
+            }
+
+            if (LiquibaseCommand.ROLLBACK.isCommand(resolvedCommand)) {
+                liquibase.rollback(changesToRollback, new Contexts(liqContexts).toString());
             }
 
         } catch (MigrationFailedException migrationException) {
@@ -285,6 +300,7 @@ public class ChangesetEvaluator extends Builder {
         return testRollbacks;
     }
 
+
     @DataBoundSetter
     public void setTestRollbacks(boolean testRollbacks) {
         this.testRollbacks = testRollbacks;
@@ -342,6 +358,15 @@ public class ChangesetEvaluator extends Builder {
     @DataBoundSetter
     public void setChangeLogParameters(String changeLogParameters) {
         this.changeLogParameters = changeLogParameters;
+    }
+
+    public String getLiquibaseOperation() {
+        return liquibaseOperation;
+    }
+
+    @DataBoundSetter
+    public void setLiquibaseOperation(String liquibaseOperation) {
+        this.liquibaseOperation = liquibaseOperation;
     }
 
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
