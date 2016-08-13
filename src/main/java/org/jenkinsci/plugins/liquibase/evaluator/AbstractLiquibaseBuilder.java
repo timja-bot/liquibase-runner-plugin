@@ -81,30 +81,45 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
+        RolledbackChangesetAction rolledbackChangesetAction = new RolledbackChangesetAction();
+
         Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build);
-        ExecutedChangesetAction action = new ExecutedChangesetAction(build);
-        Liquibase liquibase = createLiquibase(build, listener, action, configProperties, launcher);
+        ExecutedChangesetAction executedChangesetAction = new ExecutedChangesetAction(build);
+        Liquibase liquibase = createLiquibase(build, listener, executedChangesetAction, configProperties, launcher, rolledbackChangesetAction);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
         Contexts contexts = new Contexts(liqContexts);
         try {
-            doPerform(build, listener, liquibase, contexts);
+            doPerform(build, listener, liquibase, contexts, rolledbackChangesetAction, executedChangesetAction);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
         }
-        build.addAction(action);
+
+        build.addAction(executedChangesetAction);
+
+        if (rolledbackChangesetAction.isRollbacksExpected() ||
+                !rolledbackChangesetAction.getRolledbackChangesets().isEmpty()) {
+            build.addAction(rolledbackChangesetAction);
+        }
+
+
         return true;
     };
 
     public abstract void doPerform(AbstractBuild<?, ?> build,
                                    BuildListener listener,
-                                   Liquibase liquibase, Contexts contexts)
+                                   Liquibase liquibase,
+                                   Contexts contexts,
+                                   RolledbackChangesetAction rolledbackChangesetAction,
+                                   ExecutedChangesetAction executedChangesetAction)
             throws InterruptedException, IOException, LiquibaseException;
 
     public Liquibase createLiquibase(AbstractBuild<?, ?> build,
                                      BuildListener listener,
                                      ExecutedChangesetAction action,
-                                     Properties configProperties, Launcher launcher) {
+                                     Properties configProperties,
+                                     Launcher launcher,
+                                     RolledbackChangesetAction rolledbackChangesetAction) {
         Liquibase liquibase;
         String driverName = getProperty(configProperties, LiquibaseProperty.DRIVER);
 
@@ -125,7 +140,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
         }
-        liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
+        liquibase.setChangeExecListener(new BuildChangeExecListener(action,rolledbackChangesetAction, listener));
         if (!Strings.isNullOrEmpty(changeLogParameters)) {
             Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
             for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {

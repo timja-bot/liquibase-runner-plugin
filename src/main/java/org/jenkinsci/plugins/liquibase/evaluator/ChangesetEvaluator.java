@@ -67,9 +67,12 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
     public void doPerform(AbstractBuild<?, ?> build,
                           BuildListener listener,
                           Liquibase liquibase,
-                          Contexts contexts)
+                          Contexts contexts,
+                          RolledbackChangesetAction rolledbackChangesetAction,
+                          ExecutedChangesetAction executedChangesetAction)
             throws InterruptedException, IOException {
 
+        executedChangesetAction.setProvideStatusIfEmpty(true);
         try {
             String resolvedCommand;
             if (isTestRollbacks()) {

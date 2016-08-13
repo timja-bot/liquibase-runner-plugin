@@ -7,37 +7,40 @@
     <j:set var="allChangeSets" value="${it.changeSetDetails}"/>
     <j:set var="maxDisplay" value="5"/>
 
-    <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
-        <j:if test="${allChangeSets.isEmpty()}">No Changesets Executed.</j:if>
-        <j:if test="${allChangeSets.size()>0}">
-            <a href="${it.urlName}">Evaluated ${allChangeSets.size()} changeSets:</a>
-            <ul class="changeSetList">
-                <j:set var="displayedCount" value="${0}"/>
+    <j:if test="${it.shouldSummarize}">
+        <t:summary icon="/plugin/liquibase-runner/liquibase_icon48x48.png">
+            <j:if test="${allChangeSets.isEmpty()}">No Changesets Executed.</j:if>
+            <j:if test="${allChangeSets.size()>0}">
+                <a href="${it.urlName}">Evaluated ${allChangeSets.size()} changeSets:</a>
+                <ul class="changeSetList">
+                    <j:set var="displayedCount" value="${0}"/>
 
-                <j:forEach items="${allChangeSets}" end="${maxDisplay-1}" var="changeSetDetail">
-                    <j:if test="${changeSetDetail.successfullyExecuted}">
-                        <j:set var="changeCss" value="changeSetId"/>
+                    <j:forEach items="${allChangeSets}" end="${maxDisplay-1}" var="changeSetDetail">
+                        <j:if test="${changeSetDetail.successfullyExecuted}">
+                            <j:set var="changeCss" value="changeSetId"/>
+                        </j:if>
+                        <j:if test="${!changeSetDetail.successfullyExecuted}">
+                            <j:set var="changeCss" value="result-failed"/>
+                        </j:if>
+                        <li class="changeSetItem">
+                            <a href="${it.urlName}/changeset/${changeSetDetail.id}" style="font-weight: bold;">
+                                <span class="${changeCss}">${changeSetDetail.id}</span>
+                            </a>
+                            by
+                            <span class="changeSetAuthor">${changeSetDetail.author}</span>
+
+                            <br/>
+                        </li>
+                        <j:set var="displayedCount" value="${displayedCount + 1}"/>
+                    </j:forEach>
+                    <j:if test="${maxDisplay &lt; it.getChangeSetDetails().size() }">
+                        <a href="${it.urlName}">View All ${">>>"}</a>
                     </j:if>
-                    <j:if test="${!changeSetDetail.successfullyExecuted}">
-                        <j:set var="changeCss" value="result-failed"/>
-                    </j:if>
-                    <li class="changeSetItem">
-                        <a href="${it.urlName}/changeset/${changeSetDetail.id}" style="font-weight: bold;">
-                            <span class="${changeCss}">${changeSetDetail.id}</span>
-                        </a>
-                        by
-                        <span class="changeSetAuthor">${changeSetDetail.author}</span>
 
-                        <br/>
-                    </li>
-                    <j:set var="displayedCount" value="${displayedCount + 1}"/>
-                </j:forEach>
-                <j:if test="${maxDisplay &lt; it.getChangeSetDetails().size() }">
-                    <a href="${it.urlName}">View All ${">>>"}</a>
-                </j:if>
+                </ul>
+            </j:if>
+        </t:summary>
+    </j:if>
 
-            </ul>
-        </j:if>
-    </t:summary>
 
 </j:jelly>

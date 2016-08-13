@@ -21,41 +21,39 @@ import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-public class RollbackBuilder extends AbstractLiquibaseBuilder {
+public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-
     private String rollbackType;
-
     protected int numberOfChangesetsToRollback;
     private String rollbackLastHours;
-
     private String rollbackToTag;
     private String rollbackToDate;
 
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
     enum RollbackStrategy {
         TAG, DATE, RELATIVE, COUNT
     }
 
     @DataBoundConstructor
-    public RollbackBuilder(String databaseEngine,
-                           String changeLogFile,
-                           String username,
-                           String password,
-                           String url,
-                           String defaultSchemaName,
-                           String contexts,
-                           String liquibasePropertiesPath,
-                           String classpath,
-                           String driverClassname,
-                           String changeLogParameters,
-                           String labels,
-                           String rollbackType,
-                           int numberOfChangesetsToRollback,
-                           String rollbackLastHours,
-                           String rollbackToTag, String rollbackToDate) {
+    public RollbackBuildStep(String databaseEngine,
+                             String changeLogFile,
+                             String username,
+                             String password,
+                             String url,
+                             String defaultSchemaName,
+                             String contexts,
+                             String liquibasePropertiesPath,
+                             String classpath,
+                             String driverClassname,
+                             String changeLogParameters,
+                             String labels,
+                             String rollbackType,
+                             int numberOfChangesetsToRollback,
+                             String rollbackLastHours,
+                             String rollbackToTag, String rollbackToDate) {
         super(databaseEngine, changeLogFile, username, password, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
                 classpath, driverClassname, changeLogParameters, labels);
@@ -70,10 +68,13 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
     public void doPerform(AbstractBuild<?, ?> build,
                           BuildListener listener,
                           Liquibase liquibase,
-                          Contexts contexts)
+                          Contexts contexts,
+                          RolledbackChangesetAction rolledbackChangesetAction,
+                          ExecutedChangesetAction executedChangesetAction)
             throws InterruptedException, IOException, LiquibaseException {
 
 
+        rolledbackChangesetAction.setRollbacksExpected(true);
         RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
 
         if (rollbackStrategy == RollbackStrategy.COUNT) {
