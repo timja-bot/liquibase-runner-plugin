@@ -1,0 +1,60 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form"
+         xmlns:st="jelly:stapler">
+
+    <f:section title="Change log">
+        <f:entry title="Change Log File" field="changeLogFile"
+                 description="Root changeset file.">
+            <f:textbox value="${instance.changeLogFile}"/>
+        </f:entry>
+    </f:section>
+
+
+    <f:section title="Rollback Type">
+        <f:radioBlock inline="true" name="rollbackType" value="COUNT"
+                      title="Count" checked="${instance.rollbackType=='COUNT'}">
+            <f:entry field="numberOfChangesetsToRollback"
+                     description="Number of changesets to rollback">
+                <f:textbox value="${instance.numberOfChangesetsToRollback}"/>
+            </f:entry>
+        </f:radioBlock>
+
+        <f:radioBlock inline="true" name="rollbackType" value="TAG"
+                      title="Tag" checked="${instance.rollbackType='TAG'}">
+            <f:entry field="rollbackToTag"
+            description="Tag to rollback to">
+                <f:textbox field="rollbackToTag"/>
+            </f:entry>
+        </f:radioBlock>
+        <f:radioBlock inline="true" name="rollbackType" value="DATE"
+                      title="Date" checked="${instance.rollbackType='DATE'}">
+            <f:entry field="rollbackToDate"
+                     description="Rollback changesets executed after this date (format DD/MM/YYYY)">
+                <f:textbox value="${instance.rollbackToDate}"/>
+            </f:entry>
+        </f:radioBlock>
+        <f:radioBlock inline="true" name="rollbackType" value="RELATIVE"
+                      title="Relative Time" checked="${instance.rollbackType='RELATIVE'}">
+            <f:entry field="rollbackLastHours"
+                     description="Rollback any changesets executed in the past number of hours">
+                <f:textbox value="${instance.rollbackLastHours}"/>
+            </f:entry>
+        </f:radioBlock>
+    </f:section>
+
+
+    <f:advanced>
+        <st:include
+                page="/org/jenkinsci/plugins/liquibase/evaluator/AbstractLiquibaseBuilder/liquibase-common-config.jelly"/>
+
+
+        <f:entry title="Changes to Rollback" field="changesToRollback" description="Number of changesets to rollback">
+            <f:textbox value="${instance.changesToRollback}"/>
+        </f:entry>
+
+
+    </f:advanced>
+</j:jelly>
+

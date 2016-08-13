@@ -84,7 +84,6 @@ public class ExecutedChangesetAction implements Action {
     public void addChangeset(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
         addChangeSetDetail(changeSetDetail);
-
     }
 
     public List<ChangeSetDetail> getSuccessfulChangeSets() {
