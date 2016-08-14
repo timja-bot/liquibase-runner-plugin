@@ -48,7 +48,7 @@ public class RolledbackChangesetAction implements Action  {
 
     @Override
     public String getIconFileName() {
-        return "/plugin/liquibase-runner/undo_48x48.png";
+        return "/plugin/liquibase-runner/undo_arrow_icon_48x48.png";
     }
 
     @Override

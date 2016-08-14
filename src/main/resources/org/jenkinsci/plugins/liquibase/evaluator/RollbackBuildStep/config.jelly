@@ -16,27 +16,27 @@
         <f:radioBlock inline="true" name="rollbackType" value="COUNT"
                       title="Count" checked="${instance.rollbackType=='COUNT'}">
             <f:entry field="numberOfChangesetsToRollback"
-                     description="Number of changesets to rollback">
+                     description="Rolls back the last specified number of change sets applied.">
                 <f:textbox value="${instance.numberOfChangesetsToRollback}"/>
             </f:entry>
         </f:radioBlock>
 
         <f:radioBlock inline="true" name="rollbackType" value="TAG"
-                      title="Tag" checked="${instance.rollbackType='TAG'}">
+                      title="Tag" checked="${instance.rollbackType=='TAG'}">
             <f:entry field="rollbackToTag"
-                     description="Tag to rollback to">
+                     description="Rolls back the database to the the state is was when the tag was applied">
                 <f:textbox field="rollbackToTag"/>
             </f:entry>
         </f:radioBlock>
         <f:radioBlock inline="true" name="rollbackType" value="DATE"
-                      title="Date" checked="${instance.rollbackType='DATE'}">
+                      title="Date" checked="${instance.rollbackType=='DATE'}">
             <f:entry field="rollbackToDate"
-                     description="Rollback changesets executed after this date (format DD/MM/YYYY)">
+                     description="Rolls back the database to the the state is was at the given date/time. (format: yyyy-MM-dd'T'HH:mm:ss)">
                 <f:textbox value="${instance.rollbackToDate}"/>
             </f:entry>
         </f:radioBlock>
         <f:radioBlock inline="true" name="rollbackType" value="RELATIVE"
-                      title="Relative Time" checked="${instance.rollbackType='RELATIVE'}">
+                      title="Relative Time" checked="${instance.rollbackType=='RELATIVE'}">
             <f:entry field="rollbackLastHours"
                      description="Rollback any changesets executed in the past number of hours">
                 <f:textbox value="${instance.rollbackLastHours}"/>

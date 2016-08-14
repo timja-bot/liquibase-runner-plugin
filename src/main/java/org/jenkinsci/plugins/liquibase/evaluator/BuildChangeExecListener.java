@@ -88,9 +88,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
         printConsoleLogMessage(changeSet);
 
         ChangeSetDetail changeSetDetail = createChangeSetDetail(change, changeSet, database);
-
         action.addChangeSetDetail(changeSetDetail);
-
     }
 
     protected ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
@@ -101,7 +99,6 @@ public class BuildChangeExecListener implements ChangeExecListener {
                 Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
                 statementSqls.addAll(Arrays.asList(sqls));
             }
-
         }
         ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet, statementSqls);
         return changeSetDetail;
