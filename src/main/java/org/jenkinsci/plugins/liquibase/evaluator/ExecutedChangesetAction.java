@@ -23,6 +23,8 @@ public class ExecutedChangesetAction implements Action {
 
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
 
+    private boolean provideStatusIfEmpty;
+
     public ExecutedChangesetAction() {
     }
 
@@ -48,6 +50,18 @@ public class ExecutedChangesetAction implements Action {
 
     public List<ChangeSetDetail> getChangeSetDetails() {
         return changeSetDetails;
+    }
+
+    public boolean isProvideStatusIfEmpty() {
+        return provideStatusIfEmpty;
+    }
+
+    public boolean isShouldSummarize() {
+        return (!changeSetDetails.isEmpty() || provideStatusIfEmpty);
+    }
+
+    public void setProvideStatusIfEmpty(boolean provideStatusIfEmpty) {
+        this.provideStatusIfEmpty = provideStatusIfEmpty;
     }
 
     public List<ChangeSetDetail> getFailedChangeSets() {
@@ -84,7 +98,6 @@ public class ExecutedChangesetAction implements Action {
     public void addChangeset(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
         addChangeSetDetail(changeSetDetail);
-
     }
 
     public List<ChangeSetDetail> getSuccessfulChangeSets() {

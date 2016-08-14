@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
-import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
+import org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder;
 import org.jenkinsci.plugins.liquibase.evaluator.IncludedDatabaseDriver;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
@@ -28,14 +28,14 @@ public class PropertiesAssembler {
      * @param build
      * @return
      */
-    public static Properties createLiquibaseProperties(ChangesetEvaluator liquibaseBuilder, AbstractBuild<?, ?> build) {
+    public static Properties createLiquibaseProperties(AbstractLiquibaseBuilder liquibaseBuilder, AbstractBuild<?, ?> build) {
         Properties properties = new Properties();
         assembleDefaults(properties);
         assembleFromProjectConfiguration(liquibaseBuilder, properties, build);
         return properties;
     }
 
-    protected static void assembleFromProjectConfiguration(ChangesetEvaluator liquibaseBuilder,
+    protected static void assembleFromProjectConfiguration(AbstractLiquibaseBuilder liquibaseBuilder,
                                                            Properties properties,
                                                            AbstractBuild<?, ?> build) {
 
@@ -53,7 +53,7 @@ public class PropertiesAssembler {
         resolveDatabaseDriver(liquibaseBuilder, properties);
     }
 
-    private static void resolveDatabaseDriver(ChangesetEvaluator liquibaseBuilder, Properties properties) {
+    private static void resolveDatabaseDriver(AbstractLiquibaseBuilder liquibaseBuilder, Properties properties) {
         if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
             PropertiesAssembler.setDriverFromDBEngine(liquibaseBuilder, properties);
         } else {
@@ -107,10 +107,10 @@ public class PropertiesAssembler {
         }
     }
 
-    public static void setDriverFromDBEngine(ChangesetEvaluator changesetEvaluator, Properties properties) {
-        if (!Strings.isNullOrEmpty(changesetEvaluator.getDatabaseEngine())) {
-            for (IncludedDatabaseDriver includedDatabaseDriver : changesetEvaluator.getDrivers()) {
-                if (includedDatabaseDriver.getDisplayName().equals(changesetEvaluator.getDatabaseEngine())) {
+    public static void setDriverFromDBEngine(AbstractLiquibaseBuilder liquibaseBuilder, Properties properties) {
+        if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
+            for (IncludedDatabaseDriver includedDatabaseDriver : liquibaseBuilder.getDrivers()) {
+                if (includedDatabaseDriver.getDisplayName().equals(liquibaseBuilder.getDatabaseEngine())) {
                     setProperty(properties, LiquibaseProperty.DRIVER, includedDatabaseDriver.getDriverClassName());
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("using db driver class[" + includedDatabaseDriver.getDriverClassName() + "] ");

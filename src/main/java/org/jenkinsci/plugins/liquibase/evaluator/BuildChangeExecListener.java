@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
  */
 public class BuildChangeExecListener implements ChangeExecListener {
     private final ExecutedChangesetAction action;
+    private RolledbackChangesetAction rolledbackChangesetAction;
     private static final Logger LOG = LoggerFactory.getLogger(BuildChangeExecListener.class);
     private BuildListener buildListener;
     private static final String RAN_CHANGESET_MSG = "Ran changeset: ";
@@ -37,6 +38,14 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
     public BuildChangeExecListener(ExecutedChangesetAction action, BuildListener buildListener) {
         this.action = action;
+        this.buildListener = buildListener;
+    }
+
+    public BuildChangeExecListener(ExecutedChangesetAction action,
+                                   RolledbackChangesetAction rolledbackChangesetAction,
+                                   BuildListener buildListener) {
+        this.action = action;
+        this.rolledbackChangesetAction = rolledbackChangesetAction;
         this.buildListener = buildListener;
     }
 
@@ -58,6 +67,8 @@ public class BuildChangeExecListener implements ChangeExecListener {
         }
         String logMessage = formatChangesetForLog(changeSet, databaseChangeLog, "Rolled back");
         buildListener.getLogger().println(logMessage);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
+        rolledbackChangesetAction.addRollback(changeSetDetail);
     }
 
     public void preconditionFailed(PreconditionFailedException error, PreconditionContainer.FailOption onFail) {
@@ -77,9 +88,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
         printConsoleLogMessage(changeSet);
 
         ChangeSetDetail changeSetDetail = createChangeSetDetail(change, changeSet, database);
-
         action.addChangeSetDetail(changeSetDetail);
-
     }
 
     protected ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
@@ -90,11 +99,8 @@ public class BuildChangeExecListener implements ChangeExecListener {
                 Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
                 statementSqls.addAll(Arrays.asList(sqls));
             }
-
         }
         ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet, statementSqls);
-
-
         return changeSetDetail;
     }
 
