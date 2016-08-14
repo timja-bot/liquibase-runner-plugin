@@ -81,7 +81,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
-        RolledbackChangesetAction rolledbackChangesetAction = new RolledbackChangesetAction();
+        RolledbackChangesetAction rolledbackChangesetAction = new RolledbackChangesetAction(build);
 
         Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build);
         ExecutedChangesetAction executedChangesetAction = new ExecutedChangesetAction(build);
@@ -95,10 +95,11 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
             build.setResult(Result.UNSTABLE);
         }
 
-        build.addAction(executedChangesetAction);
+        if (executedChangesetAction.isShouldSummarize()) {
+            build.addAction(executedChangesetAction);
+        }
 
-        if (rolledbackChangesetAction.isRollbacksExpected() ||
-                !rolledbackChangesetAction.getRolledbackChangesets().isEmpty()) {
+        if (rolledbackChangesetAction.isShouldSummarize()) {
             build.addAction(rolledbackChangesetAction);
         }
 

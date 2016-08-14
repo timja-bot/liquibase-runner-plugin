@@ -24,7 +24,7 @@
         <f:radioBlock inline="true" name="rollbackType" value="TAG"
                       title="Tag" checked="${instance.rollbackType='TAG'}">
             <f:entry field="rollbackToTag"
-            description="Tag to rollback to">
+                     description="Tag to rollback to">
                 <f:textbox field="rollbackToTag"/>
             </f:entry>
         </f:radioBlock>
@@ -44,17 +44,9 @@
         </f:radioBlock>
     </f:section>
 
-
     <f:advanced>
         <st:include
                 page="/org/jenkinsci/plugins/liquibase/evaluator/AbstractLiquibaseBuilder/liquibase-common-config.jelly"/>
-
-
-        <f:entry title="Changes to Rollback" field="changesToRollback" description="Number of changesets to rollback">
-            <f:textbox value="${instance.changesToRollback}"/>
-        </f:entry>
-
-
     </f:advanced>
 </j:jelly>
 
