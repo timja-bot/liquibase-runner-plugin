@@ -11,7 +11,6 @@
     <f:advanced>
         <st:include
                 page="/org/jenkinsci/plugins/liquibase/evaluator/AbstractLiquibaseBuilder/liquibase-common-config.jelly"/>
-
         <f:entry title="Test Rollbacks" field="testRollbacks"
                  description="Executes any included rollback statements in addition to the changeset.">
             <f:checkbox checked="${instance.testRollbacks}"/>
@@ -21,8 +20,6 @@
                  description="Runs 'dropAll' prior to executing changesets.">
             <f:checkbox checked="${instance.dropAll}"/>
         </f:entry>
-
-
     </f:advanced>
 </j:jelly>
 
