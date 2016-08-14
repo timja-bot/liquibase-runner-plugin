@@ -31,7 +31,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     private String rollbackToTag;
     private String rollbackToDate;
 
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private SimpleDateFormat simpleDateFormat= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     enum RollbackStrategy {
         TAG, DATE, RELATIVE, COUNT
@@ -57,6 +57,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         super(databaseEngine, changeLogFile, username, password, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
                 classpath, driverClassname, changeLogParameters, labels);
+
         this.rollbackType = rollbackType;
         this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;
         this.rollbackLastHours = rollbackLastHours;
