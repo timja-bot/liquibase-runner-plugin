@@ -78,15 +78,19 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
 
         if (rollbackStrategy == RollbackStrategy.COUNT) {
+            listener.getLogger().println("Rollback back the last " + numberOfChangesetsToRollback + " changeset(s) applied.");
             liquibase.rollback(numberOfChangesetsToRollback, contexts, new LabelExpression(labels));
         }
 
         if (rollbackStrategy == RollbackStrategy.DATE || rollbackStrategy == RollbackStrategy.RELATIVE) {
             Date targetDate = resolveTargetDate(rollbackStrategy);
+            listener.getLogger().println("Rolling back changeset(s) applied after date " + simpleDateFormat.format(targetDate));
             liquibase.rollback(targetDate, contexts, new LabelExpression(labels));
         }
 
         if (rollbackStrategy == RollbackStrategy.TAG) {
+            listener.getLogger()
+                    .println("Rolling back database to tag '" + rollbackToTag+ "'");
             liquibase.rollback(rollbackToTag, contexts, new LabelExpression(labels));
         }
     }
