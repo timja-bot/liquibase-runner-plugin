@@ -186,7 +186,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
 
         @Override
         public String getDisplayName() {
-            return "Rollback Liquibase Changes";
+            return "Rollback liquibase changes";
         }
 
     }
