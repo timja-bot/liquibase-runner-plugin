@@ -26,6 +26,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluatorBuildResultTest.class);
     private static final String LIQUIBASE_PROPERTIES = "/example-changesets/h2.liquibase.properties";
+    private static final int NUMBER_OF_CHANGESETS = 4;
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -100,7 +101,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
         FreeStyleBuild build = createAndBuildErrorFreeProject();
         ExecutedChangesetAction action = build.getActions(ExecutedChangesetAction.class).get(0);
-        assertThat(action.getChangeSetDetails(), hasSize(3));
+        assertThat(action.getChangeSetDetails(), hasSize(NUMBER_OF_CHANGESETS));
     }
 
 
