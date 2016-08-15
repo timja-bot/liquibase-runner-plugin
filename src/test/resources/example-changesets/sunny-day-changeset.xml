@@ -16,6 +16,9 @@
         </createTable>
         <comment>This is a simple create table</comment>
     </changeSet>
+    <changeSet id="first_tag" author="keith">
+        <tagDatabase tag="first_tag"/>
+    </changeSet>
     <changeSet author="keith" id="create-color-table">
         <createTable
                 remarks="sample table"

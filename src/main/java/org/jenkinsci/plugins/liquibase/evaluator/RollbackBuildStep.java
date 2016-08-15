@@ -24,6 +24,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+    public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
 
     private String rollbackType;
     protected int numberOfChangesetsToRollback;
@@ -31,10 +32,15 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     private String rollbackToTag;
     private String rollbackToDate;
 
-    private SimpleDateFormat simpleDateFormat= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private SimpleDateFormat simpleDateFormat= new SimpleDateFormat(DATE_PATTERN);
 
-    enum RollbackStrategy {
+    public enum RollbackStrategy {
         TAG, DATE, RELATIVE, COUNT
+    }
+
+    public RollbackBuildStep() {
+
+
     }
 
     @DataBoundConstructor
@@ -97,9 +103,16 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     }
 
     protected Date resolveTargetDate(RollbackStrategy rollbackStrategy) {
+        Date now = new Date();
+        return resolveTargetDate(rollbackStrategy, now);
+    }
+
+    protected Date resolveTargetDate(RollbackStrategy rollbackStrategy, Date now) {
         Date targetDate;
         if (rollbackStrategy == RollbackStrategy.RELATIVE) {
             Calendar instance = Calendar.getInstance();
+            instance.setTime(now);
+
             instance.add(Calendar.HOUR, 0 - Integer.parseInt(rollbackLastHours));
             targetDate = instance.getTime();
         } else {

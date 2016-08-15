@@ -6,11 +6,8 @@ import hudson.model.Result;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
 import org.junit.Before;
@@ -28,9 +25,6 @@ import static org.junit.Assert.assertThat;
 public class ChangesetEvaluatorBuildResultTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluatorBuildResultTest.class);
-    private static final String SUNNY_DAY_CHANGESET_XML = "/example-changesets/sunny-day-changeset.xml";
-    private static final String CHANGESET_WITH_ERROR_XML = "/example-changesets/changeset-with-error.xml";
-    private static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
     private static final String LIQUIBASE_PROPERTIES = "/example-changesets/h2.liquibase.properties";
 
     @Rule
@@ -55,7 +49,7 @@ public class ChangesetEvaluatorBuildResultTest {
     @Test
     public void should_indicate_unstable_build_when_changeset_has_error()
             throws IOException, ExecutionException, InterruptedException {
-        File changesetFileWithError = createChangesetFileWithError(temporaryFolder);
+        File changesetFileWithError = LiquibaseTestUtil.createChangesetFileWithError(temporaryFolder);
         FreeStyleProject project = createProjectWithChangelogFile(changesetFileWithError);
         FreeStyleBuild build = launchBuildForProject(project);
         assertThat(build.getResult(), is(Result.UNSTABLE));
@@ -74,11 +68,12 @@ public class ChangesetEvaluatorBuildResultTest {
     @Test
     public void should_use_liquibase_defaults_file() throws InterruptedException, ExecutionException, IOException {
 
-        createProjectFiles(temporaryFolder, SUNNY_DAY_CHANGESET_XML, LIQUIBASE_PROPERTIES);
+        LiquibaseTestUtil
+                .createProjectFiles(temporaryFolder, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML, LIQUIBASE_PROPERTIES);
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
         project.setCustomWorkspace(temporaryFolder.getRoot().getAbsolutePath());
         ChangesetEvaluator evaluator = new ChangesetEvaluator();
-        evaluator.setLiquibasePropertiesPath(extractFilenameFromResourcePath(LIQUIBASE_PROPERTIES));
+        evaluator.setLiquibasePropertiesPath(LiquibaseTestUtil.extractFilenameFromResourcePath(LIQUIBASE_PROPERTIES));
         project.getBuildersList().add(evaluator);
         FreeStyleBuild build = launchBuildForProject(project);
         assertThat(build.getResult(), is(Result.SUCCESS));
@@ -94,7 +89,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
     protected FreeStyleBuild createAndBuildLiquibaseProject(String changesetResourcePath)
             throws IOException, InterruptedException, ExecutionException {
-        File yamlChangeset = createProjectFile(temporaryFolder, changesetResourcePath);
+        File yamlChangeset = LiquibaseTestUtil.createProjectFile(temporaryFolder, changesetResourcePath);
         FreeStyleProject project = createProjectWithChangelogFile(yamlChangeset);
         return launchBuildForProject(project);
     }
@@ -111,7 +106,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
     protected FreeStyleBuild createAndBuildErrorFreeProject()
             throws IOException, InterruptedException, ExecutionException {
-        File changelogFile = createErrorFreeChangeset(temporaryFolder);
+        File changelogFile = LiquibaseTestUtil.createErrorFreeChangeset(temporaryFolder);
         FreeStyleProject project = createProjectWithChangelogFile(changelogFile);
         return launchBuildForProject(project);
     }
@@ -121,7 +116,7 @@ public class ChangesetEvaluatorBuildResultTest {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
         ChangesetEvaluator evaluator = new ChangesetEvaluator();
         evaluator.setChangeLogFile(changelogFile.getAbsolutePath());
-        evaluator.setUrl(IN_MEMORY_JDBC_URL);
+        evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
         evaluator.setDatabaseEngine("H2");
         project.getBuildersList().add(evaluator);
         return project;
@@ -132,31 +127,4 @@ public class ChangesetEvaluatorBuildResultTest {
         return project.scheduleBuild2(0).get();
     }
 
-    private File createErrorFreeChangeset(TemporaryFolder temporaryFolder) throws IOException {
-        return createProjectFile(temporaryFolder, SUNNY_DAY_CHANGESET_XML);
-    }
-
-    private File createChangesetFileWithError(TemporaryFolder temporaryFolder) throws IOException {
-        return createProjectFile(temporaryFolder, CHANGESET_WITH_ERROR_XML);
-    }
-
-    private void createProjectFiles(TemporaryFolder temporaryFolder, String... resourcePaths) throws IOException {
-        for (int i = 0; i < resourcePaths.length; i++) {
-            String resourcePath = resourcePaths[i];
-            createProjectFile(temporaryFolder, resourcePath);
-        }
-    }
-    private File createProjectFile(TemporaryFolder temporaryFolder,
-                                   String sourceResourcePath) throws IOException {
-        String filename = extractFilenameFromResourcePath(sourceResourcePath);
-        File changesetFile = temporaryFolder.newFile(filename);
-        InputStream resourceAsStream = getClass().getResourceAsStream(sourceResourcePath);
-        String changeset = IOUtils.toString(resourceAsStream);
-        FileUtils.write(changesetFile, changeset);
-        return changesetFile;
-    }
-
-    private String extractFilenameFromResourcePath(String sourceResourcePath) {
-        return sourceResourcePath.substring(sourceResourcePath.lastIndexOf("/")+1, sourceResourcePath.length());
-    }
 }
