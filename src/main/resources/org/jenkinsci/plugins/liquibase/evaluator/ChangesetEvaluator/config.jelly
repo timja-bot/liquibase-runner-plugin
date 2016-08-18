@@ -8,18 +8,18 @@
              description="Root changeset file.">
         <f:textbox value="${instance.changeLogFile}"/>
     </f:entry>
+    <f:entry title="Drop All" field="dropAll"
+             description="Runs 'dropAll' prior to executing changesets.">
+        <f:checkbox checked="${instance.dropAll}"/>
+    </f:entry>
+    <f:entry title="Test Rollbacks" field="testRollbacks"
+             description="Executes any included rollback statements in addition to the changeset.">
+        <f:checkbox checked="${instance.testRollbacks}"/>
+    </f:entry>
     <f:advanced>
         <st:include
-                page="/org/jenkinsci/plugins/liquibase/evaluator/AbstractLiquibaseBuilder/liquibase-common-config.jelly"/>
-        <f:entry title="Test Rollbacks" field="testRollbacks"
-                 description="Executes any included rollback statements in addition to the changeset.">
-            <f:checkbox checked="${instance.testRollbacks}"/>
-        </f:entry>
-
-        <f:entry title="Drop All" field="dropAll"
-                 description="Runs 'dropAll' prior to executing changesets.">
-            <f:checkbox checked="${instance.dropAll}"/>
-        </f:entry>
+                page="liquibase-common-config.jelly"
+                class="org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder"/>
     </f:advanced>
 </j:jelly>
 

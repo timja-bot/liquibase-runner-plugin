@@ -4,48 +4,53 @@
          xmlns:f="/lib/form"
          xmlns:st="jelly:stapler">
 
-    <f:section title="Change log">
-        <f:entry title="Change Log File" field="changeLogFile"
-                 description="Root changeset file.">
-            <f:textbox value="${instance.changeLogFile}"/>
-        </f:entry>
-    </f:section>
 
-    <f:section title="Rollback Type">
+    <f:entry title="Change Log File" field="changeLogFile"
+             description="Root changeset file.">
+        <f:textbox value="${instance.changeLogFile}"/>
+    </f:entry>
+    <f:block>Roll back strategy:
         <f:radioBlock inline="true" name="rollbackType" value="COUNT"
-                      title="Count" checked="${instance.rollbackType=='COUNT'}">
+                      title="By number of changesets" checked="${instance.rollbackType=='COUNT'}">
             <f:entry field="numberOfChangesetsToRollback"
-                     description="Rolls back the last specified number of change sets applied.">
+                     description="Number of changesets to roll back">
                 <f:textbox value="${instance.numberOfChangesetsToRollback}"/>
             </f:entry>
         </f:radioBlock>
 
         <f:radioBlock inline="true" name="rollbackType" value="TAG"
-                      title="Tag" checked="${instance.rollbackType=='TAG'}">
+                      help="/plugin/liquibase-runner/help-rollback-by-tag.html"
+                      title="By tag"
+                      checked="${instance.rollbackType=='TAG'}">
             <f:entry field="rollbackToTag"
-                     description="Rolls back the database to the the state is was when the tag was applied">
+                     description="tag name">
                 <f:textbox field="rollbackToTag"/>
             </f:entry>
         </f:radioBlock>
         <f:radioBlock inline="true" name="rollbackType" value="DATE"
-                      title="Date" checked="${instance.rollbackType=='DATE'}">
+                      title="By date/time"
+                      help="/plugin/liquibase-runner/help-rollback-by-date.html"
+                      checked="${instance.rollbackType=='DATE'}">
             <f:entry field="rollbackToDate"
-                     description="Rolls back the database to the the state is was at the given date/time. (format: yyyy-MM-dd'T'HH:mm:ss)">
+                     description="format: yyyy-MM-dd'T'HH:mm:ss">
                 <f:textbox value="${instance.rollbackToDate}"/>
             </f:entry>
         </f:radioBlock>
         <f:radioBlock inline="true" name="rollbackType" value="RELATIVE"
-                      title="Relative Time" checked="${instance.rollbackType=='RELATIVE'}">
+                      title="By relative time"
+                      help="/plugin/liquibase-runner/help-rollback-by-relative.html"
+                      checked="${instance.rollbackType=='RELATIVE'}">
             <f:entry field="rollbackLastHours"
-                     description="Rollback any changesets executed in the past number of hours">
+                     description="Number of hours">
                 <f:textbox value="${instance.rollbackLastHours}"/>
             </f:entry>
         </f:radioBlock>
-    </f:section>
+    </f:block>
 
     <f:advanced>
         <st:include
-                page="/org/jenkinsci/plugins/liquibase/evaluator/AbstractLiquibaseBuilder/liquibase-common-config.jelly"/>
+                page="/org/jenkinsci/plugins/liquibase/evaluator/AbstractLiquibaseBuilder/liquibase-common-config.jelly"
+                class="org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder"/>
     </f:advanced>
 </j:jelly>
 
