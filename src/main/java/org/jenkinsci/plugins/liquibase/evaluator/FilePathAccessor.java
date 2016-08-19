@@ -82,7 +82,7 @@ public class FilePathAccessor implements ResourceAccessor {
                     if (includeFiles) {
                         List<FilePath> files = child.list(FileFileFilter.FILE);
                         for (FilePath filePath : files) {
-                            result.add(filePath.toURI().toURL().toString());
+                            result.add(filePath.getRemote());
                         }
                     }
                 }
