@@ -57,9 +57,18 @@ public class FilePathAccessor implements ResourceAccessor {
                             boolean includeDirectories,
                             boolean recursive) throws IOException {
 
+        final FilePath workspace = build.getWorkspace();
+        return list(workspace, relativeTo, path, includeFiles, includeDirectories, recursive);
+    }
+
+    protected Set<String> list(FilePath workspace,
+                             String relativeTo,
+                             String path,
+                             boolean includeFiles,
+                             boolean includeDirectories, boolean recursive) throws IOException {
         Set<String> result = Sets.newHashSet();
 
-        final FilePath workspace = build.getWorkspace();
+
         if (workspace !=null) {
             FilePath child;
             if (relativeTo == null) {
