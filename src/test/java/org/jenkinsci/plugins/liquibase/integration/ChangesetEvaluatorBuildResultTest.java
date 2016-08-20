@@ -124,21 +124,19 @@ public class ChangesetEvaluatorBuildResultTest {
                 LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(),
                         "/example-changesets/include-all-changeset.xml");
 
-        File parentFile = rootChangeset.getParentFile();
-
-        File includedDir = new File(parentFile, "include-all");
+        File includedDir = new File(rootChangeset.getParentFile(), "include-all");
         includedDir.mkdirs();
-
         LiquibaseTestUtil.createFileFromResource(includedDir, "/example-changesets/sunny-day-changeset.xml");
 
-        FreeStyleProject projectWithChangelogFile = createProjectWithChangelogFile(rootChangeset);
-        projectWithChangelogFile.setCustomWorkspace(includedDir.getParent());
-        FreeStyleBuild freeStyleBuild = launchBuildForProject(projectWithChangelogFile);
+        FreeStyleProject project = createProjectWithChangelogFile(rootChangeset);
+        // use of includeAll means changeset files must reside in project's workspace.
+        // here we do so by setting the project's custom workspace to the directory where these files reside.
+        // Normally, this would presumably be achieved by checking out the changesets via source control.
+        project.setCustomWorkspace(includedDir.getParent());
+        FreeStyleBuild build = launchBuildForProject(project);
 
-
-        assertThat(freeStyleBuild.getResult(), is(Result.SUCCESS));
-        List<ChangeSetDetail> changeSetDetails =
-                freeStyleBuild.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
+        assertThat(build.getResult(), is(Result.SUCCESS));
+        List<ChangeSetDetail> changeSetDetails = build.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
 
         assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
     }
