@@ -14,24 +14,23 @@ public class LiquibaseTestUtil {
     static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
 
     static File createErrorFreeChangeset(TemporaryFolder temporaryFolder) throws IOException {
-        return createProjectFile(temporaryFolder, SUNNY_DAY_CHANGESET_XML);
+        return createFileFromResource(temporaryFolder.getRoot(), SUNNY_DAY_CHANGESET_XML);
     }
 
     static File createChangesetFileWithError(TemporaryFolder temporaryFolder) throws IOException {
-        return createProjectFile(temporaryFolder, CHANGESET_WITH_ERROR_XML);
+        return createFileFromResource(temporaryFolder.getRoot(), CHANGESET_WITH_ERROR_XML);
     }
 
     static void createProjectFiles(TemporaryFolder temporaryFolder, String... resourcePaths) throws IOException {
         for (int i = 0; i < resourcePaths.length; i++) {
             String resourcePath = resourcePaths[i];
-            createProjectFile(temporaryFolder, resourcePath);
+            createFileFromResource(temporaryFolder.getRoot(), resourcePath);
         }
     }
 
-    static File createProjectFile(TemporaryFolder temporaryFolder,
-                                  String sourceResourcePath) throws IOException {
+    public static File createFileFromResource(File parent, String sourceResourcePath) throws IOException {
         String filename = extractFilenameFromResourcePath(sourceResourcePath);
-        File changesetFile = temporaryFolder.newFile(filename);
+        File changesetFile = new File(parent, filename);
         InputStream resourceAsStream = LiquibaseTestUtil.class.getResourceAsStream(sourceResourcePath);
         String changeset = IOUtils.toString(resourceAsStream);
         FileUtils.write(changesetFile, changeset);

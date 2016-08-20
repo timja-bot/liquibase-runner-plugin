@@ -6,8 +6,11 @@ import hudson.model.Result;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.hamcrest.Matcher;
+import org.jenkinsci.plugins.liquibase.evaluator.ChangeSetDetail;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
 import org.junit.Before;
@@ -20,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.jenkinsci.plugins.liquibase.integration.IsChangesetDetailWithId.changeSetDetailWithId;
 import static org.junit.Assert.assertThat;
 
 public class ChangesetEvaluatorBuildResultTest {
@@ -88,22 +93,63 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(build.getResult(), is(Result.SUCCESS));
     }
 
-    protected FreeStyleBuild createAndBuildLiquibaseProject(String changesetResourcePath)
-            throws IOException, InterruptedException, ExecutionException {
-        File yamlChangeset = LiquibaseTestUtil.createProjectFile(temporaryFolder, changesetResourcePath);
-        FreeStyleProject project = createProjectWithChangelogFile(yamlChangeset);
-        return launchBuildForProject(project);
-    }
-
     @Test
     public void should_have_expected_executed_changesets()
             throws InterruptedException, ExecutionException, IOException {
 
         FreeStyleBuild build = createAndBuildErrorFreeProject();
         ExecutedChangesetAction action = build.getActions(ExecutedChangesetAction.class).get(0);
-        assertThat(action.getChangeSetDetails(), hasSize(NUMBER_OF_CHANGESETS));
+        assertThat(action.getChangeSetDetails(), containsSunnyDayChangesetDetails());
     }
 
+    @Test
+    public void should_handle_changelog_with_include() throws IOException, ExecutionException, InterruptedException {
+        File changeLog = LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(),
+                "/example-changesets/include-one.xml");
+        FreeStyleProject project = createProjectWithChangelogFile(changeLog);
+        LiquibaseTestUtil.createProjectFiles(temporaryFolder, "/example-changesets/sunny-day-changeset.xml");
+        FreeStyleBuild build = launchBuildForProject(project);
+
+        assertThat(build.getResult(), is(Result.SUCCESS));
+        ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
+
+        assertThat(action.getChangeSetDetails(), hasSize(NUMBER_OF_CHANGESETS));
+        assertThat(action.getChangeSetDetails(), containsSunnyDayChangesetDetails());
+    }
+
+
+    @Test
+    public void should_handle_include_all() throws IOException, ExecutionException, InterruptedException {
+        File rootChangeset =
+                LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(),
+                        "/example-changesets/include-all-changeset.xml");
+
+        File parentFile = rootChangeset.getParentFile();
+
+        File includedDir = new File(parentFile, "include-all");
+        includedDir.mkdirs();
+
+        LiquibaseTestUtil.createFileFromResource(includedDir, "/example-changesets/sunny-day-changeset.xml");
+
+        FreeStyleProject projectWithChangelogFile = createProjectWithChangelogFile(rootChangeset);
+        projectWithChangelogFile.setCustomWorkspace(includedDir.getParent());
+        FreeStyleBuild freeStyleBuild = launchBuildForProject(projectWithChangelogFile);
+
+
+        assertThat(freeStyleBuild.getResult(), is(Result.SUCCESS));
+        List<ChangeSetDetail> changeSetDetails =
+                freeStyleBuild.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
+
+        assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
+    }
+
+
+    protected FreeStyleBuild createAndBuildLiquibaseProject(String changesetResourcePath)
+            throws IOException, InterruptedException, ExecutionException {
+        File yamlChangeset = LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(), changesetResourcePath);
+        FreeStyleProject project = createProjectWithChangelogFile(yamlChangeset);
+        return launchBuildForProject(project);
+    }
 
     protected FreeStyleBuild createAndBuildErrorFreeProject()
             throws IOException, InterruptedException, ExecutionException {
@@ -112,6 +158,13 @@ public class ChangesetEvaluatorBuildResultTest {
         return launchBuildForProject(project);
     }
 
+    private static Matcher<Iterable<? extends ChangeSetDetail>> containsSunnyDayChangesetDetails() {
+        return contains(
+                changeSetDetailWithId("create-table"),
+                changeSetDetailWithId("first_tag"),
+                changeSetDetailWithId("create-color-table"),
+                changeSetDetailWithId("create-testing-table"));
+    }
 
     protected FreeStyleProject createProjectWithChangelogFile(File changelogFile) throws IOException {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();

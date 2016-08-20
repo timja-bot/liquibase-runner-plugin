@@ -114,7 +114,7 @@ public class RollbackResultTest {
             LiquibaseException, ExecutionException, InterruptedException {
 
         File changesetContainingError = LiquibaseTestUtil
-                .createProjectFile(temporaryFolder, CHANGELOG_WITH_ROLLBACK_ERROR_RESOURCE_PATH);
+                .createFileFromResource(temporaryFolder.getRoot(), CHANGELOG_WITH_ROLLBACK_ERROR_RESOURCE_PATH);
 
         createDatabase(changesetContainingError);
 
