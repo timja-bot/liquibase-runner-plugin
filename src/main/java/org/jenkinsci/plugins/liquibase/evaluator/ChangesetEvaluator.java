@@ -36,12 +36,8 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
     private String liquibaseOperation;
     protected int changesToRollback = 1;
 
-
-
-
     public ChangesetEvaluator() {
         super();
-
     }
 
     @DataBoundConstructor
