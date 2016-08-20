@@ -31,7 +31,7 @@ public class FilePathAccessor implements ResourceAccessor {
     public InputStream getResourceAsStream(String s) throws IOException {
         InputStream inputStream = null;
         final FilePath workspace = build.getWorkspace();
-        if (workspace !=null) {
+        if (workspace != null) {
             FilePath child = workspace.child(s);
             try {
                 if (child.exists()) {
@@ -62,14 +62,13 @@ public class FilePathAccessor implements ResourceAccessor {
     }
 
     protected Set<String> list(FilePath workspace,
-                             String relativeTo,
-                             String path,
-                             boolean includeFiles,
-                             boolean includeDirectories, boolean recursive) throws IOException {
+                               String relativeTo,
+                               String path,
+                               boolean includeFiles,
+                               boolean includeDirectories, boolean recursive) throws IOException {
         Set<String> result = Sets.newHashSet();
 
-
-        if (workspace !=null) {
+        if (workspace != null) {
             FilePath child;
             if (relativeTo == null) {
                 child = workspace.child(path);
@@ -78,16 +77,35 @@ public class FilePathAccessor implements ResourceAccessor {
             }
 
             try {
+                List<FilePath> filePaths = child.list();
+
+                for (int i = 0; i < filePaths.size(); i++) {
+                    FilePath filePath = filePaths.get(i);
+                    if (filePath.isDirectory()) {
+
+                        if (includeDirectories) {
+                            result.add(filePath.getRemote());
+                        }
+                        if (recursive) {
+                            result.addAll(list(workspace, relativeTo, path, includeFiles, includeDirectories, true));
+                        }
+                    } else {
+                        if (includeFiles) {
+                            result.add(filePath.getRemote());
+                        }
+                    }
+                }
                 if (child.isDirectory()) {
                     if (includeDirectories) {
-                        result.add(child.toURI().toURL().toString());
+                        result.add(child.getRemote());
                     }
                     if (recursive) {
                         List<FilePath> dirs = child.listDirectories();
                         for (FilePath dir : dirs) {
-                            result.addAll(list(null, dir.getRemote(), includeFiles, true, true));
+                            result.addAll(list(null, dir.getRemote(), includeFiles, includeDirectories, true));
                         }
                     }
+                } else {
                     if (includeFiles) {
                         List<FilePath> files = child.list(FileFileFilter.FILE);
                         for (FilePath filePath : files) {
