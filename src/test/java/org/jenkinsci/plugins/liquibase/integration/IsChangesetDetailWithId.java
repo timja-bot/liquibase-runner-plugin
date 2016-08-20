@@ -13,7 +13,6 @@ public class IsChangesetDetailWithId extends TypeSafeMatcher<ChangeSetDetail> {
     }
 
     public static IsChangesetDetailWithId changeSetDetailWithId(String expectedId) {
-
         ChangeSetDetail expected = new ChangeSetDetail();
         expected.setId(expectedId);
         return new IsChangesetDetailWithId(expected);
@@ -35,6 +34,6 @@ public class IsChangesetDetailWithId extends TypeSafeMatcher<ChangeSetDetail> {
 
     @Override
     protected void describeMismatchSafely(ChangeSetDetail item, Description mismatchDescription) {
-        mismatchDescription.appendText("was a changeSetDetailWithId ").appendText(item.getId());
+        mismatchDescription.appendText("was a changeSetDetail with id ").appendText(item.getId());
     }
 }

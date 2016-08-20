@@ -158,6 +158,10 @@ public class ChangesetEvaluatorBuildResultTest {
         return launchBuildForProject(project);
     }
 
+    /**
+     * Matches the changeset order as represented in "sunny-day-changeset.xml"
+     * @return
+     */
     private static Matcher<Iterable<? extends ChangeSetDetail>> containsSunnyDayChangesetDetails() {
         return contains(
                 changeSetDetailWithId("create-table"),
