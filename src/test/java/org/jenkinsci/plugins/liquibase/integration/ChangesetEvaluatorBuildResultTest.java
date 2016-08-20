@@ -142,6 +142,7 @@ public class ChangesetEvaluatorBuildResultTest {
     }
 
 
+
     protected FreeStyleBuild createAndBuildLiquibaseProject(String changesetResourcePath)
             throws IOException, InterruptedException, ExecutionException {
         File yamlChangeset = LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(), changesetResourcePath);
