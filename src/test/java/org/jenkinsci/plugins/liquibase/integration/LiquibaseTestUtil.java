@@ -21,7 +21,7 @@ public class LiquibaseTestUtil {
         return createFileFromResource(temporaryFolder.getRoot(), CHANGESET_WITH_ERROR_XML);
     }
 
-    static void createProjectFiles(TemporaryFolder temporaryFolder, String... resourcePaths) throws IOException {
+    static void createFilesFromResources(TemporaryFolder temporaryFolder, String... resourcePaths) throws IOException {
         for (int i = 0; i < resourcePaths.length; i++) {
             String resourcePath = resourcePaths[i];
             createFileFromResource(temporaryFolder.getRoot(), resourcePath);

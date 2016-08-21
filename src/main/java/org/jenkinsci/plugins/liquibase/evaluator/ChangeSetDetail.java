@@ -41,6 +41,21 @@ public class ChangeSetDetail implements Action {
 
     }
 
+    public ChangeSetDetail(String author, String id, String comments, String description) {
+        this.author = author;
+        this.id = id;
+        this.comments = comments;
+        this.description = description;
+    }
+
+    private ChangeSetDetail(Builder builder) {
+        setSuccessfullyExecuted(builder.successfullyExecuted);
+        setAuthor(builder.author);
+        setId(builder.id);
+        setComments(builder.comments);
+        setDescription(builder.description);
+    }
+
     public static ChangeSetDetail create(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = new ChangeSetDetail();
         changeSetDetail.setFilePath(changeSet.getFilePath());
@@ -229,9 +244,11 @@ public class ChangeSetDetail implements Action {
         this.description = description;
     }
 
+
     public void setSqls(List<Sql> sqls) {
         this.sqls = sqls;
     }
+
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
@@ -243,5 +260,46 @@ public class ChangeSetDetail implements Action {
 
     public void setExceptionMessage(String exceptionMessage) {
         this.exceptionMessage = exceptionMessage;
+    }
+
+
+    public static final class Builder {
+        private boolean successfullyExecuted;
+        private String author;
+        private String id;
+        private String comments;
+        private String description;
+
+        public Builder() {
+        }
+
+        public Builder withSuccessfullyExecuted(boolean val) {
+            successfullyExecuted = val;
+            return this;
+        }
+
+        public Builder withAuthor(String val) {
+            author = val;
+            return this;
+        }
+
+        public Builder withId(String val) {
+            id = val;
+            return this;
+        }
+
+        public Builder withComments(String val) {
+            comments = val;
+            return this;
+        }
+
+        public Builder withDescription(String val) {
+            description = val;
+            return this;
+        }
+
+        public ChangeSetDetail build() {
+            return new ChangeSetDetail(this);
+        }
     }
 }
