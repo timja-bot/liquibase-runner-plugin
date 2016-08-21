@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.jenkinsci.plugins.liquibase.integration.ChangesetDetailMatcher.isChangeSetDetail;
 import static org.jenkinsci.plugins.liquibase.integration.ChangesetDetailMatcher.isChangesetWithId;
@@ -36,7 +36,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluatorBuildResultTest.class);
     private static final String LIQUIBASE_PROPERTIES = "/example-changesets/h2.liquibase.properties";
-    private static final int NUMBER_OF_CHANGESETS = 4;
+    private static final String H2 = "H2";
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -104,8 +104,10 @@ public class ChangesetEvaluatorBuildResultTest {
             throws InterruptedException, ExecutionException, IOException {
 
         FreeStyleBuild build = createAndBuildErrorFreeProject();
-        ExecutedChangesetAction action = build.getActions(ExecutedChangesetAction.class).get(0);
+        ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
         assertThat(action.getChangeSetDetails(), containsSunnyDayChangesetDetails());
+        ChangeSetDetail changeSetDetail = action.getChangeSetDetails().get(0);
+        assertThat(changeSetDetail.getExecutedSql(), notNullValue());
     }
 
     @Test
@@ -119,7 +121,6 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(build.getResult(), is(Result.SUCCESS));
         ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
 
-        assertThat(action.getChangeSetDetails(), hasSize(NUMBER_OF_CHANGESETS));
         assertThat(action.getChangeSetDetails(), containsSunnyDayChangesetDetails());
     }
 
@@ -216,7 +217,7 @@ public class ChangesetEvaluatorBuildResultTest {
                 isChangeSetDetail(new ChangeSetDetail.Builder().withAuthor("keith").withId("create-table")
                                                                .withComments("This is a simple create table")
                                                                .withSuccessfullyExecuted(true).build()),
-                isChangesetWithId("first_tag"),
+                isChangeSetDetail(new ChangeSetDetail.Builder().withAuthor("keith").withId("first_tag").build()),
                 isChangesetWithId("create-color-table"),
                 isChangesetWithId("create-testing-table"));
     }
@@ -226,7 +227,7 @@ public class ChangesetEvaluatorBuildResultTest {
         ChangesetEvaluator evaluator = new ChangesetEvaluator();
         evaluator.setChangeLogFile(changelogFile.getAbsolutePath());
         evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
-        evaluator.setDatabaseEngine("H2");
+        evaluator.setDatabaseEngine(H2);
         project.getBuildersList().add(evaluator);
         return project;
     }

@@ -25,7 +25,6 @@ public class ChangeSetDetail implements Action {
 
     public static final int MAX_LINES = 15;
     private List<Sql> sqls;
-    private Sql sql;
     private boolean successfullyExecuted = true;
     private ExecutedChangesetAction parent;
     private String author;
@@ -148,10 +147,6 @@ public class ChangeSetDetail implements Action {
         return join;
     }
 
-    public Sql getSql() {
-        return sql;
-    }
-
     public List<Sql> getSqls() {
         return sqls;
     }
@@ -175,7 +170,6 @@ public class ChangeSetDetail implements Action {
     public String toString() {
         return "ChangeSetDetail{" +
                 "sqls=" + sqls +
-                ", sql=" + sql +
                 ", successfullyExecuted=" + successfullyExecuted +
                 ", author='" + author + '\'' +
                 ", id='" + id + '\'' +
