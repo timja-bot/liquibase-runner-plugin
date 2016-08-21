@@ -9,8 +9,6 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-import liquibase.resource.CompositeResourceAccessor;
 import liquibase.resource.FileSystemResourceAccessor;
 
 import java.io.File;
@@ -69,7 +67,8 @@ public class RollbackResultTest {
 
         createDatabase(sunnyDayChangeset);
 
-        RollbackBuildStep buildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, sunnyDayChangeset);
+        RollbackBuildStep buildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, sunnyDayChangeset,
+                dbUrl);
         int numberOfChangesetsToRollback = 2;
         buildStep.setNumberOfChangesetsToRollback(numberOfChangesetsToRollback);
         RolledbackChangesetAction action = launchBuild(buildStep);
@@ -83,7 +82,8 @@ public class RollbackResultTest {
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
 
         createDatabase(sunnyDayChangeset);
-        RollbackBuildStep rollbackBuildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.TAG, sunnyDayChangeset );
+        RollbackBuildStep rollbackBuildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.TAG, sunnyDayChangeset,
+                dbUrl);
         rollbackBuildStep.setRollbackToTag(FIRST_TAG);
 
         RolledbackChangesetAction action = launchBuild(rollbackBuildStep);
@@ -98,7 +98,7 @@ public class RollbackResultTest {
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
         createDatabase(sunnyDayChangeset);
         RollbackBuildStep rollbackBuildStep =
-                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.DATE, sunnyDayChangeset);
+                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.DATE, sunnyDayChangeset, dbUrl);
         Date yesterday = dateBeforeChangesetsApplied();
         rollbackBuildStep.setRollbackToDate(new SimpleDateFormat(RollbackBuildStep.DATE_PATTERN).format(yesterday));
 
@@ -119,7 +119,7 @@ public class RollbackResultTest {
         createDatabase(changesetContainingError);
 
         RollbackBuildStep buildStep =
-                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, changesetContainingError);
+                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, changesetContainingError, dbUrl);
         buildStep.setNumberOfChangesetsToRollback(2);
 
         RolledbackChangesetAction resultAction = launchBuild(buildStep);
@@ -138,16 +138,12 @@ public class RollbackResultTest {
         JdbcConnection jdbcConnection = new JdbcConnection(connection);
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
 
-        ClassLoaderResourceAccessor classLoaderResourceAccessor =
-                new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader());
-        CompositeResourceAccessor resourceAccessor = new CompositeResourceAccessor(new FileSystemResourceAccessor(),
-                classLoaderResourceAccessor);
-        Liquibase liquibase = new Liquibase(changeset.getAbsolutePath(), resourceAccessor, database);
+        Liquibase liquibase = new Liquibase(changeset.getAbsolutePath(), new FileSystemResourceAccessor(), database);
         liquibase.update(new Contexts());
     }
 
-    protected RollbackBuildStep createBaseBuildStep(RollbackBuildStep.RollbackStrategy rollbackStrategy,
-                                                    File changelogFile) {
+    protected static RollbackBuildStep createBaseBuildStep(RollbackBuildStep.RollbackStrategy rollbackStrategy,
+                                                           File changelogFile, String dbUrl) {
         RollbackBuildStep buildStep1 = new RollbackBuildStep();
         buildStep1.setChangeLogFile(changelogFile.getAbsolutePath());
         buildStep1.setUrl(dbUrl);
