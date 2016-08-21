@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
@@ -24,6 +25,8 @@ public class ExecutedChangesetAction implements Action {
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
 
     private boolean provideStatusIfEmpty;
+
+    private String appliedTag;
 
     public ExecutedChangesetAction() {
     }
@@ -131,5 +134,16 @@ public class ExecutedChangesetAction implements Action {
             }
         }
         return found;
+    }
+
+    public boolean isTagApplied() {
+        return !Strings.isNullOrEmpty(appliedTag);
+    }
+    public String getAppliedTag() {
+        return appliedTag;
+    }
+
+    public void setAppliedTag(String appliedTag) {
+        this.appliedTag = appliedTag;
     }
 }

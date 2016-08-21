@@ -35,6 +35,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
     private boolean dropAll;
     private String liquibaseOperation;
     protected int changesToRollback = 1;
+    protected boolean tagOnSuccessfulBuild;
 
     public ChangesetEvaluator() {
         super();
@@ -51,12 +52,17 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                               String liquibasePropertiesPath,
                               String classpath,
                               String driverClassname,
-                              String changeLogParameters, boolean testRollbacks, boolean dropAll, String labels) {
+                              String changeLogParameters,
+                              boolean testRollbacks,
+                              boolean dropAll,
+                              String labels,
+                              boolean tagOnSuccessfulBuild) {
         super(databaseEngine, changeLogFile, username, password, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
                 classpath, driverClassname, changeLogParameters, labels);
         this.testRollbacks = testRollbacks;
         this.dropAll = dropAll;
+        this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
     }
 
     @Override
@@ -95,6 +101,12 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                 liquibase.rollback(changesToRollback, contexts.toString());
             }
 
+            if (tagOnSuccessfulBuild) {
+                String tagString = build.getProject().getName() + "-" + build.getNumber();
+                listener.getLogger().println("Applying tag '" + tagString + "' to schema");
+                liquibase.tag(tagString);
+                executedChangesetAction.setAppliedTag(tagString);
+            }
         } catch (MigrationFailedException migrationException) {
             migrationException.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
@@ -110,6 +122,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                 }
             }
         }
+
     }
 
     @Override
@@ -136,8 +149,19 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
         this.dropAll = dropAll;
     }
 
+
     public String getLiquibaseOperation() {
         return liquibaseOperation;
+    }
+
+
+    public boolean isTagOnSuccessfulBuild() {
+        return tagOnSuccessfulBuild;
+    }
+
+    @DataBoundSetter
+    public void setTagOnSuccessfulBuild(boolean tagOnSuccessfulBuild) {
+        this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
     }
 
     @DataBoundSetter

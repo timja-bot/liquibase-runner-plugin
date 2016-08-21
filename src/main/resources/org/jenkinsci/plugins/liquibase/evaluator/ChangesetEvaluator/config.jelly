@@ -12,6 +12,12 @@
              description="Runs 'dropAll' prior to executing changesets.">
         <f:checkbox checked="${instance.dropAll}"/>
     </f:entry>
+    <f:entry title="Tag on successful build"
+             field="tagOnSuccessfulBuild"
+             description="Creates a liquibase tag on successful build"
+             help="help-tagOnSuccess.html">
+        <f:checkbox checked="${instance.tagOnSuccessfulBuild}"/>
+    </f:entry>
     <f:entry title="Test Rollbacks" field="testRollbacks"
              description="Executes any included rollback statements in addition to the changeset.">
         <f:checkbox checked="${instance.testRollbacks}"/>

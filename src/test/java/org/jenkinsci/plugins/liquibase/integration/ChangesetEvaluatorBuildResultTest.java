@@ -3,10 +3,20 @@ package org.jenkinsci.plugins.liquibase.integration;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.FileSystemResourceAccessor;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.FileUtils;
@@ -108,6 +118,7 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(action.getChangeSetDetails(), containsSunnyDayChangesetDetails());
         ChangeSetDetail changeSetDetail = action.getChangeSetDetails().get(0);
         assertThat(changeSetDetail.getExecutedSql(), notNullValue());
+        assertThat(action.isTagApplied(), is(false));
     }
 
     @Test
@@ -149,27 +160,6 @@ public class ChangesetEvaluatorBuildResultTest {
     }
 
     @Test
-    @Ignore("Pending my understanding of how the relativeToChangelogFile attribute is supposed to work with includeAll")
-    public void should_handle_include_all_relative() throws IOException, ExecutionException, InterruptedException {
-        File rootChangeset =
-                LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(),
-                        "/example-changesets/include-all-changeset.xml");
-
-        File includedDir = new File(rootChangeset.getParentFile(), "include-all");
-        includedDir.mkdirs();
-        LiquibaseTestUtil.createFileFromResource(includedDir, "/example-changesets/sunny-day-changeset.xml");
-
-        FreeStyleProject project = createProjectWithChangelogFile(rootChangeset);
-        FreeStyleBuild build = launchBuildForProject(project);
-
-        assertThat(build.getResult(), is(Result.SUCCESS));
-        List<ChangeSetDetail> changeSetDetails = build.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
-
-        assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
-    }
-
-
-    @Test
     public void should_handle_include_all() throws IOException, ExecutionException, InterruptedException {
         File rootChangeset =
                 LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(),
@@ -184,6 +174,61 @@ public class ChangesetEvaluatorBuildResultTest {
         // here we do so by setting the project's custom workspace to the directory where these files reside.
         // Normally, this would presumably be achieved by checking out the changesets via source control.
         project.setCustomWorkspace(includedDir.getParent());
+        FreeStyleBuild build = launchBuildForProject(project);
+
+        assertThat(build.getResult(), is(Result.SUCCESS));
+        List<ChangeSetDetail> changeSetDetails = build.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
+
+        assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
+    }
+
+    @Test
+    public void should_apply_tag()
+            throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
+
+        File inmemoryDatabaseFile = temporaryFolder.newFile();
+        String dbUrl = "jdbc:h2:file:" + inmemoryDatabaseFile.getAbsolutePath();
+
+        File sunnyDayChangeset = LiquibaseTestUtil.createErrorFreeChangeset(temporaryFolder);
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        ChangesetEvaluator evaluator = new ChangesetEvaluator();
+        evaluator.setChangeLogFile(sunnyDayChangeset.getAbsolutePath());
+        evaluator.setUrl(dbUrl);
+        evaluator.setDatabaseEngine(H2);
+        evaluator.setTagOnSuccessfulBuild(true);
+        project.getBuildersList().add(evaluator);
+
+        FreeStyleBuild build = launchBuildForProject(project);
+
+        Properties liquibaseProperties = new Properties();
+        liquibaseProperties.load(getClass().getResourceAsStream("/example-changesets/unit-test.h2.liquibase.properties"));
+        Connection connection = DriverManager.getConnection(dbUrl, liquibaseProperties);
+        JdbcConnection jdbcConnection = new JdbcConnection(connection);
+
+        Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
+
+        Liquibase liquibase = new Liquibase(sunnyDayChangeset.getAbsolutePath(), new FileSystemResourceAccessor(), database);
+        boolean tagExists = liquibase.tagExists(project.getName() + "-" + build.getNumber());
+
+        ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
+
+        assertThat(tagExists, is(true));
+        assertThat(action.isTagApplied(), is(true));
+    }
+
+
+    @Test
+    @Ignore("Pending my understanding of how the relativeToChangelogFile attribute is supposed to work with includeAll")
+    public void should_handle_include_all_relative() throws IOException, ExecutionException, InterruptedException {
+        File rootChangeset =
+                LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(),
+                        "/example-changesets/include-all-changeset.xml");
+
+        File includedDir = new File(rootChangeset.getParentFile(), "include-all");
+        includedDir.mkdirs();
+        LiquibaseTestUtil.createFileFromResource(includedDir, "/example-changesets/sunny-day-changeset.xml");
+
+        FreeStyleProject project = createProjectWithChangelogFile(rootChangeset);
         FreeStyleBuild build = launchBuildForProject(project);
 
         assertThat(build.getResult(), is(Result.SUCCESS));

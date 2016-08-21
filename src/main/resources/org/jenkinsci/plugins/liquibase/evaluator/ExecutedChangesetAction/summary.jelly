@@ -39,8 +39,10 @@
 
                 </ul>
             </j:if>
+            <j:if test="${it.tagApplied}">
+                <span class="tagAppliedTitle">Applied tag: </span>
+                ${it.appliedTag}
+            </j:if>
         </t:summary>
     </j:if>
-
-
 </j:jelly>
