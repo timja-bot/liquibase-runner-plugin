@@ -172,7 +172,8 @@ public class ChangesetEvaluatorBuildResultTest {
         FreeStyleProject project = createProjectWithChangelogFile(rootChangeset);
         // use of includeAll means changeset files must reside in project's workspace.
         // here we do so by setting the project's custom workspace to the directory where these files reside.
-        // Normally, this would presumably be achieved by checking out the changesets via source control.
+        // Normally, this would presumably be achieved by checking out the changesets via source control to
+        // the project's workspace..
         project.setCustomWorkspace(includedDir.getParent());
         FreeStyleBuild build = launchBuildForProject(project);
 
