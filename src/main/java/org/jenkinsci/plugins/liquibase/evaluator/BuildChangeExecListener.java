@@ -59,7 +59,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
         String logMessage = formatChangesetForLog(changeSet, databaseChangeLog, "Rolled back");
         buildListener.getLogger().println(logMessage);
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet);
         action.addRolledBackChangesetDetail(changeSetDetail);
         if (action.hasChangesetWithId(changeSetDetail.getId())) {
             action.markChangesetAsRolledBack(changeSetDetail.getId());
@@ -98,7 +98,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
                 statementSqls.addAll(Arrays.asList(sqls));
             }
         }
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet, statementSqls);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet, statementSqls);
         return changeSetDetail;
     }
 

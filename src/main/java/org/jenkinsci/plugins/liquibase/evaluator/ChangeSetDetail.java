@@ -4,7 +4,6 @@ import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
 import liquibase.sql.Sql;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,13 +40,6 @@ public class ChangeSetDetail implements Action {
 
     }
 
-    public ChangeSetDetail(String author, String id, String comments, String description) {
-        this.author = author;
-        this.id = id;
-        this.comments = comments;
-        this.description = description;
-    }
-
     private ChangeSetDetail(Builder builder) {
         setSuccessfullyExecuted(builder.successfullyExecuted);
         setAuthor(builder.author);
@@ -56,7 +48,7 @@ public class ChangeSetDetail implements Action {
         setDescription(builder.description);
     }
 
-    public static ChangeSetDetail create(ChangeSet changeSet) {
+    public static ChangeSetDetail fromChangeSet(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = new ChangeSetDetail();
         changeSetDetail.setFilePath(changeSet.getFilePath());
         changeSetDetail.setId(changeSet.getId());
@@ -66,19 +58,14 @@ public class ChangeSetDetail implements Action {
         return changeSetDetail;
     }
 
-    public static ChangeSetDetail create(ChangeSet changeSet, Sql[] sqls) {
-        List<Sql> sqlList = Arrays.asList(sqls);
-        return create(changeSet, sqlList);
-    }
-
-    public static ChangeSetDetail create(ChangeSet changeSet, List<Sql> sqlList) {
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
+    public static ChangeSetDetail fromChangeSet(ChangeSet changeSet, List<Sql> sqlList) {
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet);
         changeSetDetail.setSqls(sqlList);
         return changeSetDetail;
     }
 
     public static ChangeSetDetail createFailed(ChangeSet changeSet, Exception e) {
-        ChangeSetDetail failedChangeset = ChangeSetDetail.create(changeSet);
+        ChangeSetDetail failedChangeset = ChangeSetDetail.fromChangeSet(changeSet);
         failedChangeset.setSuccessfullyExecuted(false);
         failedChangeset.setExceptionMessage(e.getMessage());
         return failedChangeset;
