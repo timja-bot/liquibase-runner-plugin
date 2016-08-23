@@ -35,7 +35,9 @@ import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.jenkinsci.plugins.liquibase.integration.ChangesetDetailMatcher.isChangesetWithId;
 import static org.junit.Assert.assertThat;
 
 public class RollbackResultTest {
@@ -82,8 +84,9 @@ public class RollbackResultTest {
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
 
         createDatabase(sunnyDayChangeset);
-        RollbackBuildStep rollbackBuildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.TAG, sunnyDayChangeset,
-                dbUrl);
+        RollbackBuildStep rollbackBuildStep =
+                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.TAG, sunnyDayChangeset,
+                        dbUrl);
         rollbackBuildStep.setRollbackToTag(FIRST_TAG);
 
         RolledbackChangesetAction action = launchBuild(rollbackBuildStep);
@@ -106,6 +109,12 @@ public class RollbackResultTest {
 
         int totalNumberOfChangesets = 4;
 
+        assertThat(resultAction.getRolledbackChangesets(), hasItems(
+                                                            isChangesetWithId("create-table"),
+                                                            isChangesetWithId("first_tag"),
+                                                            isChangesetWithId("create-color-table"),
+                                                            isChangesetWithId("create-testing-table"))
+                                                            );
         assertThat(resultAction.getRolledbackChangesets(), hasSize(totalNumberOfChangesets));
     }
 
@@ -144,13 +153,12 @@ public class RollbackResultTest {
 
     protected static RollbackBuildStep createBaseBuildStep(RollbackBuildStep.RollbackStrategy rollbackStrategy,
                                                            File changelogFile, String dbUrl) {
-        RollbackBuildStep buildStep1 = new RollbackBuildStep();
-        buildStep1.setChangeLogFile(changelogFile.getAbsolutePath());
-        buildStep1.setUrl(dbUrl);
-        buildStep1.setDatabaseEngine("H2");
-        RollbackBuildStep buildStep = buildStep1;
-        buildStep.setRollbackType(rollbackStrategy.name());
-        return buildStep;
+        RollbackBuildStep rollbackBuildStep = new RollbackBuildStep();
+        rollbackBuildStep.setChangeLogFile(changelogFile.getAbsolutePath());
+        rollbackBuildStep.setUrl(dbUrl);
+        rollbackBuildStep.setDatabaseEngine("H2");
+        rollbackBuildStep.setRollbackType(rollbackStrategy.name());
+        return rollbackBuildStep;
     }
 
     protected RolledbackChangesetAction launchBuild(RollbackBuildStep buildStep)
@@ -160,12 +168,9 @@ public class RollbackResultTest {
         return build.getAction(RolledbackChangesetAction.class);
     }
 
-
     protected static Date dateBeforeChangesetsApplied() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
         return calendar.getTime();
     }
-
-
 }

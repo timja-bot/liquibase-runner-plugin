@@ -27,7 +27,6 @@ import com.google.common.collect.Lists;
  */
 public class BuildChangeExecListener implements ChangeExecListener {
     private final ExecutedChangesetAction action;
-    private RolledbackChangesetAction rolledbackChangesetAction;
     private static final Logger LOG = LoggerFactory.getLogger(BuildChangeExecListener.class);
     private BuildListener buildListener;
     private static final String RAN_CHANGESET_MSG = "Ran changeset: ";
@@ -38,14 +37,6 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
     public BuildChangeExecListener(ExecutedChangesetAction action, BuildListener buildListener) {
         this.action = action;
-        this.buildListener = buildListener;
-    }
-
-    public BuildChangeExecListener(ExecutedChangesetAction action,
-                                   RolledbackChangesetAction rolledbackChangesetAction,
-                                   BuildListener buildListener) {
-        this.action = action;
-        this.rolledbackChangesetAction = rolledbackChangesetAction;
         this.buildListener = buildListener;
     }
 
@@ -65,10 +56,15 @@ public class BuildChangeExecListener implements ChangeExecListener {
         if (LOG.isDebugEnabled()) {
             LOG.debug("rolling back changeset [" + changeSet.getId() + "] ");
         }
+
         String logMessage = formatChangesetForLog(changeSet, databaseChangeLog, "Rolled back");
         buildListener.getLogger().println(logMessage);
         ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
-        rolledbackChangesetAction.addRollback(changeSetDetail);
+        action.addRolledBackChangesetDetail(changeSetDetail);
+        if (action.hasChangesetWithId(changeSetDetail.getId())) {
+            action.markChangesetAsRolledBack(changeSetDetail.getId());
+        }
+
     }
 
     public void preconditionFailed(PreconditionFailedException error, PreconditionContainer.FailOption onFail) {
@@ -88,10 +84,12 @@ public class BuildChangeExecListener implements ChangeExecListener {
         printConsoleLogMessage(changeSet);
 
         ChangeSetDetail changeSetDetail = createChangeSetDetail(change, changeSet, database);
+        changeSetDetail.setEvaluated(true);
         action.addChangeSetDetail(changeSetDetail);
+
     }
 
-    protected ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
+    protected static ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
         SqlStatement[] sqlStatements = change.generateStatements(database);
         List<Sql> statementSqls = Lists.newArrayList();
         if (sqlStatements != null && sqlStatements.length > 0) {
@@ -111,6 +109,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
     public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.createFailed(changeSet, e);
+        changeSetDetail.setEvaluated(true);
         action.addChangeSetDetail(changeSetDetail);
     }
 
@@ -118,4 +117,5 @@ public class BuildChangeExecListener implements ChangeExecListener {
         String changeSetLogMsg = Util.formatChangeset(changeSet);
         return changeSetLogMsg + ": " + msg;
     }
+
 }

@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:t="/lib/hudson">
     <j:set var="rolledbackChangesets" value="${it.rolledbackChangesets}"/>
-    <j:if test="${it.shouldSummarize}">
+
         <t:summary icon="/plugin/liquibase-runner/undo_arrow_icon_48x48.png">
             <j:if test="${rolledbackChangesets.isEmpty()}">No Rollbacks executed</j:if>
             <j:if test="${rolledbackChangesets.size()>0}">
@@ -17,5 +17,5 @@
                 </ul>
             </j:if>
         </t:summary>
-    </j:if>
+
 </j:jelly>

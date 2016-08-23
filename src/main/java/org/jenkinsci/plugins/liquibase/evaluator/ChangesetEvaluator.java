@@ -9,7 +9,6 @@ import hudson.model.Result;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
 
@@ -70,11 +69,12 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                           BuildListener listener,
                           Liquibase liquibase,
                           Contexts contexts,
-                          RolledbackChangesetAction rolledbackChangesetAction,
                           ExecutedChangesetAction executedChangesetAction)
             throws InterruptedException, IOException {
 
-        executedChangesetAction.setProvideStatusIfEmpty(true);
+
+        executedChangesetAction.setRollbacksTested(testRollbacks);
+
         try {
             String resolvedCommand;
             if (isTestRollbacks()) {
@@ -113,16 +113,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.FAILURE);
-        } finally {
-            if (liquibase.getDatabase() != null) {
-                try {
-                    liquibase.getDatabase().close();
-                } catch (DatabaseException e) {
-                    LOG.warn("error closing database", e);
-                }
-            }
         }
-
     }
 
     @Override

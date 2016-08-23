@@ -33,7 +33,8 @@ public class ChangeSetDetail implements Action {
     private String description;
     private String filePath;
     private String exceptionMessage;
-
+    private boolean rolledBack;
+    private boolean evaluated;
 
 
     public ChangeSetDetail() {
@@ -75,6 +76,7 @@ public class ChangeSetDetail implements Action {
         changeSetDetail.setSqls(sqlList);
         return changeSetDetail;
     }
+
     public static ChangeSetDetail createFailed(ChangeSet changeSet, Exception e) {
         ChangeSetDetail failedChangeset = ChangeSetDetail.create(changeSet);
         failedChangeset.setSuccessfullyExecuted(false);
@@ -85,8 +87,10 @@ public class ChangeSetDetail implements Action {
 
     public String getExecutedSql() {
         StringBuilder sb = new StringBuilder();
-        for (Sql changesetSql : sqls) {
-            sb.append(changesetSql.toSql()).append('\n');
+        if (sqls != null) {
+            for (Sql changesetSql : sqls) {
+                sb.append(changesetSql.toSql()).append('\n');
+            }
         }
 
         return sb.toString();
@@ -97,8 +101,9 @@ public class ChangeSetDetail implements Action {
     }
 
     public boolean hasSql() {
-        return !getExecutedSql().isEmpty();
+        return sqls != null && !getExecutedSql().isEmpty();
     }
+
     public String getTruncatedSql() {
         String executedSql = getExecutedSql();
         return truncateString(executedSql);
@@ -206,6 +211,7 @@ public class ChangeSetDetail implements Action {
     public boolean hasExceptionMessage() {
         return !Strings.isNullOrEmpty(exceptionMessage);
     }
+
     public String getAuthor() {
         return author;
     }
@@ -256,6 +262,21 @@ public class ChangeSetDetail implements Action {
         this.exceptionMessage = exceptionMessage;
     }
 
+    public boolean isRolledBack() {
+        return rolledBack;
+    }
+
+    public void setRolledBack(boolean rolledBack) {
+        this.rolledBack = rolledBack;
+    }
+
+    public boolean isEvaluated() {
+        return evaluated;
+    }
+
+    public void setEvaluated(boolean evaluated) {
+        this.evaluated = evaluated;
+    }
 
     public static final class Builder {
         private boolean successfullyExecuted;
@@ -295,5 +316,7 @@ public class ChangeSetDetail implements Action {
         public ChangeSetDetail build() {
             return new ChangeSetDetail(this);
         }
+
+
     }
 }

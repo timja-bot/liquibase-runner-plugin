@@ -18,5 +18,12 @@
     <changeSet author="keith" id="sql-error">
         <sql>i'm certainly not valid sql</sql>
     </changeSet>
+    <changeSet id="create-color-table" author="keith">
+        <createTable tableName="color">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>
 

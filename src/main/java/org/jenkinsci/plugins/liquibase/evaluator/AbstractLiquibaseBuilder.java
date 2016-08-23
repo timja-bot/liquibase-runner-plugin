@@ -9,8 +9,10 @@ import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ResourceAccessor;
 
@@ -26,6 +28,8 @@ import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.jenkinsci.plugins.liquibase.common.PropertiesAssembler;
 import org.jenkinsci.plugins.liquibase.common.Util;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -43,6 +47,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     protected String driverClassname;
     protected String labels;
     private String changeLogParameters;
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractLiquibaseBuilder.class);
+
 
     public AbstractLiquibaseBuilder(String databaseEngine,
                                     String changeLogFile,
@@ -81,37 +87,30 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
-        RolledbackChangesetAction rolledbackChangesetAction = new RolledbackChangesetAction(build);
 
         Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build);
         ExecutedChangesetAction executedChangesetAction = new ExecutedChangesetAction(build);
-        Liquibase liquibase = createLiquibase(build, listener, executedChangesetAction, configProperties, launcher, rolledbackChangesetAction);
+        Liquibase liquibase = createLiquibase(build, listener, executedChangesetAction, configProperties, launcher);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
         Contexts contexts = new Contexts(liqContexts);
         try {
-            doPerform(build, listener, liquibase, contexts, rolledbackChangesetAction, executedChangesetAction);
+            doPerform(build, listener, liquibase, contexts, executedChangesetAction);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
+        } finally {
+            closeLiquibase(liquibase);
         }
-
-        if (executedChangesetAction.isShouldSummarize()) {
+        if (!executedChangesetAction.isRollbackOnly()) {
             build.addAction(executedChangesetAction);
         }
-
-        if (rolledbackChangesetAction.isShouldSummarize()) {
-            build.addAction(rolledbackChangesetAction);
-        }
-
-
         return true;
-    };
+    }
 
     public abstract void doPerform(AbstractBuild<?, ?> build,
                                    BuildListener listener,
                                    Liquibase liquibase,
                                    Contexts contexts,
-                                   RolledbackChangesetAction rolledbackChangesetAction,
                                    ExecutedChangesetAction executedChangesetAction)
             throws InterruptedException, IOException, LiquibaseException;
 
@@ -119,8 +118,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                                      BuildListener listener,
                                      ExecutedChangesetAction action,
                                      Properties configProperties,
-                                     Launcher launcher,
-                                     RolledbackChangesetAction rolledbackChangesetAction) {
+                                     Launcher launcher) {
         Liquibase liquibase;
         String driverName = getProperty(configProperties, LiquibaseProperty.DRIVER);
 
@@ -141,7 +139,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
         }
-        liquibase.setChangeExecListener(new BuildChangeExecListener(action,rolledbackChangesetAction, listener));
+        BuildChangeExecListener buildChangeExecListener = new BuildChangeExecListener(action, listener);
+        liquibase.setChangeExecListener(buildChangeExecListener);
         if (!Strings.isNullOrEmpty(changeLogParameters)) {
             Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
             for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
@@ -150,6 +149,23 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
             }
         }
         return liquibase;
+    }
+
+    private static void closeLiquibase(Liquibase liquibase) {
+        if (liquibase.getDatabase() != null) {
+            try {
+                DatabaseConnection connection = liquibase.getDatabase().getConnection();
+                if (!connection.isClosed()) {
+                    try {
+                        connection.close();
+                    } catch (DatabaseException e) {
+                        LOG.warn("error closing connection");
+                    }
+                }
+            } catch (DatabaseException e) {
+                LOG.warn("error closing database", e);
+            }
+        }
     }
 
     protected Connection retrieveConnection(Properties configProperties, String driverName) {

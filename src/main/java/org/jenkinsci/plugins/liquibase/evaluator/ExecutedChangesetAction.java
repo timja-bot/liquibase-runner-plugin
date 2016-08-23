@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import liquibase.changelog.ChangeSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,9 +23,13 @@ public class ExecutedChangesetAction implements Action {
 
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
 
-    private boolean provideStatusIfEmpty;
+    private List<ChangeSetDetail> rolledBackChangesets = Lists.newArrayList();
+
+    private boolean rollbackOnly;
 
     private String appliedTag;
+
+    private boolean rollbacksTested;
 
     public ExecutedChangesetAction() {
     }
@@ -53,18 +56,6 @@ public class ExecutedChangesetAction implements Action {
 
     public List<ChangeSetDetail> getChangeSetDetails() {
         return changeSetDetails;
-    }
-
-    public boolean isProvideStatusIfEmpty() {
-        return provideStatusIfEmpty;
-    }
-
-    public boolean isShouldSummarize() {
-        return (!changeSetDetails.isEmpty() || provideStatusIfEmpty);
-    }
-
-    public void setProvideStatusIfEmpty(boolean provideStatusIfEmpty) {
-        this.provideStatusIfEmpty = provideStatusIfEmpty;
     }
 
     public List<ChangeSetDetail> getFailedChangeSets() {
@@ -98,22 +89,36 @@ public class ExecutedChangesetAction implements Action {
         return exceptionMessagesExist;
     }
 
-    public void addChangeset(ChangeSet changeSet) {
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
-        addChangeSetDetail(changeSetDetail);
-    }
-
-    public List<ChangeSetDetail> getSuccessfulChangeSets() {
-        Collection<ChangeSetDetail> successful = Collections2.filter(changeSetDetails, new Predicate<ChangeSetDetail>() {
+    public List<ChangeSetDetail> getExecutedChangesets() {
+        return filterChangeSetDetails(new Predicate<ChangeSetDetail>() {
             @Override
             public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
                 boolean include = false;
-                if (changeSetDetail != null) {
-                    include = changeSetDetail.isSuccessfullyExecuted();
+                if (changeSetDetail!=null) {
+                    include = changeSetDetail.isEvaluated();
                 }
                 return include;
             }
         });
+
+    }
+
+    public List<ChangeSetDetail> getSuccessfulChangeSets() {
+        return filterChangeSetDetails(new Predicate<ChangeSetDetail>() {
+            @Override
+            public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
+                boolean include = false;
+                if (changeSetDetail != null) {
+                    include = changeSetDetail.isEvaluated() && changeSetDetail.isSuccessfullyExecuted();
+                }
+                return include;
+            }
+        });
+    }
+
+    private List<ChangeSetDetail> filterChangeSetDetails(Predicate<ChangeSetDetail> predicate) {
+        Collection<ChangeSetDetail> successful = Collections2.filter(changeSetDetails,
+                predicate);
         return new ArrayList<ChangeSetDetail>(successful);
     }
 
@@ -145,5 +150,55 @@ public class ExecutedChangesetAction implements Action {
 
     public void setAppliedTag(String appliedTag) {
         this.appliedTag = appliedTag;
+    }
+
+    public void markChangesetAsRolledBack(String changeSetId) {
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            if (changeSetDetail.getId().equals(changeSetId)) {
+                changeSetDetail.setRolledBack(true);
+            }
+        }
+    }
+
+    public boolean hasChangesetWithId(String changesetId) {
+        boolean result = false;
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            if (changeSetDetail.getId().equals(changesetId)) {
+                result=true;
+                break;
+            }
+        }
+        return result;
+    }
+    public boolean isRollbacksTested() {
+        return rollbacksTested;
+    }
+
+    public void setRollbacksTested(boolean rollbacksTested) {
+        this.rollbacksTested = rollbacksTested;
+    }
+
+    public void addRolledBackChangesetDetail(ChangeSetDetail changeSetDetail) {
+        rolledBackChangesets.add(changeSetDetail);
+    }
+    public void setChangeSetDetails(List<ChangeSetDetail> changeSetDetails) {
+        this.changeSetDetails = changeSetDetails;
+    }
+
+    public List<ChangeSetDetail> getRolledBackChangesets() {
+        return rolledBackChangesets;
+    }
+
+    public void setRolledBackChangesets(List<ChangeSetDetail> rolledBackChangesets) {
+        this.rolledBackChangesets = rolledBackChangesets;
+    }
+
+
+    public void setRollbackOnly(boolean rollbackOnly) {
+        this.rollbackOnly = rollbackOnly;
+    }
+
+    public boolean isRollbackOnly() {
+        return rollbackOnly;
     }
 }

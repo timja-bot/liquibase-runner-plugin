@@ -32,6 +32,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     private String rollbackToTag;
     private String rollbackToDate;
 
+
     private SimpleDateFormat simpleDateFormat= new SimpleDateFormat(DATE_PATTERN);
 
     public enum RollbackStrategy {
@@ -76,13 +77,13 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
                           BuildListener listener,
                           Liquibase liquibase,
                           Contexts contexts,
-                          RolledbackChangesetAction rolledbackChangesetAction,
                           ExecutedChangesetAction executedChangesetAction)
             throws InterruptedException, IOException, LiquibaseException {
 
-
-        rolledbackChangesetAction.setRollbacksExpected(true);
+        executedChangesetAction.setRollbackOnly(true);
+        RolledbackChangesetAction action = new RolledbackChangesetAction(build);
         RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
+        build.addAction(action);
 
         if (rollbackStrategy == RollbackStrategy.COUNT) {
             listener.getLogger().println("Rollback back the last " + numberOfChangesetsToRollback + " changeset(s) applied.");
@@ -96,11 +97,16 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         }
 
         if (rollbackStrategy == RollbackStrategy.TAG) {
-            listener.getLogger()
-                    .println("Rolling back database to tag '" + rollbackToTag+ "'");
+            listener.getLogger().println("Rolling back database to tag '" + rollbackToTag+ "'");
             liquibase.rollback(rollbackToTag, contexts, new LabelExpression(labels));
         }
+
+        action.setRolledbackChangesets(executedChangesetAction.getRolledBackChangesets());
+
+
+
     }
+
 
     protected Date resolveTargetDate(RollbackStrategy rollbackStrategy) {
         Date now = new Date();

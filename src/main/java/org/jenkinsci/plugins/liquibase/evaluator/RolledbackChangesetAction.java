@@ -12,7 +12,6 @@ public class RolledbackChangesetAction implements Action  {
     private AbstractBuild<?, ?> build;
 
     List<ChangeSetDetail> rolledbackChangesets = Lists.newArrayList();
-    private boolean rollbacksExpected;
 
 
     public RolledbackChangesetAction() {
@@ -28,18 +27,6 @@ public class RolledbackChangesetAction implements Action  {
 
     public List<ChangeSetDetail> getRolledbackChangesets() {
         return rolledbackChangesets;
-    }
-
-    public boolean isRollbacksExpected() {
-        return rollbacksExpected;
-    }
-
-    public void setRollbacksExpected(boolean rollbacksExpected) {
-        this.rollbacksExpected = rollbacksExpected;
-    }
-
-    public boolean isShouldSummarize() {
-        return !rolledbackChangesets.isEmpty() || rollbacksExpected;
     }
 
     public AbstractBuild<?, ?> getBuild() {
@@ -60,4 +47,9 @@ public class RolledbackChangesetAction implements Action  {
     public String getUrlName() {
         return "rolledbackChangesets";
     }
+
+    public void setRolledbackChangesets(List<ChangeSetDetail> rolledbackChangesets) {
+        this.rolledbackChangesets = rolledbackChangesets;
+    }
+
 }
