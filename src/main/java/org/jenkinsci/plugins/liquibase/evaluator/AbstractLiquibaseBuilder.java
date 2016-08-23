@@ -14,6 +14,8 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.resource.CompositeResourceAccessor;
 import liquibase.resource.ResourceAccessor;
 
 import java.io.IOException;
@@ -79,6 +81,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
 
 
     }
+
     protected static String getProperty(Properties configProperties, LiquibaseProperty property) {
         return configProperties.getProperty(property.propertyName());
     }
@@ -132,9 +135,14 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
             Database database =
                     DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
 
-            ResourceAccessor resourceAccessor = new FilePathAccessor(build);
+            ResourceAccessor filePathAccessor = new FilePathAccessor(build);
+            CompositeResourceAccessor compositeResourceAccessor =
+                    new CompositeResourceAccessor(filePathAccessor,
+                            new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
+                            new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
+                    );
             liquibase = new Liquibase(configProperties.getProperty(LiquibaseProperty.CHANGELOG_FILE.propertyName()),
-                    resourceAccessor, database);
+                    compositeResourceAccessor, database);
 
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);

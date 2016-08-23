@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.filefilter.FileFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -23,6 +25,8 @@ import com.google.common.collect.Sets;
  */
 public class FilePathAccessor implements ResourceAccessor {
     private final AbstractBuild<?, ?> build;
+
+    private static final Logger LOG = LoggerFactory.getLogger(FilePathAccessor.class);
 
     public FilePathAccessor(AbstractBuild<?, ?> build) {
         this.build = build;
@@ -46,8 +50,16 @@ public class FilePathAccessor implements ResourceAccessor {
     }
 
     public Set<InputStream> getResourcesAsStream(String path) throws IOException {
-        Set<InputStream> streams = Sets.newHashSet();
-        streams.add(getResourceAsStream(path));
+        Set<InputStream> streams = null;
+        try {
+            InputStream resourceAsStream = getResourceAsStream(path);
+            if (resourceAsStream!=null) {
+                streams = Sets.newHashSet();
+                streams.add(resourceAsStream);
+            }
+        } catch (IOException e) {
+            LOG.info("Unable to load resources from path '" + path +"'", e);
+        }
         return streams;
     }
 
@@ -122,7 +134,11 @@ public class FilePathAccessor implements ResourceAccessor {
             }
         }
 
-        return result;
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result;
+        }
     }
 
     public ClassLoader toClassLoader() {
