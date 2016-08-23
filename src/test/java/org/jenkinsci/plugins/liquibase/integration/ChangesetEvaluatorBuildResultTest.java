@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.jenkinsci.plugins.liquibase.integration.ChangesetDetailMatcher.isChangeSetDetail;
-import static org.jenkinsci.plugins.liquibase.integration.ChangesetDetailMatcher.isChangesetWithId;
+import static org.jenkinsci.plugins.liquibase.integration.IsChangeSetDetail.hasId;
+import static org.jenkinsci.plugins.liquibase.integration.IsChangeSetDetail.isChangeSetDetail;
 import static org.junit.Assert.assertThat;
 
 public class ChangesetEvaluatorBuildResultTest {
@@ -263,8 +263,8 @@ public class ChangesetEvaluatorBuildResultTest {
                                                                .withComments("This is a simple create table")
                                                                .withSuccessfullyExecuted(true).build()),
                 isChangeSetDetail(new ChangeSetDetail.Builder().withAuthor("keith").withId("first_tag").build()),
-                isChangesetWithId("create-color-table"),
-                isChangesetWithId("create-testing-table"));
+                hasId("create-color-table"),
+                hasId("create-testing-table"));
     }
 
     protected FreeStyleProject createProjectWithChangelogFile(File changelogFile) throws IOException {

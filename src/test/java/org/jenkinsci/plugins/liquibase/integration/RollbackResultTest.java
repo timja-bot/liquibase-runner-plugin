@@ -37,7 +37,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.jenkinsci.plugins.liquibase.integration.ChangesetDetailMatcher.isChangesetWithId;
+import static org.jenkinsci.plugins.liquibase.integration.IsChangeSetDetail.hasId;
 import static org.junit.Assert.assertThat;
 
 public class RollbackResultTest {
@@ -110,10 +110,10 @@ public class RollbackResultTest {
         int totalNumberOfChangesets = 4;
 
         assertThat(resultAction.getRolledbackChangesets(), hasItems(
-                                                            isChangesetWithId("create-table"),
-                                                            isChangesetWithId("first_tag"),
-                                                            isChangesetWithId("create-color-table"),
-                                                            isChangesetWithId("create-testing-table"))
+                                                            hasId("create-table"),
+                                                            hasId("first_tag"),
+                                                            hasId("create-color-table"),
+                                                            hasId("create-testing-table"))
                                                             );
         assertThat(resultAction.getRolledbackChangesets(), hasSize(totalNumberOfChangesets));
     }

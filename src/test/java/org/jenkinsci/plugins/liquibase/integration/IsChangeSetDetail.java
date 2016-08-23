@@ -7,9 +7,9 @@ import org.jenkinsci.plugins.liquibase.evaluator.ChangeSetDetail;
 
 import static org.hamcrest.CoreMatchers.allOf;
 
-public class ChangesetDetailMatcher {
+public class IsChangeSetDetail {
 
-    public static Matcher<ChangeSetDetail> isChangesetWithId(final String id) {
+    public static Matcher<ChangeSetDetail> hasId(final String id) {
         return new TypeSafeMatcher<ChangeSetDetail>() {
             @Override
             public void describeTo(Description description) {
@@ -29,7 +29,7 @@ public class ChangesetDetailMatcher {
     }
     public static Matcher<ChangeSetDetail> isChangeSetDetail(ChangeSetDetail changeSetDetail) {
         return allOf(
-                isChangesetWithId(changeSetDetail.getId()), hasAuthor(changeSetDetail.getAuthor()), hasComments(changeSetDetail.getComments()));
+                hasId(changeSetDetail.getId()), hasAuthor(changeSetDetail.getAuthor()), hasComments(changeSetDetail.getComments()));
     }
 
     public static Matcher<ChangeSetDetail> hasComments(final String comments) {
