@@ -219,7 +219,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
 
     @Test
-    @Ignore("Pending my understanding of how the relativeToChangelogFile attribute is supposed to work with includeAll")
+    @Ignore("Possibly not working due to liquibase issue https://liquibase.jira.com/browse/CORE-2761")
     public void should_handle_include_all_relative() throws IOException, ExecutionException, InterruptedException {
         File rootChangeset =
                 LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(),
@@ -282,5 +282,4 @@ public class ChangesetEvaluatorBuildResultTest {
             throws InterruptedException, ExecutionException {
         return project.scheduleBuild2(0).get();
     }
-
 }
