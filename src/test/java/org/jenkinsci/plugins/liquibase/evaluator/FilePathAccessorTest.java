@@ -5,9 +5,11 @@ import hudson.model.AbstractBuild;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -15,6 +17,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnit44Runner;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
@@ -28,9 +32,15 @@ public class FilePathAccessorTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Before
+
+    public void setup() throws IOException {
+        temporaryFolder.create();
+
+    }
     @Test
     public void should_list_files() throws IOException, InterruptedException {
-        temporaryFolder.create();
         File childDir = temporaryFolder.newFolder(CHILD_DIR);
         childDir.mkdirs();
 
@@ -48,6 +58,15 @@ public class FilePathAccessorTest {
 
         assertThat(result, hasSize(1));
         assertThat(result, hasItem(childFilepath));
+    }
+
+    @Test
+    public void should_return_null_if_not_found() throws IOException {
+        FilePathAccessor accessor = new FilePathAccessor(build);
+
+        InputStream inputStream = accessor.getResourceAsStream("i_dont_exist");
+        assertThat(inputStream, is(nullValue()));
+
     }
 
 }
