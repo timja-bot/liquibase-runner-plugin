@@ -105,9 +105,6 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         }
 
         action.setRolledbackChangesets(executedChangesetAction.getRolledBackChangesets());
-
-
-
     }
 
 
