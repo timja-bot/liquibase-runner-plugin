@@ -33,7 +33,6 @@ public class ChangeSetDetail implements Action {
     private String filePath;
     private String exceptionMessage;
     private boolean rolledBack;
-    private boolean evaluated;
 
 
     public ChangeSetDetail() {
@@ -257,20 +256,13 @@ public class ChangeSetDetail implements Action {
         this.rolledBack = rolledBack;
     }
 
-    public boolean isEvaluated() {
-        return evaluated;
-    }
-
-    public void setEvaluated(boolean evaluated) {
-        this.evaluated = evaluated;
-    }
-
     public static final class Builder {
         private boolean successfullyExecuted;
         private String author;
         private String id;
         private String comments;
         private String description;
+
 
         public Builder() {
         }

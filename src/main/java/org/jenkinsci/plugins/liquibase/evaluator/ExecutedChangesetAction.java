@@ -62,11 +62,9 @@ public class ExecutedChangesetAction implements Action {
         Collection<ChangeSetDetail> filtered = Collections2.filter(changeSetDetails, new Predicate<ChangeSetDetail>() {
             @Override
             public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
-
                 boolean include = false;
                 if (changeSetDetail != null) {
                     include = !changeSetDetail.isSuccessfullyExecuted();
-
                 }
                 return include;
             }
@@ -89,27 +87,13 @@ public class ExecutedChangesetAction implements Action {
         return exceptionMessagesExist;
     }
 
-    public List<ChangeSetDetail> getExecutedChangesets() {
-        return filterChangeSetDetails(new Predicate<ChangeSetDetail>() {
-            @Override
-            public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
-                boolean include = false;
-                if (changeSetDetail!=null) {
-                    include = changeSetDetail.isEvaluated();
-                }
-                return include;
-            }
-        });
-
-    }
-
     public List<ChangeSetDetail> getSuccessfulChangeSets() {
         return filterChangeSetDetails(new Predicate<ChangeSetDetail>() {
             @Override
             public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
                 boolean include = false;
                 if (changeSetDetail != null) {
-                    include = changeSetDetail.isEvaluated() && changeSetDetail.isSuccessfullyExecuted();
+                    include = changeSetDetail.isSuccessfullyExecuted();
                 }
                 return include;
             }

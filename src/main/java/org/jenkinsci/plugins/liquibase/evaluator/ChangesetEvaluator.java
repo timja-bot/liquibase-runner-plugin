@@ -8,6 +8,7 @@ import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
+import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
@@ -32,8 +33,6 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
 
     protected boolean testRollbacks;
     private boolean dropAll;
-    private String liquibaseOperation;
-    protected int changesToRollback = 1;
     protected boolean tagOnSuccessfulBuild;
 
     public ChangesetEvaluator() {
@@ -89,16 +88,12 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
             }
             listener.getLogger().println("Running liquibase command '" + resolvedCommand + "'");
 
+            LabelExpression labelExpression = new LabelExpression(labels);
             if (LiquibaseCommand.UPDATE_TESTING_ROLLBACKS.isCommand(resolvedCommand)) {
-                liquibase.updateTestingRollback(contexts, new liquibase.LabelExpression(labels));
+                liquibase.updateTestingRollback(contexts, labelExpression);
             }
-
             if (LiquibaseCommand.UPDATE.isCommand(resolvedCommand)) {
-                liquibase.update(contexts, new liquibase.LabelExpression(labels));
-            }
-
-            if (LiquibaseCommand.ROLLBACK.isCommand(resolvedCommand)) {
-                liquibase.rollback(changesToRollback, contexts.toString());
+                liquibase.update(contexts, labelExpression);
             }
 
             if (tagOnSuccessfulBuild) {
@@ -125,7 +120,6 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
         return testRollbacks;
     }
 
-
     @DataBoundSetter
     public void setTestRollbacks(boolean testRollbacks) {
         this.testRollbacks = testRollbacks;
@@ -141,11 +135,6 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
     }
 
 
-    public String getLiquibaseOperation() {
-        return liquibaseOperation;
-    }
-
-
     public boolean isTagOnSuccessfulBuild() {
         return tagOnSuccessfulBuild;
     }
@@ -155,13 +144,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
         this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
     }
 
-    @DataBoundSetter
-    public void setLiquibaseOperation(String liquibaseOperation) {
-        this.liquibaseOperation = liquibaseOperation;
-    }
-
     public static class DescriptorImpl extends AbstractLiquibaseDescriptor {
-
 
         public DescriptorImpl() {
             load();

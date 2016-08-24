@@ -57,14 +57,13 @@ public class BuildChangeExecListener implements ChangeExecListener {
             LOG.debug("rolling back changeset [" + changeSet.getId() + "] ");
         }
 
-        String logMessage = formatChangesetForLog(changeSet, databaseChangeLog, "Rolled back");
+        String logMessage = formatChangesetForLog(changeSet, "Rolled back");
         buildListener.getLogger().println(logMessage);
         ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet);
         action.addRolledBackChangesetDetail(changeSetDetail);
         if (action.hasChangesetWithId(changeSetDetail.getId())) {
             action.markChangesetAsRolledBack(changeSetDetail.getId());
         }
-
     }
 
     public void preconditionFailed(PreconditionFailedException error, PreconditionContainer.FailOption onFail) {
@@ -84,7 +83,6 @@ public class BuildChangeExecListener implements ChangeExecListener {
         printConsoleLogMessage(changeSet);
 
         ChangeSetDetail changeSetDetail = createChangeSetDetail(change, changeSet, database);
-        changeSetDetail.setEvaluated(true);
         action.addChangeSetDetail(changeSetDetail);
 
     }
@@ -109,11 +107,10 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
     public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.createFailed(changeSet, e);
-        changeSetDetail.setEvaluated(true);
         action.addChangeSetDetail(changeSetDetail);
     }
 
-    public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
+    public static String formatChangesetForLog(ChangeSet changeSet, String msg) {
         String changeSetLogMsg = Util.formatChangeset(changeSet);
         return changeSetLogMsg + ": " + msg;
     }

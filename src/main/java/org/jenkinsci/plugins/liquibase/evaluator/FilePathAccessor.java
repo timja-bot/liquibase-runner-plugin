@@ -152,7 +152,7 @@ public class FilePathAccessor implements ResourceAccessor {
                         urlClassLoader =
                                 new URLClassLoader(new URL[]{new URL("file://" + workspace.getBaseName())});
                     } catch (MalformedURLException e) {
-                        throw new RuntimeException("Unable to construct classloader.");
+                        throw new RuntimeException("Unable to construct classloader.",e);
                     }
                 }
                 return urlClassLoader;

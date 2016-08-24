@@ -37,6 +37,8 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
 public abstract class AbstractLiquibaseBuilder extends Builder {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractLiquibaseBuilder.class);
+
     protected String databaseEngine;
     protected String changeLogFile;
     protected String username;
@@ -49,7 +51,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     protected String driverClassname;
     protected String labels;
     private String changeLogParameters;
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractLiquibaseBuilder.class);
 
 
     public AbstractLiquibaseBuilder(String databaseEngine,
@@ -79,13 +80,16 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
 
     public AbstractLiquibaseBuilder() {
 
-
     }
 
-    protected static String getProperty(Properties configProperties, LiquibaseProperty property) {
-        return configProperties.getProperty(property.propertyName());
-    }
+    public abstract void doPerform(AbstractBuild<?, ?> build,
+                                   BuildListener listener,
+                                   Liquibase liquibase,
+                                   Contexts contexts,
+                                   ExecutedChangesetAction executedChangesetAction)
+    throws InterruptedException, IOException, LiquibaseException;
 
+    abstract public Descriptor<Builder> getDescriptor();
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
@@ -110,13 +114,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         return true;
     }
 
-    public abstract void doPerform(AbstractBuild<?, ?> build,
-                                   BuildListener listener,
-                                   Liquibase liquibase,
-                                   Contexts contexts,
-                                   ExecutedChangesetAction executedChangesetAction)
-            throws InterruptedException, IOException, LiquibaseException;
-
     public Liquibase createLiquibase(AbstractBuild<?, ?> build,
                                      BuildListener listener,
                                      ExecutedChangesetAction action,
@@ -130,19 +127,19 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                 Util.addClassloader(launcher.isUnix(), build.getWorkspace(), classpath);
             }
 
-            Connection connection = retrieveConnection(configProperties, driverName);
-            JdbcConnection jdbcConnection = new JdbcConnection(connection);
-            Database database =
-                    DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
+            JdbcConnection jdbcConnection = createJdbcConnection(configProperties, driverName);
+            Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
 
             ResourceAccessor filePathAccessor = new FilePathAccessor(build);
-            CompositeResourceAccessor compositeResourceAccessor =
+            CompositeResourceAccessor resourceAccessor =
                     new CompositeResourceAccessor(filePathAccessor,
                             new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
                             new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
                     );
-            liquibase = new Liquibase(configProperties.getProperty(LiquibaseProperty.CHANGELOG_FILE.propertyName()),
-                    compositeResourceAccessor, database);
+
+
+            String changeLogFile = getProperty(configProperties, LiquibaseProperty.CHANGELOG_FILE);
+            liquibase = new Liquibase(changeLogFile, resourceAccessor, database);
 
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
@@ -153,10 +150,34 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
             Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
             for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
                 liquibase.setChangeLogParameter(entry.getKey(), entry.getValue());
-
             }
         }
         return liquibase;
+    }
+
+    private JdbcConnection createJdbcConnection(Properties configProperties, String driverName) {
+        Connection connection;
+        String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
+        try {
+            Util.registerDatabaseDriver(driverName, classpath);
+            String userName = getProperty(configProperties, LiquibaseProperty.USERNAME);
+            String password = getProperty(configProperties, LiquibaseProperty.PASSWORD);
+            connection = DriverManager.getConnection(dbUrl, userName, password);
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Error registering database driver " + driverName, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Error registering database driver " + driverName, e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Error registering database driver " + driverName, e);
+        }
+        return new JdbcConnection(connection);
+    }
+
+    protected static String getProperty(Properties configProperties, LiquibaseProperty property) {
+        return configProperties.getProperty(property.propertyName());
     }
 
     private static void closeLiquibase(Liquibase liquibase) {
@@ -167,7 +188,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                     try {
                         connection.close();
                     } catch (DatabaseException e) {
-                        LOG.warn("error closing connection");
+                        LOG.warn("error closing connection",e);
                     }
                 }
             } catch (DatabaseException e) {
@@ -176,37 +197,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         }
     }
 
-    protected Connection retrieveConnection(Properties configProperties, String driverName) {
-        Connection connection;
-        String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
-        try {
-            Util.registerDatabaseDriver(driverName, classpath);
-            connection = DriverManager.getConnection(dbUrl, getProperty(configProperties, LiquibaseProperty.USERNAME),
-                    getProperty(configProperties,
-                            LiquibaseProperty.PASSWORD));
-        } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(
-                    "Error registering database driver " + driverName, e);
-        }
-        return connection;
-    }
-
     public List<IncludedDatabaseDriver> getDrivers() {
         return ChangesetEvaluator.DESCRIPTOR.getIncludedDatabaseDrivers();
     }
-
-
-    abstract public Descriptor<Builder> getDescriptor();
-
 
     public String getDatabaseEngine() {
         return databaseEngine;

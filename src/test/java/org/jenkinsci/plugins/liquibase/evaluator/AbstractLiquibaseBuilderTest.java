@@ -114,6 +114,7 @@ public class AbstractLiquibaseBuilderTest {
         return configProperties;
     }
 
+
     private static class LiquibaseBuilderStub extends AbstractLiquibaseBuilder {
         @Override
         public void doPerform(AbstractBuild<?, ?> build,
