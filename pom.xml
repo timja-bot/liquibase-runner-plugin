@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>2.9</version>
-        <relativePath />
+        <relativePath/>
     </parent>
     <artifactId>liquibase-runner</artifactId>
     <version>1.1.0-SNAPSHOT</version>
@@ -49,8 +50,7 @@
     </pluginRepositories>
 
     <properties>
-        <jenkins.version>2.7.2</jenkins.version>
-
+        <jenkins.version>1.580.1</jenkins.version>
     </properties>
     <dependencies>
         <dependency>
@@ -143,4 +143,13 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>jenkins_2_7_2</id>
+            <!-- for testing against a later version of jenkins -->
+            <properties>
+                <jenkins.version>2.7.2</jenkins.version>
+            </properties>
+        </profile>
+    </profiles>
 </project>
