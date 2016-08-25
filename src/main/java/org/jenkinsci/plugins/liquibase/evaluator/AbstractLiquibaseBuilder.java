@@ -130,8 +130,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         String resolvedClasspath = getProperty(configProperties, LiquibaseProperty.CLASSPATH);
 
         try {
+            FilePath workspace = build.getWorkspace();
             if (!Strings.isNullOrEmpty(resolvedClasspath)) {
-                Util.addClassloader(launcher.isUnix(), build.getWorkspace(), resolvedClasspath);
+                Util.addClassloader(launcher.isUnix(), workspace, resolvedClasspath);
             }
 
             JdbcConnection jdbcConnection = createJdbcConnection(configProperties, driverName);
@@ -139,10 +140,11 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
 
 
             FilePath filePath;
-            if (Strings.isNullOrEmpty(basePath)) {
-                filePath = build.getWorkspace();
+            String resolvedBasePath = hudson.Util.replaceMacro(basePath, build.getEnvironment(listener));
+            if (Strings.isNullOrEmpty(resolvedBasePath)) {
+                filePath = workspace;
             } else {
-                filePath = build.getWorkspace().child(hudson.Util.replaceMacro(basePath, build.getEnvironment(listener)));
+                filePath = workspace.child(resolvedBasePath);
 
             }
 
