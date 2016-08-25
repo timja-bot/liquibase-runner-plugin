@@ -3,6 +3,10 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:f="/lib/form">
 
+    <f:entry help="help-basePath.html" title="Directory containing change log file" field="basePath"
+             description="Leave blank for workspace root.  May be relative to workspace or an absolute path.">
+        <f:textbox value="${instance.basePath}"/>
+    </f:entry>
     <f:entry title="Database Engine">
         <select class="setting-input" name="LiquibaseBuilder.databaseEngine">
             <option value="">Select included driver</option>

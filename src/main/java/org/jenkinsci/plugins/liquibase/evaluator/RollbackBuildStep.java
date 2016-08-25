@@ -61,13 +61,14 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
                              String driverClassname,
                              String changeLogParameters,
                              String labels,
+                             String basePath,
                              String rollbackType,
                              int numberOfChangesetsToRollback,
                              String rollbackLastHours,
                              String rollbackToTag, String rollbackToDate) {
         super(databaseEngine, changeLogFile, username, password, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
-                classpath, driverClassname, changeLogParameters, labels);
+                classpath, driverClassname, changeLogParameters, labels, basePath);
 
         this.rollbackType = rollbackType;
         this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;

@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -52,6 +53,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     protected String driverClassname;
     protected String labels;
     private String changeLogParameters;
+    private String basePath;
+
 
 
     public AbstractLiquibaseBuilder(String databaseEngine,
@@ -64,7 +67,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                                     String liquibasePropertiesPath,
                                     String classpath,
                                     String driverClassname,
-                                    String changeLogParameters, String labels) {
+                                    String changeLogParameters, String labels, String basePath) {
         this.databaseEngine = databaseEngine;
         this.changeLogFile = changeLogFile;
         this.username = username;
@@ -77,6 +80,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         this.driverClassname = driverClassname;
         this.changeLogParameters = changeLogParameters;
         this.labels = labels;
+        this.basePath = basePath;
     }
 
     public AbstractLiquibaseBuilder() {
@@ -133,7 +137,16 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
             JdbcConnection jdbcConnection = createJdbcConnection(configProperties, driverName);
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
 
-            ResourceAccessor filePathAccessor = new FilePathAccessor(build);
+
+            FilePath filePath;
+            if (Strings.isNullOrEmpty(basePath)) {
+                filePath = build.getWorkspace();
+            } else {
+                filePath = build.getWorkspace().child(hudson.Util.replaceMacro(basePath, build.getEnvironment(listener)));
+
+            }
+
+            ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
             CompositeResourceAccessor resourceAccessor =
                     new CompositeResourceAccessor(filePathAccessor,
                             new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
@@ -323,5 +336,14 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @DataBoundSetter
     public void setLabels(String labels) {
         this.labels = labels;
+    }
+
+    public String getBasePath() {
+        return basePath;
+    }
+
+    @DataBoundSetter
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
     }
 }

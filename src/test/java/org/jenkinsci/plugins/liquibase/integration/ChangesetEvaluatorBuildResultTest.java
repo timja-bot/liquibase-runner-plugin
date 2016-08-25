@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangeSetDetail;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
@@ -101,6 +102,37 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(build.getResult(), is(Result.SUCCESS));
     }
 
+
+    @Test
+    public void should_locate_change_log_using_basepath()
+            throws IOException, ExecutionException, InterruptedException, SQLException, LiquibaseException {
+        File changesetDir = temporaryFolder.newFolder("changesetDir");
+        ChangesetEvaluator evaluator = new ChangesetEvaluator();
+        File changeLog =
+                LiquibaseTestUtil.createFileFromResource(changesetDir, "/example-changesets/single-changeset.xml");
+        evaluator.setChangeLogFile(
+                changeLog.getAbsolutePath());
+        evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
+        evaluator.setDatabaseEngine(H2);
+
+        evaluator.setBasePath("changesetDir");
+
+
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        project.getBuildersList().add(evaluator);
+        project.setCustomWorkspace(changesetDir.getParent());
+
+        FreeStyleBuild build = launchBuildForProject(project);
+
+        assertThat(build.getResult(), is(Result.SUCCESS));
+
+        ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
+
+        assertThat(build.getAction(ExecutedChangesetAction.class), CoreMatchers.notNullValue());
+        assertThat(action.getSuccessfulChangeSets(), contains(IsChangeSetDetail.hasId("create-table")));
+
+
+    }
 
     @Test
     public void should_handle_json_changesets_successfully()
@@ -236,11 +268,6 @@ public class ChangesetEvaluatorBuildResultTest {
         List<ChangeSetDetail> changeSetDetails = build.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
 
         assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
-    }
-
-    @Test
-    public void should_resolve_expressions_in_configuration() {
-
     }
 
 

@@ -50,7 +50,7 @@ public class FilePathAccessorTest {
 
         FilePath filePath = new FilePath(temporaryFolder.getRoot());
 
-        FilePathAccessor filePathAccessor = new FilePathAccessor(build);
+        FilePathAccessor filePathAccessor = new FilePathAccessor(build.getWorkspace());
 
         Set<String> result =
                 filePathAccessor.list( filePath, null,
@@ -62,7 +62,7 @@ public class FilePathAccessorTest {
 
     @Test
     public void should_return_null_if_not_found() throws IOException {
-        FilePathAccessor accessor = new FilePathAccessor(build);
+        FilePathAccessor accessor = new FilePathAccessor(build.getWorkspace());
 
         InputStream inputStream = accessor.getResourceAsStream("i_dont_exist");
         assertThat(inputStream, is(nullValue()));

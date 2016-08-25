@@ -53,6 +53,8 @@ h3. Version History
 h4. Version 1.1.0 (Aug 24, 2017)
 
 * [JENKINS-37591|https://issues.jenkins-ci.org/browse/JENKINS-37591] Upgraded to use Liquibase 3.5.1
+* [JENKINS-37700|https://issues.jenkins-ci.org/browse/JENKINS-37700] Allow base path to be set.
+* [JENKINS-37699|https://issues.jenkins-ci.org/browse/JENKINS-37699] Allow expressions in configuration fields
 * [JENKINS-37420|https://issues.jenkins-ci.org/browse/JENKINS-37420] Added roll back build step
 * [JENKINS-37592|https://issues.jenkins-ci.org/browse/JENKINS-37592] Tag on successful update.
 * [JENKINS-37637|https://issues.jenkins-ci.org/browse/JENKINS-37637] Allow changesets to be loaded from classpath.

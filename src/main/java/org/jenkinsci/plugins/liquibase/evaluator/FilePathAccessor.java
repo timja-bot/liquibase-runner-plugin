@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import liquibase.resource.ResourceAccessor;
 
 import java.io.IOException;
@@ -24,19 +23,19 @@ import com.google.common.collect.Sets;
  * Provides Jenkin's file abstraction as a liquibase resource accessor.
  */
 public class FilePathAccessor implements ResourceAccessor {
-    private final AbstractBuild<?, ?> build;
+    private final FilePath filePath;
 
     private static final Logger LOG = LoggerFactory.getLogger(FilePathAccessor.class);
 
-    public FilePathAccessor(AbstractBuild<?, ?> build) {
-        this.build = build;
+    public FilePathAccessor(FilePath filePath) {
+        this.filePath = filePath;
     }
 
     public InputStream getResourceAsStream(String s) throws IOException {
         InputStream inputStream = null;
-        final FilePath workspace = build.getWorkspace();
-        if (workspace != null) {
-            FilePath child = workspace.child(s);
+
+        if (filePath != null) {
+            FilePath child = filePath.child(s);
             try {
                 if (child.exists()) {
                     inputStream = child.read();
@@ -69,10 +68,10 @@ public class FilePathAccessor implements ResourceAccessor {
                             boolean includeDirectories,
                             boolean recursive) throws IOException {
 
-        final FilePath workspace = build.getWorkspace();
-        return list(workspace, relativeTo, path, includeFiles, includeDirectories, recursive);
+        return list(filePath, relativeTo, path, includeFiles, includeDirectories, recursive);
     }
 
+    @SuppressWarnings("ReturnOfNull")
     protected Set<String> list(FilePath workspace,
                                String relativeTo,
                                String path,
@@ -146,11 +145,10 @@ public class FilePathAccessor implements ResourceAccessor {
             @Override
             public URLClassLoader run() {
                 URLClassLoader urlClassLoader = null;
-                final FilePath workspace = build.getWorkspace();
-                if (workspace != null) {
+                if (filePath != null) {
                     try {
                         urlClassLoader =
-                                new URLClassLoader(new URL[]{new URL("file://" + workspace.getBaseName())});
+                                new URLClassLoader(new URL[]{new URL("file://" + filePath.getBaseName())});
                     } catch (MalformedURLException e) {
                         throw new RuntimeException("Unable to construct classloader.",e);
                     }
