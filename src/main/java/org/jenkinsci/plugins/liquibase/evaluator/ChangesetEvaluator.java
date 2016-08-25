@@ -14,8 +14,10 @@ import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.jenkinsci.plugins.liquibase.common.LiquibaseCommand;
+import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.slf4j.Logger;
@@ -68,7 +70,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                           BuildListener listener,
                           Liquibase liquibase,
                           Contexts contexts,
-                          ExecutedChangesetAction executedChangesetAction)
+                          ExecutedChangesetAction executedChangesetAction, Properties configProperties)
             throws InterruptedException, IOException {
 
 
@@ -88,7 +90,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
             }
             listener.getLogger().println("Running liquibase command '" + resolvedCommand + "'");
 
-            LabelExpression labelExpression = new LabelExpression(labels);
+            LabelExpression labelExpression = new LabelExpression(getProperty(configProperties, LiquibaseProperty.LABELS));
             if (LiquibaseCommand.UPDATE_TESTING_ROLLBACKS.isCommand(resolvedCommand)) {
                 liquibase.updateTestingRollback(contexts, labelExpression);
             }

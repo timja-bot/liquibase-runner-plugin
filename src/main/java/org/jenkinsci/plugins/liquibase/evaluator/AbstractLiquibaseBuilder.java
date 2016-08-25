@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -86,7 +87,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                                    BuildListener listener,
                                    Liquibase liquibase,
                                    Contexts contexts,
-                                   ExecutedChangesetAction executedChangesetAction)
+                                   ExecutedChangesetAction executedChangesetAction, Properties configProperties)
     throws InterruptedException, IOException, LiquibaseException;
 
     abstract public Descriptor<Builder> getDescriptor();
@@ -95,13 +96,14 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
-        Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build);
+        Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build,
+                build.getEnvironment(listener));
         ExecutedChangesetAction executedChangesetAction = new ExecutedChangesetAction(build);
         Liquibase liquibase = createLiquibase(build, listener, executedChangesetAction, configProperties, launcher);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
         Contexts contexts = new Contexts(liqContexts);
         try {
-            doPerform(build, listener, liquibase, contexts, executedChangesetAction);
+            doPerform(build, listener, liquibase, contexts, executedChangesetAction, configProperties);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
@@ -118,13 +120,14 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                                      BuildListener listener,
                                      ExecutedChangesetAction action,
                                      Properties configProperties,
-                                     Launcher launcher) {
+                                     Launcher launcher) throws IOException, InterruptedException {
         Liquibase liquibase;
         String driverName = getProperty(configProperties, LiquibaseProperty.DRIVER);
+        String resolvedClasspath = getProperty(configProperties, LiquibaseProperty.CLASSPATH);
 
         try {
-            if (!Strings.isNullOrEmpty(classpath)) {
-                Util.addClassloader(launcher.isUnix(), build.getWorkspace(), classpath);
+            if (!Strings.isNullOrEmpty(resolvedClasspath)) {
+                Util.addClassloader(launcher.isUnix(), build.getWorkspace(), resolvedClasspath);
             }
 
             JdbcConnection jdbcConnection = createJdbcConnection(configProperties, driverName);
@@ -146,20 +149,33 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         }
         BuildChangeExecListener buildChangeExecListener = new BuildChangeExecListener(action, listener);
         liquibase.setChangeExecListener(buildChangeExecListener);
+
         if (!Strings.isNullOrEmpty(changeLogParameters)) {
-            Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
-            for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
-                liquibase.setChangeLogParameter(entry.getKey(), entry.getValue());
-            }
+            EnvVars environment = build.getEnvironment(listener);
+            populateChangeLogParameters(liquibase, environment, changeLogParameters);
         }
         return liquibase;
+    }
+
+    protected static void populateChangeLogParameters(Liquibase liquibase,
+                                                      EnvVars environment,
+                                                      String changeLogParameters) {
+        Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
+        for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
+            String value = entry.getValue();
+
+            String resolvedValue = hudson.Util.replaceMacro(value, environment);
+            String resolvedKey = hudson.Util.replaceMacro(entry.getKey(), environment);
+            liquibase.setChangeLogParameter(resolvedKey, resolvedValue);
+        }
     }
 
     private JdbcConnection createJdbcConnection(Properties configProperties, String driverName) {
         Connection connection;
         String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
         try {
-            Util.registerDatabaseDriver(driverName, classpath);
+            Util.registerDatabaseDriver(driverName,
+                    configProperties.getProperty(LiquibaseProperty.CLASSPATH.propertyName()));
             String userName = getProperty(configProperties, LiquibaseProperty.USERNAME);
             String password = getProperty(configProperties, LiquibaseProperty.PASSWORD);
             connection = DriverManager.getConnection(dbUrl, userName, password);

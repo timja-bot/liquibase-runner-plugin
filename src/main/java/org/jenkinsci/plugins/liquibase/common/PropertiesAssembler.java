@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.common;
 
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 
@@ -23,52 +24,74 @@ public class PropertiesAssembler {
     private static final String DEFAULT_DB_DRIVER = "org.h2.Driver";
 
     /**
-     * Creates a properties instance for use with liquibase execution.
+     * Creates a properties instance for use with liquibase execution.  Property values may come from these sources,
+     * in order of least to most precedence:
+     *
+     * <ul>
+     *     <li>Plugin Default values</li>
+     *     <li>Values from properties file described by {@link AbstractLiquibaseBuilder#liquibasePropertiesPath}</li>
+     *     <li>Values on the {@link AbstractLiquibaseBuilder} itself.</li>
+     * </ul>
+     *
+     * Furthermore, any token expressions found are replaced with values found in the passed environment.
+     *
      * @param liquibaseBuilder
      * @param build
+     * @param environment
      * @return
      */
-    public static Properties createLiquibaseProperties(AbstractLiquibaseBuilder liquibaseBuilder, AbstractBuild<?, ?> build) {
+    public static Properties createLiquibaseProperties(AbstractLiquibaseBuilder liquibaseBuilder,
+                                                       AbstractBuild<?, ?> build, EnvVars environment)
+            throws IOException, InterruptedException {
         Properties properties = new Properties();
         assembleDefaults(properties);
-        assembleFromProjectConfiguration(liquibaseBuilder, properties, build);
+        String propertiesPath = resolvePropertiesPath(liquibaseBuilder, environment);
+        assembleFromPropertiesFile(properties, propertiesPath, build);
+        assembleFromProjectConfiguration(liquibaseBuilder, properties, environment);
         return properties;
     }
 
     protected static void assembleFromProjectConfiguration(AbstractLiquibaseBuilder liquibaseBuilder,
                                                            Properties properties,
-                                                           AbstractBuild<?, ?> build) {
+                                                           EnvVars environment)
+            throws IOException, InterruptedException {
 
 
-        String liquibasePropertiesPath = liquibaseBuilder.getLiquibasePropertiesPath();
-        readFromExternalProperties(properties, liquibasePropertiesPath, build);
-        addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
-        addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername());
-        addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, liquibaseBuilder.getPassword());
-        addPropertyIfDefined(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName());
-        addPropertyIfDefined(properties, LiquibaseProperty.URL, liquibaseBuilder.getUrl());
-        addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile());
-        addPropertyIfDefined(properties, LiquibaseProperty.LABELS, liquibaseBuilder.getLabels());
-        addPropertyIfDefined(properties, LiquibaseProperty.CONTEXTS, liquibaseBuilder.getContexts());
-        resolveDatabaseDriver(liquibaseBuilder, properties);
+
+        addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile(),
+                environment);
+
+        addPropertyIfDefined(properties, LiquibaseProperty.CLASSPATH, liquibaseBuilder.getClasspath(), environment);
+        addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername(), environment);
+        addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, liquibaseBuilder.getPassword(), environment);
+        addPropertyIfDefined(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName(),
+                environment);
+        addPropertyIfDefined(properties, LiquibaseProperty.URL, liquibaseBuilder.getUrl(), environment);
+        addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile(),
+                environment);
+        addPropertyIfDefined(properties, LiquibaseProperty.LABELS, liquibaseBuilder.getLabels(), environment);
+        addPropertyIfDefined(properties, LiquibaseProperty.CONTEXTS, liquibaseBuilder.getContexts(), environment);
+        resolveDatabaseDriver(liquibaseBuilder, properties, environment);
     }
 
-    private static void resolveDatabaseDriver(AbstractLiquibaseBuilder liquibaseBuilder, Properties properties) {
+    private static void resolveDatabaseDriver(AbstractLiquibaseBuilder liquibaseBuilder,
+                                              Properties properties,
+                                              EnvVars environment) {
         if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
             PropertiesAssembler.setDriverFromDBEngine(liquibaseBuilder, properties);
         } else {
-            if (!Strings.isNullOrEmpty(liquibaseBuilder.getDriverClassname())) {
-                setProperty(properties, LiquibaseProperty.DRIVER, liquibaseBuilder.getDriverClassname());
-            }
+            addPropertyIfDefined(properties, LiquibaseProperty.DRIVER, liquibaseBuilder.getDriverClassname(),
+                    environment);
         }
     }
 
-    private static void readFromExternalProperties(Properties properties,
+
+    private static void assembleFromPropertiesFile(Properties properties,
                                                    String liquibasePropertiesPath,
                                                    AbstractBuild<?, ?> build) {
         if (!Strings.isNullOrEmpty(liquibasePropertiesPath)) {
             FilePath workspace = build.getWorkspace();
-            if (workspace!=null) {
+            if (workspace != null) {
                 InputStreamReader streamReader = null;
                 try {
                     FilePath liquibaseProperties = workspace.child(liquibasePropertiesPath);
@@ -85,7 +108,9 @@ public class PropertiesAssembler {
                     IOUtils.closeQuietly(streamReader);
                 }
             } else {
-                throw new LiquibaseRuntimeException("Project workspace was found to be null when attempting to load liquibase properties file at '" + liquibasePropertiesPath + '.');
+                throw new LiquibaseRuntimeException(
+                        "Project workspace was found to be null when attempting to load liquibase properties file at '" +
+                                liquibasePropertiesPath + '.');
             }
         }
     }
@@ -99,12 +124,17 @@ public class PropertiesAssembler {
         properties.setProperty(liquibaseProperty.propertyName(), value);
     }
 
-    private static void addPropertyIfDefined(Properties properties,
-                                             LiquibaseProperty liquibaseProperty,
-                                             String value) {
+    protected static void addPropertyIfDefined(Properties properties,
+                                               LiquibaseProperty liquibaseProperty,
+                                               String value, EnvVars environment) {
         if (!Strings.isNullOrEmpty(value)) {
-            setProperty(properties, liquibaseProperty, value);
+            String resolvedValue = hudson.Util.replaceMacro(value, environment);
+            properties.setProperty(liquibaseProperty.propertyName(), resolvedValue);
         }
+    }
+
+    private static String resolvePropertiesPath(AbstractLiquibaseBuilder liquibaseBuilder, EnvVars environment) {
+        return hudson.Util.replaceMacro(liquibaseBuilder.getLiquibasePropertiesPath(), environment);
     }
 
     public static void setDriverFromDBEngine(AbstractLiquibaseBuilder liquibaseBuilder, Properties properties) {

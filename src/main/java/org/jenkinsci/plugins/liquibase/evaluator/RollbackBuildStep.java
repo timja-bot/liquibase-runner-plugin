@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Properties;
 
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -80,7 +81,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
                           BuildListener listener,
                           Liquibase liquibase,
                           Contexts contexts,
-                          ExecutedChangesetAction executedChangesetAction)
+                          ExecutedChangesetAction executedChangesetAction, Properties configProperties)
             throws InterruptedException, IOException, LiquibaseException {
 
         executedChangesetAction.setRollbackOnly(true);

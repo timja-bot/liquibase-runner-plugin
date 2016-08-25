@@ -238,6 +238,11 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
     }
 
+    @Test
+    public void should_resolve_expressions_in_configuration() {
+
+    }
+
 
     protected FreeStyleBuild createAndBuildLiquibaseProject(String changesetResourcePath)
             throws IOException, InterruptedException, ExecutionException {

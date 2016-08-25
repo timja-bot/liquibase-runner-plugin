@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.Build;
@@ -8,6 +9,7 @@ import hudson.model.Descriptor;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.Liquibase;
+import liquibase.changelog.ChangeLogParameters;
 import liquibase.changelog.ChangeSet;
 import liquibase.changelog.DatabaseChangeLog;
 import liquibase.exception.LiquibaseException;
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jenkinsci.plugins.liquibase.integration.LiquibaseTestUtil;
 import org.junit.Before;
@@ -29,8 +32,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -51,6 +56,8 @@ public class AbstractLiquibaseBuilderTest {
     Launcher launcher;
 
     protected String dbUrl;
+    protected LiquibaseBuilderStub liquibaseBuilderStub = new LiquibaseBuilderStub();
+    protected Properties liquibaseProperties;
 
     @Before
     public void setup() throws IOException {
@@ -59,27 +66,49 @@ public class AbstractLiquibaseBuilderTest {
         File dbFile = new File(dbfiles, "h2");
         dbUrl = "jdbc:h2:file:" + dbFile.getAbsolutePath();
         when(buildListener.getLogger()).thenReturn(System.out);
+        liquibaseProperties = createLiquibaseProperties();
     }
 
     @Test
-    public void should_load_changeset_from_system_classpath() throws IOException, LiquibaseException {
-        AbstractLiquibaseBuilder liquibaseBuilder = new LiquibaseBuilderStub();
+    public void should_load_changeset_from_system_classpath()
+            throws IOException, LiquibaseException, InterruptedException {
 
-        Properties configProperties = createLiquibaseProperties();
         // this changelogFile is available only through this test class's classloader
-        configProperties.setProperty("changeLogFile", "example-changesets/single-changeset.xml");
+        liquibaseProperties.setProperty("changeLogFile", "example-changesets/single-changeset.xml");
 
-        Liquibase liquibase = liquibaseBuilder
-                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), configProperties, launcher);
+        Liquibase liquibase = liquibaseBuilderStub
+                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties, launcher);
         liquibase.update(new Contexts());
 
         assertThatOneChangesetExecuted(liquibase);
     }
 
     @Test
-    public void should_load_changeset_from_dynamic_classpath() throws IOException, LiquibaseException {
-        Properties liquibaseProperties = createLiquibaseProperties();
-        LiquibaseBuilderStub stub = new LiquibaseBuilderStub();
+    public void should_populate_changelog_parameters() throws IOException, InterruptedException {
+
+        Liquibase liquibase = liquibaseBuilderStub
+                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties, launcher);
+
+
+        String parameterValue = "red";
+        AbstractLiquibaseBuilder.populateChangeLogParameters(liquibase, new EnvVars(), "color=" + parameterValue);
+
+        ChangeLogParameters changeLogParameters = liquibase.getChangeLogParameters();
+        File changelog = temporaryFolder.newFile("changelog");
+        FileUtils.write(changelog, "${color}");
+
+        Object resolvedValue = changeLogParameters.getValue("color", new DatabaseChangeLog(changelog.getAbsolutePath()));
+
+        LOG.debug("value={}", resolvedValue);
+
+        assertThat(resolvedValue, instanceOf(String.class));
+        assertThat((String) resolvedValue, is(parameterValue));
+
+    }
+
+    @Test
+    public void should_load_changeset_from_dynamic_classpath()
+            throws IOException, LiquibaseException, InterruptedException {
 
         File changesets = temporaryFolder.newFolder("changesets");
 
@@ -90,10 +119,12 @@ public class AbstractLiquibaseBuilderTest {
 
         String changeLogResourcePath = subDirectoryName + "/single-changeset.xml";
         liquibaseProperties.setProperty("changeLogFile", changeLogResourcePath);
-        stub.setClasspath(changesets.getAbsolutePath());
+        liquibaseProperties.setProperty("classpath", changesets.getAbsolutePath());
+
 
         Liquibase liquibase =
-                stub.createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties,
+                liquibaseBuilderStub
+                        .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties,
                         launcher);
         liquibase.update(new Contexts(""));
 
@@ -121,7 +152,7 @@ public class AbstractLiquibaseBuilderTest {
                               BuildListener listener,
                               Liquibase liquibase,
                               Contexts contexts,
-                              ExecutedChangesetAction executedChangesetAction)
+                              ExecutedChangesetAction executedChangesetAction, Properties configProperties)
                 throws InterruptedException, IOException, LiquibaseException {
 
         }
