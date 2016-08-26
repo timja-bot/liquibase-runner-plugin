@@ -29,7 +29,9 @@ section of the builder configuration. Here you'll find most of liquibase's confi
 the JDBC URL used to access the database.
 
 For convenience, the plugin includes a few database drivers for use. Alternatively, you may
-also define a classpath where a database driver may be loaded.
+also define a classpath where a database driver may be loaded, and the driver classname.
+
+Note that individual configuration values will override any found in a defined liquibase properties file.  This emulates how command-line usage of liquibase works.
 
 h2. Evaluate liquibase changesets step
 
@@ -50,7 +52,9 @@ build slave runs your project, that file will no longer be available, and all ch
 
 h3. Version History
 
-h4. Version 1.1.0 (Aug 24, 2017)
+h4. Version 1.1.0 (Aug 25, 2016)
+
+Thanks to David Siegal for suggestions, testing, and guidance for this release.
 
 * [JENKINS-37591|https://issues.jenkins-ci.org/browse/JENKINS-37591] Upgraded to use Liquibase 3.5.1
 * [JENKINS-37700|https://issues.jenkins-ci.org/browse/JENKINS-37700] Allow base path to be set.
