@@ -23,7 +23,7 @@ public class RollbackBuildStepTest {
         RollbackBuildStep rollbackBuildStep = new RollbackBuildStep();
         rollbackBuildStep.setRollbackLastHours(HOURS_IN_DAY);
         Date resolveFrom = sdf.parse(RESOLVE_FROM_DATE);
-        Date result = rollbackBuildStep.resolveTargetDate(RollbackBuildStep.RollbackStrategy.RELATIVE, new EnvVars());
+        Date result = rollbackBuildStep.resolveTargetDate(RollbackBuildStep.RollbackStrategy.RELATIVE,resolveFrom, new EnvVars());
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(resolveFrom);

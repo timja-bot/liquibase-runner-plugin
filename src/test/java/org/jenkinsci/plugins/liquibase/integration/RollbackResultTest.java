@@ -72,7 +72,7 @@ public class RollbackResultTest {
         RollbackBuildStep buildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, sunnyDayChangeset,
                 dbUrl);
         int numberOfChangesetsToRollback = 2;
-        buildStep.setNumberOfChangesetsToRollback(numberOfChangesetsToRollback);
+        buildStep.setNumberOfChangesetsToRollback(String.valueOf(numberOfChangesetsToRollback));
         RolledbackChangesetAction action = launchBuild(buildStep);
 
         assertThat(action.getBuild().getResult(), is(Result.SUCCESS));
@@ -129,7 +129,7 @@ public class RollbackResultTest {
 
         RollbackBuildStep buildStep =
                 createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, changesetContainingError, dbUrl);
-        buildStep.setNumberOfChangesetsToRollback(2);
+        buildStep.setNumberOfChangesetsToRollback(String.valueOf(2));
 
         RolledbackChangesetAction resultAction = launchBuild(buildStep);
         assertThat(resultAction, notNullValue());
