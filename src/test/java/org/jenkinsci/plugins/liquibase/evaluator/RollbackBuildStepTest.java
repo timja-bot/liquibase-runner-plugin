@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
+import hudson.EnvVars;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -21,7 +23,7 @@ public class RollbackBuildStepTest {
         RollbackBuildStep rollbackBuildStep = new RollbackBuildStep();
         rollbackBuildStep.setRollbackLastHours(HOURS_IN_DAY);
         Date resolveFrom = sdf.parse(RESOLVE_FROM_DATE);
-        Date result = rollbackBuildStep.resolveTargetDate(RollbackBuildStep.RollbackStrategy.RELATIVE, resolveFrom);
+        Date result = rollbackBuildStep.resolveTargetDate(RollbackBuildStep.RollbackStrategy.RELATIVE, new EnvVars());
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(resolveFrom);

@@ -1,6 +1,8 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -18,6 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
+import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -31,13 +34,13 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
 
     private String rollbackType;
-    protected int numberOfChangesetsToRollback;
+    protected String numberOfChangesetsToRollback;
     private String rollbackLastHours;
     private String rollbackToTag;
     private String rollbackToDate;
 
 
-    private SimpleDateFormat simpleDateFormat= new SimpleDateFormat(DATE_PATTERN);
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
 
     public enum RollbackStrategy {
         TAG, DATE, RELATIVE, COUNT
@@ -63,7 +66,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
                              String labels,
                              String basePath,
                              String rollbackType,
-                             int numberOfChangesetsToRollback,
+                             String numberOfChangesetsToRollback,
                              String rollbackLastHours,
                              String rollbackToTag, String rollbackToDate) {
         super(databaseEngine, changeLogFile, username, password, url, defaultSchemaName, contexts,
@@ -90,44 +93,61 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
         build.addAction(action);
 
+        EnvVars environment = build.getEnvironment(listener);
+        LabelExpression labelExpression = new LabelExpression(getProperty(configProperties, LiquibaseProperty.LABELS));
+
         if (rollbackStrategy == RollbackStrategy.COUNT) {
-            listener.getLogger().println("Rollback back the last " + numberOfChangesetsToRollback + " changeset(s) applied.");
-            liquibase.rollback(numberOfChangesetsToRollback, contexts, new LabelExpression(labels));
+            String resolvedRollbackCount = Util.replaceMacro(numberOfChangesetsToRollback, environment);
+            int rollbackCount;
+            if (resolvedRollbackCount != null) {
+                rollbackCount = Integer.parseInt(resolvedRollbackCount);
+            } else {
+                throw new LiquibaseRuntimeException(
+                        "Invalid value '" + numberOfChangesetsToRollback + "' for rollback count.");
+            }
+            listener.getLogger().println("Rollback back the last " + rollbackCount + " changeset(s) applied.");
+            liquibase.rollback(rollbackCount, contexts, labelExpression);
         }
 
         if (rollbackStrategy == RollbackStrategy.DATE || rollbackStrategy == RollbackStrategy.RELATIVE) {
-            Date targetDate = resolveTargetDate(rollbackStrategy);
-            listener.getLogger().println("Rolling back changeset(s) applied after date " + simpleDateFormat.format(targetDate));
-            liquibase.rollback(targetDate, contexts, new LabelExpression(labels));
+            Date targetDate = resolveTargetDate(rollbackStrategy, environment);
+            listener.getLogger()
+                    .println("Rolling back changeset(s) applied after date " + simpleDateFormat.format(targetDate));
+            liquibase.rollback(targetDate, contexts, labelExpression);
         }
 
         if (rollbackStrategy == RollbackStrategy.TAG) {
-            listener.getLogger().println("Rolling back database to tag '" + rollbackToTag+ "'");
-            liquibase.rollback(rollbackToTag, contexts, new LabelExpression(labels));
+            String resolvedTag = Util.replaceMacro(rollbackToTag, environment);
+            listener.getLogger().println("Rolling back database to tag '" + resolvedTag + "'");
+            liquibase.rollback(resolvedTag, contexts, labelExpression);
         }
 
         action.setRolledbackChangesets(executedChangesetAction.getRolledBackChangesets());
     }
 
 
-    protected Date resolveTargetDate(RollbackStrategy rollbackStrategy) {
+    protected Date resolveTargetDate(RollbackStrategy rollbackStrategy, EnvVars environment) {
         Date now = new Date();
-        return resolveTargetDate(rollbackStrategy, now);
+        return resolveTargetDate(rollbackStrategy, now, environment);
     }
 
-    protected Date resolveTargetDate(RollbackStrategy rollbackStrategy, Date now) {
+    protected Date resolveTargetDate(RollbackStrategy rollbackStrategy, Date now, EnvVars environment) {
         Date targetDate;
         if (rollbackStrategy == RollbackStrategy.RELATIVE) {
             Calendar instance = Calendar.getInstance();
             instance.setTime(now);
 
-            instance.add(Calendar.HOUR, 0 - Integer.parseInt(rollbackLastHours));
+            String lastHours = Util.replaceMacro(rollbackLastHours, environment);
+            if (lastHours != null) {
+                instance.add(Calendar.HOUR, 0 - Integer.parseInt(lastHours));
+            }
             targetDate = instance.getTime();
         } else {
+            String rollbackDate = Util.replaceMacro(rollbackToDate, environment);
             try {
-                targetDate = simpleDateFormat.parse(rollbackToDate);
+                targetDate = simpleDateFormat.parse(rollbackDate);
             } catch (ParseException e) {
-                throw new LiquibaseRuntimeException("Invalid value for rollback to date value:" + rollbackToDate,
+                throw new LiquibaseRuntimeException("Invalid value for rollback to date value:" + rollbackDate,
                         e);
             }
         }
@@ -139,12 +159,12 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         return DESCRIPTOR;
     }
 
-    public int getNumberOfChangesetsToRollback() {
+    public String getNumberOfChangesetsToRollback() {
         return numberOfChangesetsToRollback;
     }
 
     @DataBoundSetter
-    public void setNumberOfChangesetsToRollback(int numberOfChangesetsToRollback) {
+    public void setNumberOfChangesetsToRollback(String numberOfChangesetsToRollback) {
         this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;
     }
 
