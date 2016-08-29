@@ -77,12 +77,20 @@ public class PropertiesAssembler {
     private static void resolveDatabaseDriver(AbstractLiquibaseBuilder liquibaseBuilder,
                                               Properties properties,
                                               EnvVars environment) {
-        if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
+
+
+        boolean useIncludedDriver = useIncludedDriver(liquibaseBuilder);
+        if (useIncludedDriver) {
             PropertiesAssembler.setDriverFromDBEngine(liquibaseBuilder, properties);
         } else {
             addPropertyIfDefined(properties, LiquibaseProperty.DRIVER, liquibaseBuilder.getDriverClassname(),
                     environment);
         }
+    }
+
+    private static boolean useIncludedDriver(AbstractLiquibaseBuilder liquibaseBuilder) {
+        boolean useIncludedDriver = liquibaseBuilder.hasUseIncludedDriverBeenSet() && liquibaseBuilder.isUseIncludedDriver();
+        return useIncludedDriver && !Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine());
     }
 
 
@@ -150,5 +158,4 @@ public class PropertiesAssembler {
             }
         }
     }
-
 }

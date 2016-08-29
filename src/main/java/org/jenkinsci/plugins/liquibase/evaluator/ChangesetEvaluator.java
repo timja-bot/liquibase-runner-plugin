@@ -57,10 +57,11 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                               boolean dropAll,
                               String labels,
                               String basePath,
-                              boolean tagOnSuccessfulBuild) {
+                              boolean tagOnSuccessfulBuild,
+                              boolean useIncludedDriver) {
         super(databaseEngine, changeLogFile, username, password, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
-                classpath, driverClassname, changeLogParameters, labels, basePath);
+                classpath, driverClassname, changeLogParameters, labels, basePath, useIncludedDriver);
         this.testRollbacks = testRollbacks;
         this.dropAll = dropAll;
         this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
@@ -73,7 +74,6 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                           Contexts contexts,
                           ExecutedChangesetAction executedChangesetAction, Properties configProperties)
             throws InterruptedException, IOException {
-
 
         executedChangesetAction.setRollbacksTested(testRollbacks);
 
@@ -91,7 +91,8 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
             }
             listener.getLogger().println("Running liquibase command '" + resolvedCommand + "'");
 
-            LabelExpression labelExpression = new LabelExpression(getProperty(configProperties, LiquibaseProperty.LABELS));
+            LabelExpression labelExpression =
+                    new LabelExpression(getProperty(configProperties, LiquibaseProperty.LABELS));
             if (LiquibaseCommand.UPDATE_TESTING_ROLLBACKS.isCommand(resolvedCommand)) {
                 liquibase.updateTestingRollback(contexts, labelExpression);
             }

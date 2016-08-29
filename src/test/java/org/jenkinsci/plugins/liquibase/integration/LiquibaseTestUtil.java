@@ -1,17 +1,22 @@
 package org.jenkinsci.plugins.liquibase.integration;
 
+import hudson.model.FreeStyleProject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class LiquibaseTestUtil {
     static final String SUNNY_DAY_CHANGESET_XML = "/example-changesets/sunny-day-changeset.xml";
     private static final String CHANGESET_WITH_ERROR_XML = "/example-changesets/changeset-with-error.xml";
     static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
+    static final String H2 = "H2";
 
     static File createErrorFreeChangeset(TemporaryFolder temporaryFolder) throws IOException {
         return createFileFromResource(temporaryFolder.getRoot(), SUNNY_DAY_CHANGESET_XML);
@@ -39,5 +44,16 @@ public class LiquibaseTestUtil {
 
     static String extractFilenameFromResourcePath(String sourceResourcePath) {
         return sourceResourcePath.substring(sourceResourcePath.lastIndexOf("/")+1, sourceResourcePath.length());
+    }
+
+    public static FreeStyleProject createLiquibaseProject(File changelogFile, JenkinsRule jenkinsRule)
+            throws IOException {
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        ChangesetEvaluator evaluator = new ChangesetEvaluator();
+        evaluator.setChangeLogFile(changelogFile.getAbsolutePath());
+        evaluator.setUrl(IN_MEMORY_JDBC_URL);
+        evaluator.setDatabaseEngine(H2);
+        project.getBuildersList().add(evaluator);
+        return project;
     }
 }

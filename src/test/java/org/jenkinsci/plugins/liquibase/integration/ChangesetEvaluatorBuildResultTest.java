@@ -47,7 +47,6 @@ public class ChangesetEvaluatorBuildResultTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluatorBuildResultTest.class);
     private static final String LIQUIBASE_PROPERTIES = "/example-changesets/h2.liquibase.properties";
-    private static final String H2 = "H2";
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -113,7 +112,7 @@ public class ChangesetEvaluatorBuildResultTest {
         evaluator.setChangeLogFile(
                 changeLog.getAbsolutePath());
         evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
-        evaluator.setDatabaseEngine(H2);
+        evaluator.setDatabaseEngine(LiquibaseTestUtil.H2);
 
         evaluator.setBasePath("changesetDir");
 
@@ -227,7 +226,7 @@ public class ChangesetEvaluatorBuildResultTest {
         ChangesetEvaluator evaluator = new ChangesetEvaluator();
         evaluator.setChangeLogFile(sunnyDayChangeset.getAbsolutePath());
         evaluator.setUrl(dbUrl);
-        evaluator.setDatabaseEngine(H2);
+        evaluator.setDatabaseEngine(LiquibaseTestUtil.H2);
         evaluator.setTagOnSuccessfulBuild(true);
         project.getBuildersList().add(evaluator);
 
@@ -301,13 +300,8 @@ public class ChangesetEvaluatorBuildResultTest {
     }
 
     protected FreeStyleProject createProjectWithChangelogFile(File changelogFile) throws IOException {
-        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-        ChangesetEvaluator evaluator = new ChangesetEvaluator();
-        evaluator.setChangeLogFile(changelogFile.getAbsolutePath());
-        evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
-        evaluator.setDatabaseEngine(H2);
-        project.getBuildersList().add(evaluator);
-        return project;
+        JenkinsRule jenkinsRule = this.jenkinsRule;
+        return LiquibaseTestUtil.createLiquibaseProject(changelogFile, jenkinsRule);
     }
 
     protected static FreeStyleBuild launchBuildForProject(FreeStyleProject project)

@@ -54,6 +54,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     protected String labels;
     private String changeLogParameters;
     private String basePath;
+    private Boolean useIncludedDriver;
 
 
 
@@ -67,7 +68,10 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                                     String liquibasePropertiesPath,
                                     String classpath,
                                     String driverClassname,
-                                    String changeLogParameters, String labels, String basePath) {
+                                    String changeLogParameters,
+                                    String labels,
+                                    String basePath,
+                                    boolean useIncludedDriver) {
         this.databaseEngine = databaseEngine;
         this.changeLogFile = changeLogFile;
         this.username = username;
@@ -81,10 +85,19 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         this.changeLogParameters = changeLogParameters;
         this.labels = labels;
         this.basePath = basePath;
+        this.useIncludedDriver = useIncludedDriver;
+
     }
 
     public AbstractLiquibaseBuilder() {
 
+    }
+
+    protected Object readResolve() {
+        if (useIncludedDriver == null) {
+            useIncludedDriver = Strings.isNullOrEmpty(driverClassname);
+        }
+        return this;
     }
 
     public abstract void doPerform(AbstractBuild<?, ?> build,
@@ -145,7 +158,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                 filePath = workspace;
             } else {
                 filePath = workspace.child(resolvedBasePath);
-
             }
 
             ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
@@ -347,5 +359,24 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @DataBoundSetter
     public void setBasePath(String basePath) {
         this.basePath = basePath;
+    }
+
+    public void clearDriverClassname() {
+        driverClassname = null;
+    }
+    public void clearDatabaseEngine() {
+        databaseEngine=null;
+    }
+
+    public boolean hasUseIncludedDriverBeenSet() {
+        return useIncludedDriver!=null;
+    }
+    public boolean isUseIncludedDriver() {
+        return useIncludedDriver;
+    }
+
+    @DataBoundSetter
+    public void setUseIncludedDriver(Boolean useIncludedDriver) {
+        this.useIncludedDriver = useIncludedDriver;
     }
 }
