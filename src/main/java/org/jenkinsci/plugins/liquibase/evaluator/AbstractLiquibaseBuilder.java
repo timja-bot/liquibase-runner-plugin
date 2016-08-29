@@ -190,7 +190,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
         for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
             String value = entry.getValue();
-
             String resolvedValue = hudson.Util.replaceMacro(value, environment);
             String resolvedKey = hudson.Util.replaceMacro(entry.getKey(), environment);
             liquibase.setChangeLogParameter(resolvedKey, resolvedValue);
