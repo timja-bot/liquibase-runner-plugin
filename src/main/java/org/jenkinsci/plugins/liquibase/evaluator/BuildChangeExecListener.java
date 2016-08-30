@@ -56,8 +56,14 @@ public class BuildChangeExecListener implements ChangeExecListener {
         if (LOG.isDebugEnabled()) {
             LOG.debug("rolling back changeset [" + changeSet.getId() + "] ");
         }
-        String logMessage = formatChangesetForLog(changeSet, databaseChangeLog, "Rolled back");
+
+        String logMessage = formatChangesetForLog(changeSet, "Rolled back");
         buildListener.getLogger().println(logMessage);
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet);
+        action.addRolledBackChangesetDetail(changeSetDetail);
+        if (action.hasChangesetWithId(changeSetDetail.getId())) {
+            action.markChangesetAsRolledBack(changeSetDetail.getId());
+        }
     }
 
     public void preconditionFailed(PreconditionFailedException error, PreconditionContainer.FailOption onFail) {
@@ -77,12 +83,11 @@ public class BuildChangeExecListener implements ChangeExecListener {
         printConsoleLogMessage(changeSet);
 
         ChangeSetDetail changeSetDetail = createChangeSetDetail(change, changeSet, database);
-
         action.addChangeSetDetail(changeSetDetail);
 
     }
 
-    protected ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
+    protected static ChangeSetDetail createChangeSetDetail(Change change, ChangeSet changeSet, Database database) {
         SqlStatement[] sqlStatements = change.generateStatements(database);
         List<Sql> statementSqls = Lists.newArrayList();
         if (sqlStatements != null && sqlStatements.length > 0) {
@@ -90,11 +95,8 @@ public class BuildChangeExecListener implements ChangeExecListener {
                 Sql[] sqls = SqlGeneratorFactory.getInstance().generateSql(sqlStatement, database);
                 statementSqls.addAll(Arrays.asList(sqls));
             }
-
         }
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet, statementSqls);
-
-
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet, statementSqls);
         return changeSetDetail;
     }
 
@@ -108,8 +110,9 @@ public class BuildChangeExecListener implements ChangeExecListener {
         action.addChangeSetDetail(changeSetDetail);
     }
 
-    public static String formatChangesetForLog(ChangeSet changeSet, DatabaseChangeLog changeLog, String msg) {
+    public static String formatChangesetForLog(ChangeSet changeSet, String msg) {
         String changeSetLogMsg = Util.formatChangeset(changeSet);
         return changeSetLogMsg + ": " + msg;
     }
+
 }

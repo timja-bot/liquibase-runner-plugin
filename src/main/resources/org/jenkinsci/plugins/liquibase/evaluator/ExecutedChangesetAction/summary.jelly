@@ -26,17 +26,18 @@
                             <span class="${changeCss}">${changeSetDetail.id}</span>
                         </a>
                         by
-                        <span class="changeSetAuthor">${changeSetDetail.author}</span>
-
-                        <br/>
+                        <span class="changeSetAuthor">${changeSetDetail.author}</span> <br/>
                     </li>
                     <j:set var="displayedCount" value="${displayedCount + 1}"/>
                 </j:forEach>
                 <j:if test="${maxDisplay &lt; it.getChangeSetDetails().size() }">
                     <a href="${it.urlName}">View All ${">>>"}</a>
                 </j:if>
-
             </ul>
+        </j:if>
+        <j:if test="${it.tagApplied}">
+            <span style="font-weight: bold;" class="tagAppliedTitle">Applied tag:</span>
+                ${it.appliedTag}
         </j:if>
     </t:summary>
 

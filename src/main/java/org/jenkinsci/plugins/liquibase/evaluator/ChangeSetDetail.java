@@ -4,7 +4,6 @@ import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
 import liquibase.sql.Sql;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -25,7 +24,6 @@ public class ChangeSetDetail implements Action {
 
     public static final int MAX_LINES = 15;
     private List<Sql> sqls;
-    private Sql sql;
     private boolean successfullyExecuted = true;
     private ExecutedChangesetAction parent;
     private String author;
@@ -34,14 +32,22 @@ public class ChangeSetDetail implements Action {
     private String description;
     private String filePath;
     private String exceptionMessage;
-
+    private boolean rolledBack;
 
 
     public ChangeSetDetail() {
 
     }
 
-    public static ChangeSetDetail create(ChangeSet changeSet) {
+    private ChangeSetDetail(Builder builder) {
+        setSuccessfullyExecuted(builder.successfullyExecuted);
+        setAuthor(builder.author);
+        setId(builder.id);
+        setComments(builder.comments);
+        setDescription(builder.description);
+    }
+
+    public static ChangeSetDetail fromChangeSet(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = new ChangeSetDetail();
         changeSetDetail.setFilePath(changeSet.getFilePath());
         changeSetDetail.setId(changeSet.getId());
@@ -51,18 +57,14 @@ public class ChangeSetDetail implements Action {
         return changeSetDetail;
     }
 
-    public static ChangeSetDetail create(ChangeSet changeSet, Sql[] sqls) {
-        List<Sql> sqlList = Arrays.asList(sqls);
-        return create(changeSet, sqlList);
-    }
-
-    public static ChangeSetDetail create(ChangeSet changeSet, List<Sql> sqlList) {
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
+    public static ChangeSetDetail fromChangeSet(ChangeSet changeSet, List<Sql> sqlList) {
+        ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet);
         changeSetDetail.setSqls(sqlList);
         return changeSetDetail;
     }
+
     public static ChangeSetDetail createFailed(ChangeSet changeSet, Exception e) {
-        ChangeSetDetail failedChangeset = ChangeSetDetail.create(changeSet);
+        ChangeSetDetail failedChangeset = ChangeSetDetail.fromChangeSet(changeSet);
         failedChangeset.setSuccessfullyExecuted(false);
         failedChangeset.setExceptionMessage(e.getMessage());
         return failedChangeset;
@@ -71,8 +73,10 @@ public class ChangeSetDetail implements Action {
 
     public String getExecutedSql() {
         StringBuilder sb = new StringBuilder();
-        for (Sql changesetSql : sqls) {
-            sb.append(changesetSql.toSql()).append('\n');
+        if (sqls != null) {
+            for (Sql changesetSql : sqls) {
+                sb.append(changesetSql.toSql()).append('\n');
+            }
         }
 
         return sb.toString();
@@ -83,8 +87,9 @@ public class ChangeSetDetail implements Action {
     }
 
     public boolean hasSql() {
-        return !getExecutedSql().isEmpty();
+        return sqls != null && !getExecutedSql().isEmpty();
     }
+
     public String getTruncatedSql() {
         String executedSql = getExecutedSql();
         return truncateString(executedSql);
@@ -133,10 +138,6 @@ public class ChangeSetDetail implements Action {
         return join;
     }
 
-    public Sql getSql() {
-        return sql;
-    }
-
     public List<Sql> getSqls() {
         return sqls;
     }
@@ -160,7 +161,6 @@ public class ChangeSetDetail implements Action {
     public String toString() {
         return "ChangeSetDetail{" +
                 "sqls=" + sqls +
-                ", sql=" + sql +
                 ", successfullyExecuted=" + successfullyExecuted +
                 ", author='" + author + '\'' +
                 ", id='" + id + '\'' +
@@ -197,6 +197,7 @@ public class ChangeSetDetail implements Action {
     public boolean hasExceptionMessage() {
         return !Strings.isNullOrEmpty(exceptionMessage);
     }
+
     public String getAuthor() {
         return author;
     }
@@ -229,9 +230,11 @@ public class ChangeSetDetail implements Action {
         this.description = description;
     }
 
+
     public void setSqls(List<Sql> sqls) {
         this.sqls = sqls;
     }
+
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
@@ -243,5 +246,56 @@ public class ChangeSetDetail implements Action {
 
     public void setExceptionMessage(String exceptionMessage) {
         this.exceptionMessage = exceptionMessage;
+    }
+
+    public boolean isRolledBack() {
+        return rolledBack;
+    }
+
+    public void setRolledBack(boolean rolledBack) {
+        this.rolledBack = rolledBack;
+    }
+
+    public static final class Builder {
+        private boolean successfullyExecuted;
+        private String author;
+        private String id;
+        private String comments;
+        private String description;
+
+
+        public Builder() {
+        }
+
+        public Builder withSuccessfullyExecuted(boolean val) {
+            successfullyExecuted = val;
+            return this;
+        }
+
+        public Builder withAuthor(String val) {
+            author = val;
+            return this;
+        }
+
+        public Builder withId(String val) {
+            id = val;
+            return this;
+        }
+
+        public Builder withComments(String val) {
+            comments = val;
+            return this;
+        }
+
+        public Builder withDescription(String val) {
+            description = val;
+            return this;
+        }
+
+        public ChangeSetDetail build() {
+            return new ChangeSetDetail(this);
+        }
+
+
     }
 }

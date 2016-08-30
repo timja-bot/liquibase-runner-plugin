@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.liquibase.common;
 
 public enum LiquibaseCommand {
     UPDATE("update"),
-    UPDATE_TESTING_ROLLBACKS("updateTestingRollback");
+    UPDATE_TESTING_ROLLBACKS("updateTestingRollback"), ROLLBACK("rollback");
 
     private final String command;
 

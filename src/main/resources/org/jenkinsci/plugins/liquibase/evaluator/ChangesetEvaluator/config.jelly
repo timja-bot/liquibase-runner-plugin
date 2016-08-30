@@ -1,71 +1,31 @@
 <?jelly escape-by-default='true'?>
 
 <j:jelly xmlns:j="jelly:core"
-         xmlns:f="/lib/form">
+         xmlns:f="/lib/form"
+         xmlns:st="jelly:stapler">
 
     <f:entry title="Change Log File" field="changeLogFile"
              description="Root changeset file.">
         <f:textbox value="${instance.changeLogFile}"/>
     </f:entry>
+    <f:entry title="Drop All" field="dropAll"
+             description="Runs 'dropAll' prior to executing changesets.">
+        <f:checkbox checked="${instance.dropAll}"/>
+    </f:entry>
+    <f:entry title="Tag on successful build"
+             field="tagOnSuccessfulBuild"
+             description="Creates a liquibase tag on successful build"
+             help="help-tagOnSuccess.html">
+        <f:checkbox checked="${instance.tagOnSuccessfulBuild}"/>
+    </f:entry>
+    <f:entry title="Test Rollbacks" field="testRollbacks"
+             description="Executes any included rollback statements in addition to the changeset.">
+        <f:checkbox checked="${instance.testRollbacks}"/>
+    </f:entry>
     <f:advanced>
-        <f:entry title="Database Engine">
-            <select class="setting-input"  name="LiquibaseBuilder.databaseEngine">
-                <option value="">Select included driver</option>
-                <j:forEach var="engine" items="${descriptor.getIncludedDatabaseDrivers()}">
-                    <f:option selected="${instance.databaseEngine==engine.displayName}" value="${engine.displayName}">
-                        ${engine.displayName}
-                    </f:option>
-                </j:forEach>
-            </select>
-        </f:entry>
-        <f:entry title="Driver classname" field="driverClassname"
-                 description="Database driver classname.">
-            <f:textbox value="${instance.driverClassname}"/>
-        </f:entry>
-
-        <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb">
-            <f:textbox value="${instance.url}"/>
-        </f:entry>
-        <f:entry title="Username" field="username"
-                 description="Username used to connect to the database">
-            <f:textbox value="${instance.username}"/>
-        </f:entry>
-
-        <f:entry title="Password" field="password"
-                 description="Password used to connect to the database (will be masked in build log).">
-            <f:textbox value="${instance.password}"/>
-        </f:entry>
-        <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
-            <f:textbox value="${instance.contexts}"/>
-        </f:entry>
-        <f:entry title="Test Rollbacks" field="testRollbacks"
-                 description="Executes any included rollback statements in addition to the changeset.">
-            <f:checkbox checked="${instance.testRollbacks}"/>
-        </f:entry>
-        <f:entry title="Drop All" field="dropAll"
-                 description="Runs 'dropAll' prior to executing changesets.">
-            <f:checkbox checked="${instance.dropAll}"/>
-        </f:entry>
-
-        <f:entry title="Liquibase Defaults File" field="liquibasePropertiesPath"
-                 description="Properties file defining liquibase configuration.  You can use this instead of defining above configuration.">
-            <f:textbox value="${instance.liquibasePropertiesPath}"/>
-        </f:entry>
-        <f:entry title="Default Schema" field="defaultSchemaName"
-                 description="Default database schema to use.  Leave blank to default to that defined by the URL.">
-            <f:textbox value="${instance.defaultSchemaName}"/>
-        </f:entry>
-
-        <f:entry title="Label Expression" description="Expression defining labeled ChangeSet to execute">
-            <f:expandableTextbox name="labels" value="${instance.labels}"/>
-        </f:entry>
-        <f:entry title="Classpath" field="classpath"
-                 description="Classpath containing migration files and JDBC Driver">
-            <f:textbox value="${instance.classpath}"/>
-        </f:entry>
-        <f:entry title="Changelog Parameters" field="changeLogParameters">
-            <f:textarea value="${instance.changeLogProperties}"/>
-        </f:entry>
+        <st:include
+                page="liquibase-common-config.jelly"
+                class="org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder"/>
     </f:advanced>
 </j:jelly>
 

@@ -1,0 +1,36 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+
+    <l:layout title="${it.name}" css="/plugin/liquibase-runner/css/style.css">
+        <st:include it="${it.build}" page="sidepanel.jelly"/>
+        <l:main-panel>
+            <div>
+                <img src="${rootURL}/plugin/liquibase-runner/liquibase_icon48x48.png"/>
+                <h1 style="display:inline;vertical-align: bottom;">Rolled back changesets</h1>
+            </div>
+            <br/>
+            <j:if test="${it.getRolledbackChangesets().isEmpty()}">
+                No changesets were rolled back
+            </j:if>
+            <j:if test="${!it.getRolledbackChangesets().isEmpty()}">
+                <table id="changesetResult">
+                    <tr>
+                        <th class="theader">Order</th>
+                        <th class="theader">ID</th>
+                    </tr>
+                    <tbody>
+                        <j:forEach var="detail" items="${it.getRolledbackChangesets()}" varStatus="status">
+                            <j:set var="ch" value="${detail.getChangeSet()}"/>
+                            <tr>
+                                <td class="pane">${status.index+1}</td>
+                                <td class="pane">
+                                    <st:out value="${detail.id}"/>
+                                </td>
+                            </tr>
+                        </j:forEach>
+                    </tbody>
+                </table>
+            </j:if>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

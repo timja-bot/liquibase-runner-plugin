@@ -1,0 +1,70 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form">
+
+    <f:section title="Database Driver">
+        <f:radioBlock inline="true" name="useIncludedDriver" checked="${instance.databaseEngine==null || instance.databaseEngine!=''}" value="true"
+                      title="${%Use one of the included drivers}">
+            <f:entry title="${%Database engine}" field="databaseEngine">
+                <select class="setting-input" name="LiquibaseBuilder.databaseEngine">
+                    <option value="">Select included driver</option>
+                    <j:forEach var="engine" items="${descriptor.getIncludedDatabaseDrivers()}">
+                        <f:option selected="${instance.databaseEngine==engine.displayName}"
+                                  value="${engine.displayName}">${engine.displayName}</f:option>
+                    </j:forEach>
+                </select>
+            </f:entry>
+        </f:radioBlock>
+
+        <f:radioBlock inline="true" name="useIncludedDriver" checked="${instance.driverClassname!=null &amp;&amp; instance.driverClassname!=''}" value="false"
+                      title="${%Specify driver classname}">
+            <f:entry title="${%Database driver classname}" field="driverClassname">
+                <f:textbox value="${instance.driverClassname}"/>
+            </f:entry>
+        </f:radioBlock>
+    </f:section>
+    <f:section title="Connection Details">
+        <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb">
+            <f:textbox value="${instance.url}"/>
+        </f:entry>
+        <f:entry title="Username" field="username"
+                 description="Username used to connect to the database">
+            <f:textbox value="${instance.username}"/>
+        </f:entry>
+
+        <f:entry title="Password" field="password"
+                 description="Password used to connect to the database (will be masked in build log).">
+            <f:textbox value="${instance.password}"/>
+        </f:entry>
+    </f:section>
+
+    <f:section title="Liquibase Configuration">
+        <f:entry help="help-basePath.html" title="Directory containing change log file" field="basePath"
+                 description="Leave blank for workspace root.  May be relative to workspace or an absolute path.">
+            <f:textbox value="${instance.basePath}"/>
+        </f:entry>
+        <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
+            <f:textbox value="${instance.contexts}"/>
+        </f:entry>
+        <f:entry title="Liquibase Defaults File" field="liquibasePropertiesPath"
+                 description="Properties file defining liquibase configuration.  You can use this instead of defining above configuration.">
+            <f:textbox value="${instance.liquibasePropertiesPath}"/>
+        </f:entry>
+        <f:entry title="Default Schema" field="defaultSchemaName"
+                 description="Default database schema to use.  Leave blank to default to that defined by the URL.">
+            <f:textbox value="${instance.defaultSchemaName}"/>
+        </f:entry>
+
+        <f:entry title="Label Expression" description="Expression defining labeled ChangeSet to execute">
+            <f:expandableTextbox name="labels" value="${instance.labels}"/>
+        </f:entry>
+        <f:entry title="Classpath" field="classpath"
+                 description="Classpath containing migration files and JDBC Driver">
+            <f:textbox value="${instance.classpath}"/>
+        </f:entry>
+        <f:entry title="Changelog Parameters" field="changeLogParameters">
+            <f:textarea value="${instance.changeLogProperties}"/>
+        </f:entry>
+    </f:section>
+</j:jelly>

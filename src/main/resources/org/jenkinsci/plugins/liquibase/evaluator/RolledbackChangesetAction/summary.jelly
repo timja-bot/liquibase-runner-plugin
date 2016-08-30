@@ -1,0 +1,21 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:t="/lib/hudson">
+    <j:set var="rolledbackChangesets" value="${it.rolledbackChangesets}"/>
+
+        <t:summary icon="/plugin/liquibase-runner/undo_arrow_icon_48x48.png">
+            <j:if test="${rolledbackChangesets.isEmpty()}">No Rollbacks executed</j:if>
+            <j:if test="${rolledbackChangesets.size()>0}">
+                Rolled back ${rolledbackChangesets.size()} changeSets:
+                <ul class="changeSetList">
+                    <j:forEach items="${rolledbackChangesets}" var="rolledback">
+                        <li class="changeSetItem">
+                            <span class="changeSetId">${rolledback.id}</span>
+                            <br/>
+                        </li>
+                    </j:forEach>
+                </ul>
+            </j:if>
+        </t:summary>
+
+</j:jelly>

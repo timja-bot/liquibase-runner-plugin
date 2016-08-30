@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import liquibase.resource.ResourceAccessor;
 
 import java.io.IOException;
@@ -15,6 +14,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.filefilter.FileFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -22,17 +23,19 @@ import com.google.common.collect.Sets;
  * Provides Jenkin's file abstraction as a liquibase resource accessor.
  */
 public class FilePathAccessor implements ResourceAccessor {
-    private final AbstractBuild<?, ?> build;
+    private final FilePath filePath;
 
-    public FilePathAccessor(AbstractBuild<?, ?> build) {
-        this.build = build;
+    private static final Logger LOG = LoggerFactory.getLogger(FilePathAccessor.class);
+
+    public FilePathAccessor(FilePath filePath) {
+        this.filePath = filePath;
     }
 
     public InputStream getResourceAsStream(String s) throws IOException {
         InputStream inputStream = null;
-        final FilePath workspace = build.getWorkspace();
-        if (workspace !=null) {
-            FilePath child = workspace.child(s);
+
+        if (filePath != null) {
+            FilePath child = filePath.child(s);
             try {
                 if (child.exists()) {
                     inputStream = child.read();
@@ -46,8 +49,16 @@ public class FilePathAccessor implements ResourceAccessor {
     }
 
     public Set<InputStream> getResourcesAsStream(String path) throws IOException {
-        Set<InputStream> streams = Sets.newHashSet();
-        streams.add(getResourceAsStream(path));
+        Set<InputStream> streams = null;
+        try {
+            InputStream resourceAsStream = getResourceAsStream(path);
+            if (resourceAsStream!=null) {
+                streams = Sets.newHashSet();
+                streams.add(resourceAsStream);
+            }
+        } catch (IOException e) {
+            LOG.info("Unable to load resources from path '" + path +"'", e);
+        }
         return streams;
     }
 
@@ -57,10 +68,18 @@ public class FilePathAccessor implements ResourceAccessor {
                             boolean includeDirectories,
                             boolean recursive) throws IOException {
 
+        return list(filePath, relativeTo, path, includeFiles, includeDirectories, recursive);
+    }
+
+    @SuppressWarnings("ReturnOfNull")
+    protected Set<String> list(FilePath workspace,
+                               String relativeTo,
+                               String path,
+                               boolean includeFiles,
+                               boolean includeDirectories, boolean recursive) throws IOException {
         Set<String> result = Sets.newHashSet();
 
-        final FilePath workspace = build.getWorkspace();
-        if (workspace !=null) {
+        if (workspace != null) {
             FilePath child;
             if (relativeTo == null) {
                 child = workspace.child(path);
@@ -69,20 +88,39 @@ public class FilePathAccessor implements ResourceAccessor {
             }
 
             try {
+                List<FilePath> filePaths = child.list();
+
+                for (int i = 0; i < filePaths.size(); i++) {
+                    FilePath filePath = filePaths.get(i);
+                    if (filePath.isDirectory()) {
+
+                        if (includeDirectories) {
+                            result.add(filePath.getRemote());
+                        }
+                        if (recursive) {
+                            result.addAll(list(workspace, relativeTo, path, includeFiles, includeDirectories, true));
+                        }
+                    } else {
+                        if (includeFiles) {
+                            result.add(filePath.getRemote());
+                        }
+                    }
+                }
                 if (child.isDirectory()) {
                     if (includeDirectories) {
-                        result.add(child.toURI().toURL().toString());
+                        result.add(child.getRemote());
                     }
                     if (recursive) {
                         List<FilePath> dirs = child.listDirectories();
                         for (FilePath dir : dirs) {
-                            result.addAll(list(null, dir.getRemote(), includeFiles, true, true));
+                            result.addAll(list(null, dir.getRemote(), includeFiles, includeDirectories, true));
                         }
                     }
+                } else {
                     if (includeFiles) {
                         List<FilePath> files = child.list(FileFileFilter.FILE);
                         for (FilePath filePath : files) {
-                            result.add(filePath.toURI().toURL().toString());
+                            result.add(filePath.getRemote());
                         }
                     }
                 }
@@ -95,7 +133,11 @@ public class FilePathAccessor implements ResourceAccessor {
             }
         }
 
-        return result;
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result;
+        }
     }
 
     public ClassLoader toClassLoader() {
@@ -103,13 +145,12 @@ public class FilePathAccessor implements ResourceAccessor {
             @Override
             public URLClassLoader run() {
                 URLClassLoader urlClassLoader = null;
-                final FilePath workspace = build.getWorkspace();
-                if (workspace != null) {
+                if (filePath != null) {
                     try {
                         urlClassLoader =
-                                new URLClassLoader(new URL[]{new URL("file://" + workspace.getBaseName())});
+                                new URLClassLoader(new URL[]{new URL("file://" + filePath.getBaseName())});
                     } catch (MalformedURLException e) {
-                        throw new RuntimeException("Unable to construct classloader.");
+                        throw new RuntimeException("Unable to construct classloader.",e);
                     }
                 }
                 return urlClassLoader;

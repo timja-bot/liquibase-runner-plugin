@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import liquibase.changelog.ChangeSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
@@ -22,6 +22,14 @@ public class ExecutedChangesetAction implements Action {
     private AbstractBuild<?, ?> build;
 
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
+
+    private List<ChangeSetDetail> rolledBackChangesets = Lists.newArrayList();
+
+    private boolean rollbackOnly;
+
+    private String appliedTag;
+
+    private boolean rollbacksTested;
 
     public ExecutedChangesetAction() {
     }
@@ -54,11 +62,9 @@ public class ExecutedChangesetAction implements Action {
         Collection<ChangeSetDetail> filtered = Collections2.filter(changeSetDetails, new Predicate<ChangeSetDetail>() {
             @Override
             public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
-
                 boolean include = false;
                 if (changeSetDetail != null) {
                     include = !changeSetDetail.isSuccessfullyExecuted();
-
                 }
                 return include;
             }
@@ -81,14 +87,8 @@ public class ExecutedChangesetAction implements Action {
         return exceptionMessagesExist;
     }
 
-    public void addChangeset(ChangeSet changeSet) {
-        ChangeSetDetail changeSetDetail = ChangeSetDetail.create(changeSet);
-        addChangeSetDetail(changeSetDetail);
-
-    }
-
     public List<ChangeSetDetail> getSuccessfulChangeSets() {
-        Collection<ChangeSetDetail> successful = Collections2.filter(changeSetDetails, new Predicate<ChangeSetDetail>() {
+        return filterChangeSetDetails(new Predicate<ChangeSetDetail>() {
             @Override
             public boolean apply(@Nullable ChangeSetDetail changeSetDetail) {
                 boolean include = false;
@@ -98,6 +98,11 @@ public class ExecutedChangesetAction implements Action {
                 return include;
             }
         });
+    }
+
+    private List<ChangeSetDetail> filterChangeSetDetails(Predicate<ChangeSetDetail> predicate) {
+        Collection<ChangeSetDetail> successful = Collections2.filter(changeSetDetails,
+                predicate);
         return new ArrayList<ChangeSetDetail>(successful);
     }
 
@@ -118,5 +123,66 @@ public class ExecutedChangesetAction implements Action {
             }
         }
         return found;
+    }
+
+    public boolean isTagApplied() {
+        return !Strings.isNullOrEmpty(appliedTag);
+    }
+    public String getAppliedTag() {
+        return appliedTag;
+    }
+
+    public void setAppliedTag(String appliedTag) {
+        this.appliedTag = appliedTag;
+    }
+
+    public void markChangesetAsRolledBack(String changeSetId) {
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            if (changeSetDetail.getId().equals(changeSetId)) {
+                changeSetDetail.setRolledBack(true);
+            }
+        }
+    }
+
+    public boolean hasChangesetWithId(String changesetId) {
+        boolean result = false;
+        for (ChangeSetDetail changeSetDetail : changeSetDetails) {
+            if (changeSetDetail.getId().equals(changesetId)) {
+                result=true;
+                break;
+            }
+        }
+        return result;
+    }
+    public boolean isRollbacksTested() {
+        return rollbacksTested;
+    }
+
+    public void setRollbacksTested(boolean rollbacksTested) {
+        this.rollbacksTested = rollbacksTested;
+    }
+
+    public void addRolledBackChangesetDetail(ChangeSetDetail changeSetDetail) {
+        rolledBackChangesets.add(changeSetDetail);
+    }
+    public void setChangeSetDetails(List<ChangeSetDetail> changeSetDetails) {
+        this.changeSetDetails = changeSetDetails;
+    }
+
+    public List<ChangeSetDetail> getRolledBackChangesets() {
+        return rolledBackChangesets;
+    }
+
+    public void setRolledBackChangesets(List<ChangeSetDetail> rolledBackChangesets) {
+        this.rolledBackChangesets = rolledBackChangesets;
+    }
+
+
+    public void setRollbackOnly(boolean rollbackOnly) {
+        this.rollbackOnly = rollbackOnly;
+    }
+
+    public boolean isRollbackOnly() {
+        return rollbackOnly;
     }
 }
