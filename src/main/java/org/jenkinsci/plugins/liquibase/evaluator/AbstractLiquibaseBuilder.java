@@ -43,8 +43,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
 
     protected String databaseEngine;
     protected String changeLogFile;
-    protected String username;
-    protected String password;
     protected String url;
     protected String defaultSchemaName;
     protected String contexts;
@@ -55,13 +53,13 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     private String changeLogParameters;
     private String basePath;
     private Boolean useIncludedDriver;
+    private String credentialsId;
+
 
 
 
     public AbstractLiquibaseBuilder(String databaseEngine,
                                     String changeLogFile,
-                                    String username,
-                                    String password,
                                     String url,
                                     String defaultSchemaName,
                                     String contexts,
@@ -71,11 +69,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
                                     String changeLogParameters,
                                     String labels,
                                     String basePath,
-                                    boolean useIncludedDriver) {
+                                    boolean useIncludedDriver, String credentialsId) {
         this.databaseEngine = databaseEngine;
         this.changeLogFile = changeLogFile;
-        this.username = username;
-        this.password = password;
         this.url = url;
         this.defaultSchemaName = defaultSchemaName;
         this.contexts = contexts;
@@ -87,6 +83,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         this.basePath = basePath;
         this.useIncludedDriver = useIncludedDriver;
 
+        this.credentialsId = credentialsId;
     }
 
     public AbstractLiquibaseBuilder() {
@@ -112,6 +109,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
+
 
         Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build,
                 build.getEnvironment(listener));
@@ -200,6 +198,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         Connection connection;
         String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
         try {
+
             Util.registerDatabaseDriver(driverName,
                     configProperties.getProperty(LiquibaseProperty.CLASSPATH.propertyName()));
             String userName = getProperty(configProperties, LiquibaseProperty.USERNAME);
@@ -259,24 +258,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @DataBoundSetter
     public void setChangeLogFile(String changeLogFile) {
         this.changeLogFile = changeLogFile;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    @DataBoundSetter
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    @DataBoundSetter
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getUrl() {
@@ -377,5 +358,14 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     @DataBoundSetter
     public void setUseIncludedDriver(Boolean useIncludedDriver) {
         this.useIncludedDriver = useIncludedDriver;
+    }
+
+    public String getCredentialsId() {
+        return credentialsId;
+    }
+
+    @DataBoundSetter
+    public void setCredentialsId(String credentialsId) {
+        this.credentialsId = credentialsId;
     }
 }

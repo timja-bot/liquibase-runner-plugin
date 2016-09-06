@@ -16,7 +16,11 @@ import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public class PropertiesAssembler {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesAssembler.class);
@@ -26,13 +30,11 @@ public class PropertiesAssembler {
     /**
      * Creates a properties instance for use with liquibase execution.  Property values may come from these sources,
      * in order of least to most precedence:
-     *
      * <ul>
-     *     <li>Plugin Default values</li>
-     *     <li>Values from properties file described by {@link AbstractLiquibaseBuilder#liquibasePropertiesPath}</li>
-     *     <li>Values on the {@link AbstractLiquibaseBuilder} itself.</li>
+     * <li>Plugin Default values</li>
+     * <li>Values from properties file described by {@link AbstractLiquibaseBuilder#liquibasePropertiesPath}</li>
+     * <li>Values on the {@link AbstractLiquibaseBuilder} itself.</li>
      * </ul>
-     *
      * Furthermore, any token expressions found are replaced with values found in the passed environment.
      *
      * @param liquibaseBuilder
@@ -47,14 +49,26 @@ public class PropertiesAssembler {
         assembleDefaults(properties);
         String propertiesPath = resolvePropertiesPath(liquibaseBuilder, environment);
         assembleFromPropertiesFile(properties, propertiesPath, build);
-        assembleFromProjectConfiguration(liquibaseBuilder, properties, environment);
+
+        assembleFromProjectConfiguration(liquibaseBuilder, properties, environment, build);
         return properties;
     }
 
     protected static void assembleFromProjectConfiguration(AbstractLiquibaseBuilder liquibaseBuilder,
                                                            Properties properties,
-                                                           EnvVars environment)
+                                                           EnvVars environment, AbstractBuild<?, ?> build)
             throws IOException, InterruptedException {
+
+
+        if (!Strings.isNullOrEmpty(liquibaseBuilder.getCredentialsId())) {
+            StandardUsernamePasswordCredentials credentialById =
+                    CredentialsProvider.findCredentialById(liquibaseBuilder.getCredentialsId(),
+                            StandardUsernamePasswordCredentials.class, build,
+                            Lists.<DomainRequirement>newArrayList());
+
+            addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, credentialById.getUsername(), environment);
+            addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, credentialById.getPassword().getPlainText(), environment);
+        }
 
 
 
@@ -62,8 +76,6 @@ public class PropertiesAssembler {
                 environment);
 
         addPropertyIfDefined(properties, LiquibaseProperty.CLASSPATH, liquibaseBuilder.getClasspath(), environment);
-        addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, liquibaseBuilder.getUsername(), environment);
-        addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, liquibaseBuilder.getPassword(), environment);
         addPropertyIfDefined(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName(),
                 environment);
         addPropertyIfDefined(properties, LiquibaseProperty.URL, liquibaseBuilder.getUrl(), environment);
@@ -89,7 +101,8 @@ public class PropertiesAssembler {
     }
 
     private static boolean useIncludedDriver(AbstractLiquibaseBuilder liquibaseBuilder) {
-        boolean useIncludedDriver = liquibaseBuilder.hasUseIncludedDriverBeenSet() && liquibaseBuilder.isUseIncludedDriver();
+        boolean useIncludedDriver =
+                liquibaseBuilder.hasUseIncludedDriverBeenSet() && liquibaseBuilder.isUseIncludedDriver();
         return useIncludedDriver && !Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine());
     }
 

@@ -47,7 +47,7 @@ public class PropertiesAssemblerTest {
         BuilderStub liquibaseBuilder = new BuilderStub();
         liquibaseBuilder.setChangeLogFile(expression);
         PropertiesAssembler.assembleFromProjectConfiguration(liquibaseBuilder, properties,
-                build.getEnvironment(listener));
+                build.getEnvironment(listener), build);
 
         assertThat(properties.getProperty(changelogFile.propertyName()), is(environmentValue));
 
