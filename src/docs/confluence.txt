@@ -52,6 +52,10 @@ build slave runs your project, that file will no longer be available, and all ch
 
 h3. Version History
 
+h4. Version 1.2.0
+
+* Credentials integration
+
 h4. Version 1.1.0 (Aug 25, 2016)
 
 Thanks to David Siegal for suggestions, testing, and guidance for this release.

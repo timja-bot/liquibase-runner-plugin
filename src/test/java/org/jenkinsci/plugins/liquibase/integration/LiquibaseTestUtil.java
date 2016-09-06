@@ -15,8 +15,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class LiquibaseTestUtil {
     static final String SUNNY_DAY_CHANGESET_XML = "/example-changesets/sunny-day-changeset.xml";
     private static final String CHANGESET_WITH_ERROR_XML = "/example-changesets/changeset-with-error.xml";
-    static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
-    static final String H2 = "H2";
+    public static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
+    public static final String H2 = "H2";
 
     static File createErrorFreeChangeset(TemporaryFolder temporaryFolder) throws IOException {
         return createFileFromResource(temporaryFolder.getRoot(), SUNNY_DAY_CHANGESET_XML);
