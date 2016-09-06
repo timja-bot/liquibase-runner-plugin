@@ -66,8 +66,10 @@ public class PropertiesAssembler {
                             StandardUsernamePasswordCredentials.class, build,
                             Lists.<DomainRequirement>newArrayList());
 
-            addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, credentialById.getUsername(), environment);
-            addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, credentialById.getPassword().getPlainText(), environment);
+            if (credentialById!=null) {
+                addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, credentialById.getUsername(), environment);
+                addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, credentialById.getPassword().getPlainText(), environment);
+            }
         }
 
 
