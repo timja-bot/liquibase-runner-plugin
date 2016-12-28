@@ -1,8 +1,8 @@
 package org.jenkinsci.plugins.liquibase.common;
 
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -15,13 +15,14 @@ import org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder;
 import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
 
 public class BuilderStub extends AbstractLiquibaseBuilder {
+
     @Override
-    public void doPerform(AbstractBuild<?, ?> build,
-                          BuildListener listener,
-                          Liquibase liquibase,
-                          Contexts contexts,
-                          ExecutedChangesetAction executedChangesetAction, Properties configProperties)
-            throws InterruptedException, IOException, LiquibaseException {
+    public void runPerform(Run<?, ?> build,
+                           TaskListener listener,
+                           Liquibase liquibase,
+                           Contexts contexts,
+                           ExecutedChangesetAction executedChangesetAction,
+                           Properties configProperties) throws InterruptedException, IOException, LiquibaseException {
 
     }
 

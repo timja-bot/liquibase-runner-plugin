@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.liquibase.common;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,15 +40,16 @@ public class PropertiesAssembler {
      * @param liquibaseBuilder
      * @param build
      * @param environment
+     * @param workspace
      * @return
      */
     public static Properties createLiquibaseProperties(AbstractLiquibaseBuilder liquibaseBuilder,
-                                                       AbstractBuild<?, ?> build, EnvVars environment)
+                                                       Run<?, ?> build, EnvVars environment, FilePath workspace)
             throws IOException, InterruptedException {
         Properties properties = new Properties();
         assembleDefaults(properties);
         String propertiesPath = resolvePropertiesPath(liquibaseBuilder, environment);
-        assembleFromPropertiesFile(properties, propertiesPath, build);
+        assembleFromPropertiesFile(properties, propertiesPath, build, workspace);
 
         assembleFromProjectConfiguration(liquibaseBuilder, properties, environment, build);
         return properties;
@@ -56,7 +57,7 @@ public class PropertiesAssembler {
 
     protected static void assembleFromProjectConfiguration(AbstractLiquibaseBuilder liquibaseBuilder,
                                                            Properties properties,
-                                                           EnvVars environment, AbstractBuild<?, ?> build)
+                                                           EnvVars environment, Run<?, ?> build)
             throws IOException, InterruptedException {
 
 
@@ -111,9 +112,9 @@ public class PropertiesAssembler {
 
     private static void assembleFromPropertiesFile(Properties properties,
                                                    String liquibasePropertiesPath,
-                                                   AbstractBuild<?, ?> build) {
+                                                   Run<?, ?> build, FilePath workspace) {
+
         if (!Strings.isNullOrEmpty(liquibasePropertiesPath)) {
-            FilePath workspace = build.getWorkspace();
             if (workspace != null) {
                 InputStreamReader streamReader = null;
                 try {

@@ -2,10 +2,11 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.EnvVars;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -77,7 +78,8 @@ public class AbstractLiquibaseBuilderTest {
         liquibaseProperties.setProperty("changeLogFile", "example-changesets/single-changeset.xml");
 
         Liquibase liquibase = liquibaseBuilderStub
-                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties, launcher);
+                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties, launcher,
+                        build.getWorkspace());
         liquibase.update(new Contexts());
 
         assertThatOneChangesetExecuted(liquibase);
@@ -87,7 +89,8 @@ public class AbstractLiquibaseBuilderTest {
     public void should_populate_changelog_parameters() throws IOException, InterruptedException {
 
         Liquibase liquibase = liquibaseBuilderStub
-                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties, launcher);
+                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties, launcher,
+                        build.getWorkspace());
 
 
         String parameterValue = "red";
@@ -125,7 +128,7 @@ public class AbstractLiquibaseBuilderTest {
         Liquibase liquibase =
                 liquibaseBuilderStub
                         .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties,
-                        launcher);
+                        launcher, build.getWorkspace());
         liquibase.update(new Contexts(""));
 
         assertThatOneChangesetExecuted(liquibase);
@@ -147,12 +150,14 @@ public class AbstractLiquibaseBuilderTest {
 
 
     private static class LiquibaseBuilderStub extends AbstractLiquibaseBuilder {
+
         @Override
-        public void doPerform(AbstractBuild<?, ?> build,
-                              BuildListener listener,
-                              Liquibase liquibase,
-                              Contexts contexts,
-                              ExecutedChangesetAction executedChangesetAction, Properties configProperties)
+        public void runPerform(Run<?, ?> build,
+                               TaskListener listener,
+                               Liquibase liquibase,
+                               Contexts contexts,
+                               ExecutedChangesetAction executedChangesetAction,
+                               Properties configProperties)
                 throws InterruptedException, IOException, LiquibaseException {
 
         }

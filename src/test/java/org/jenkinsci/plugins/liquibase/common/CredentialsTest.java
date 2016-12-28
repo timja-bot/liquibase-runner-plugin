@@ -54,11 +54,13 @@ public class CredentialsTest {
         temporaryFolder.create();
 
         UsernamePasswordCredentialsImpl credentials =
-                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, credentialsId, DESCRIPTION, username, password);
+                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, credentialsId, DESCRIPTION, username,
+                        password);
         CredentialsProvider.lookupStores(jenkinsRule.getInstance()).iterator().next()
                            .addCredentials(Domain.global(), credentials);
 
     }
+
     @Test
     public void should_use_credentials() throws IOException, InterruptedException {
         builderStub.setCredentialsId(credentialsId);
@@ -83,17 +85,18 @@ public class CredentialsTest {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
         ChangesetEvaluator evaluator = new ChangesetEvaluator();
         evaluator.setChangeLogFile(LiquibaseTestUtil
-                .createFileFromResource(temporaryFolder.getRoot(), "/example-changesets/single-changeset.xml").getAbsolutePath());
+                .createFileFromResource(temporaryFolder.getRoot(), "/example-changesets/single-changeset.xml")
+                .getAbsolutePath());
         evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
         evaluator.setDatabaseEngine(LiquibaseTestUtil.H2);
         evaluator.setLiquibasePropertiesPath(propertiesfile.getAbsolutePath());
         evaluator.setCredentialsId(credentialsId);
         project.getBuildersList().add(evaluator);
 
-
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+
         Properties liquibaseProperties =
-                PropertiesAssembler.createLiquibaseProperties(evaluator, build, new EnvVars());
+                PropertiesAssembler.createLiquibaseProperties(evaluator, build, new EnvVars(), build.getWorkspace());
 
         String resolvedUsername = getProperty(liquibaseProperties, LiquibaseProperty.USERNAME);
         String resolvedPassword = getProperty(liquibaseProperties, LiquibaseProperty.PASSWORD);

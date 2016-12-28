@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
+import hudson.model.Run;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +20,7 @@ import com.google.common.collect.Lists;
  */
 public class ExecutedChangesetAction implements Action {
 
-    private AbstractBuild<?, ?> build;
+    private Run<?, ?> build;
 
     private List<ChangeSetDetail> changeSetDetails = Lists.newArrayList();
 
@@ -34,7 +35,7 @@ public class ExecutedChangesetAction implements Action {
     public ExecutedChangesetAction() {
     }
 
-    public ExecutedChangesetAction(AbstractBuild<?, ?> build) {
+    public ExecutedChangesetAction(Run<?, ?> build) {
         this.build = build;
     }
 
@@ -50,7 +51,7 @@ public class ExecutedChangesetAction implements Action {
         return "executedChangeSets";
     }
 
-    public AbstractBuild<?, ?> getBuild() {
+    public Run<?, ?> getBuild() {
         return build;
     }
 
