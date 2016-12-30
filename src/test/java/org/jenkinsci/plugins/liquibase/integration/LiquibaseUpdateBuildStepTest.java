@@ -4,7 +4,6 @@ import hudson.model.Result;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
@@ -39,14 +38,9 @@ public class LiquibaseUpdateBuildStepTest {
     @Before
     public void setup() throws IOException {
         File workspace = temporaryFolder.newFolder("workspace");
-        InputStream resourceAsStream = getClass().getResourceAsStream("/pipeline-with-ws-token.groovy");
-        String template = IOUtils.toString(resourceAsStream);
-        pipelineScript = template.replaceAll("@WORKSPACE@", workspace.getAbsolutePath());
-
-        String projectName = RandomStringUtils.randomAlphabetic(8);
-        job = jenkinsRule.jenkins.createProject(WorkflowJob.class, projectName);
-
-        LiquibaseTestUtil.createFileFromResource(workspace, "/example-changesets/sunny-day-changeset.xml");
+        pipelineScript = generatePipelineScript(workspace);
+        copyChangeLogFileToWorkspace(workspace);
+        job = jenkinsRule.jenkins.createProject(WorkflowJob.class, RandomStringUtils.randomAlphabetic(8));
     }
 
     @Test
@@ -54,5 +48,15 @@ public class LiquibaseUpdateBuildStepTest {
         job.setDefinition(new CpsFlowDefinition(pipelineScript));
         WorkflowRun workflowRun = job.scheduleBuild2(0).get();
         assertThat(workflowRun.getResult(), is(Result.SUCCESS));
+    }
+
+    private static void copyChangeLogFileToWorkspace(File workspace) throws IOException {
+        LiquibaseTestUtil.createFileFromResource(workspace, "/example-changesets/sunny-day-changeset.xml");
+    }
+
+    private String generatePipelineScript(File workspace) throws IOException {
+        String template = IOUtils.toString(getClass().getResourceAsStream("/pipeline-with-ws-token.groovy"));
+        return template.replaceAll("@WORKSPACE@", workspace.getAbsolutePath());
+
     }
 }
