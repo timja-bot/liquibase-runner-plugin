@@ -94,7 +94,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         action.setRolledbackChangesets(executedChangesetAction.getRolledBackChangesets());
     }
 
-
+    @Deprecated
     public RollbackBuildStep(String databaseEngine,
                              String changeLogFile,
                              String username,
@@ -216,5 +216,4 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         }
 
     }
-
 }

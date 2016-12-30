@@ -81,9 +81,6 @@ public class PropertiesAssembler {
                         build);
             }
         }
-
-
-
         addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile(),
                 environment, build);
 

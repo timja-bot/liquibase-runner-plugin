@@ -90,6 +90,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
 
     }
 
+    @Deprecated
     public ChangesetEvaluator(String databaseEngine,
                               String changeLogFile,
                               String url,
