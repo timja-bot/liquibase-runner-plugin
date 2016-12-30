@@ -36,7 +36,8 @@ public class PropertiesAssembler {
      * <li>Values from properties file described by {@link AbstractLiquibaseBuilder#liquibasePropertiesPath}</li>
      * <li>Values on the {@link AbstractLiquibaseBuilder} itself.</li>
      * </ul>
-     * Furthermore, any token expressions found are replaced with values found in the passed environment.
+     * Furthermore, any token expressions found are replaced with values found in the passed environment IF build
+     * is an AbstractBuild.
      *
      * @param liquibaseBuilder
      * @param build
@@ -50,7 +51,7 @@ public class PropertiesAssembler {
         Properties properties = new Properties();
         assembleDefaults(properties);
 
-        String propertiesPath = null;
+        String propertiesPath;
         if (build instanceof AbstractBuild) {
             propertiesPath = hudson.Util.replaceMacro(liquibaseBuilder.getLiquibasePropertiesPath(), environment);
         } else {
