@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.9</version>
+        <version>1.596.1</version>
         <relativePath/>
     </parent>
     <artifactId>liquibase-runner</artifactId>
@@ -50,6 +50,7 @@
     </pluginRepositories>
     <properties>
         <jenkins.version>1.596.1</jenkins.version>
+        <workflow.version>1.4</workflow.version>
     </properties>
     <dependencies>
         <dependency>
@@ -57,6 +58,26 @@
             <artifactId>credentials</artifactId>
             <version>1.16.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
+            <version>${workflow.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-cps</artifactId>
+            <version>${workflow.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-job</artifactId>
+            <version>${workflow.version}</version>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
@@ -172,10 +193,10 @@
     </build>
     <profiles>
         <profile>
-            <id>jenkins_2_7_2</id>
+            <id>jenkins_2_x</id>
             <!-- for testing against a later version of jenkins -->
             <properties>
-                <jenkins.version>2.7.2</jenkins.version>
+                <jenkins.version>2.38</jenkins.version>
             </properties>
         </profile>
         <profile>
