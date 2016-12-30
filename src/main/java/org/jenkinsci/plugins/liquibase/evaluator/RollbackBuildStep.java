@@ -39,15 +39,14 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     private String rollbackToTag;
     private String rollbackToDate;
 
-
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
 
     public enum RollbackStrategy {
         TAG, DATE, RELATIVE, COUNT
     }
 
+    @DataBoundConstructor
     public RollbackBuildStep() {
-
 
     }
 
@@ -95,7 +94,7 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         action.setRolledbackChangesets(executedChangesetAction.getRolledBackChangesets());
     }
 
-    @DataBoundConstructor
+
     public RollbackBuildStep(String databaseEngine,
                              String changeLogFile,
                              String username,

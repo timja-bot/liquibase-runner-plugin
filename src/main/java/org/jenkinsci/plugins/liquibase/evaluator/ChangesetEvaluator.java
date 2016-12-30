@@ -36,6 +36,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
     private boolean dropAll;
     protected boolean tagOnSuccessfulBuild;
 
+    @DataBoundConstructor
     public ChangesetEvaluator() {
         super();
     }
@@ -89,7 +90,6 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
 
     }
 
-    @DataBoundConstructor
     public ChangesetEvaluator(String databaseEngine,
                               String changeLogFile,
                               String url,
