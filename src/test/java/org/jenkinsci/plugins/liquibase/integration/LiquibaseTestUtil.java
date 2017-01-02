@@ -81,7 +81,7 @@ public class LiquibaseTestUtil {
         liquibase.update(new Contexts());
     }
 
-    public static String composeJdbcUrl(File inmemoryDatabaseFile) {
-        return "jdbc:h2:file:" + inmemoryDatabaseFile.getAbsolutePath();
+    public static String composeJdbcUrl(File databaseFile) {
+        return "jdbc:h2:file:" + databaseFile.getAbsolutePath();
     }
 }

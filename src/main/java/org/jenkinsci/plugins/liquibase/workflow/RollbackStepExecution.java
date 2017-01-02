@@ -13,7 +13,6 @@ import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import com.google.inject.Inject;
 
 public class RollbackStepExecution extends AbstractSynchronousStepExecution<Void> {
-
     @Inject
     private transient RollbackStep step;
 
@@ -38,8 +37,22 @@ public class RollbackStepExecution extends AbstractSynchronousStepExecution<Void
         RollbackBuildStep rollbackBuildStep  = new RollbackBuildStep();
         LiquibaseWorkflowUtil.setCommonConfiguration(rollbackBuildStep, step);
 
-        rollbackBuildStep.setNumberOfChangesetsToRollback(String.valueOf(step.getRollbackCount()));
-        rollbackBuildStep.setRollbackToTag(step.getRollbackToTag());
+        if (step.getRollbackCount() != null) {
+            rollbackBuildStep.setNumberOfChangesetsToRollback(String.valueOf(step.getRollbackCount()));
+            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.COUNT.name());
+        }
+        if (step.getRollbackToDate() != null) {
+            rollbackBuildStep.setRollbackToDate(step.getRollbackToDate());
+            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.DATE.name());
+        }
+        if (step.getRollbackToTag() != null) {
+            rollbackBuildStep.setRollbackToTag(step.getRollbackToTag());
+            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.TAG.name());
+        }
+        if (step.getRollbackLastHours() != null) {
+            rollbackBuildStep.setRollbackLastHours(step.getRollbackLastHours());
+            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.RELATIVE.name());
+        }
 
         rollbackBuildStep.perform(run, ws, launcher, listener);
 

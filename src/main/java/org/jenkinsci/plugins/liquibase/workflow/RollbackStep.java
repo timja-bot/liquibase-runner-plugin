@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.liquibase.workflow;
 
 import hudson.Extension;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
@@ -9,8 +10,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 public class RollbackStep extends AbstractLiquibaseStep {
-    private String rollbackType;
-    protected int rollbackCount;
+    protected Integer rollbackCount;
     private String rollbackLastHours;
     private String rollbackToTag;
     private String rollbackToDate;
@@ -41,11 +41,6 @@ public class RollbackStep extends AbstractLiquibaseStep {
 
 
     @DataBoundSetter
-    public void setRollbackType(String rollbackType) {
-        this.rollbackType = rollbackType;
-    }
-
-    @DataBoundSetter
     public void setRollbackCount(int rollbackCount) {
         this.rollbackCount = rollbackCount;
     }
@@ -65,22 +60,22 @@ public class RollbackStep extends AbstractLiquibaseStep {
         this.rollbackToDate = rollbackToDate;
     }
 
-    public String getRollbackType() {
-        return rollbackType;
-    }
-
-    public int getRollbackCount() {
+    @CheckForNull
+    public Integer getRollbackCount() {
         return rollbackCount;
     }
 
+    @CheckForNull
     public String getRollbackLastHours() {
         return rollbackLastHours;
     }
 
+    @CheckForNull
     public String getRollbackToTag() {
         return rollbackToTag;
     }
 
+    @CheckForNull
     public String getRollbackToDate() {
         return rollbackToDate;
     }

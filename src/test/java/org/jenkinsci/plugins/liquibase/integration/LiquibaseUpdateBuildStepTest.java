@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jenkinsci.plugins.liquibase.evaluator.RolledbackChangesetAction;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 
@@ -56,14 +58,16 @@ public class LiquibaseUpdateBuildStepTest {
     @Test
     public void should_allow_rollback_dsl()
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
-        String jdbcUrl = LiquibaseTestUtil.composeJdbcUrl(temporaryFolder.newFile());
-        LiquibaseTestUtil.createDatabase(jdbcUrl, changeLogFile);
-        String script = generatePipelineScript(workspace, "/rollback-pipeline-template.groovy");
+        File databaseFile = temporaryFolder.newFile();
+        String jdbcUrl = LiquibaseTestUtil.composeJdbcUrl(databaseFile);
+        String baseScript = generatePipelineScript(workspace, "/rollback-pipeline-template.groovy");
+        String script = baseScript.replaceAll("@DB_URL@", jdbcUrl);
         CpsFlowDefinition cpsFlowDefinition = new CpsFlowDefinition(script);
         job.setDefinition(cpsFlowDefinition);
         WorkflowRun run = job.scheduleBuild2(0).get();
         assertThat(run.getResult(), is(Result.SUCCESS));
-
+        RolledbackChangesetAction action = run.getAction(RolledbackChangesetAction.class);
+        assertThat(action.getRolledbackChangesets().size(), not(0));
     }
 
     private static File copyChangeLogFileToWorkspace(File workspace) throws IOException {
