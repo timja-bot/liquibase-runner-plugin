@@ -57,7 +57,7 @@ public class PropertiesAssembler {
         } else {
             propertiesPath = liquibaseBuilder.getLiquibasePropertiesPath();
         }
-        assembleFromPropertiesFile(properties, propertiesPath, build, workspace);
+        assembleFromPropertiesFile(properties, propertiesPath, workspace);
 
         assembleFromProjectConfiguration(liquibaseBuilder, properties, environment, build);
         return properties;
@@ -119,7 +119,7 @@ public class PropertiesAssembler {
 
     private static void assembleFromPropertiesFile(Properties properties,
                                                    String liquibasePropertiesPath,
-                                                   Run<?, ?> build, FilePath workspace) {
+                                                   FilePath workspace) {
 
         if (!Strings.isNullOrEmpty(liquibasePropertiesPath)) {
             if (workspace != null) {

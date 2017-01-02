@@ -1,6 +1,4 @@
 databaseChangeLog:
-
-
   - changeSet:
       id: sunny-day
       author: keith

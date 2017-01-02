@@ -3,24 +3,14 @@ package org.jenkinsci.plugins.liquibase.integration;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.Database;
-import liquibase.database.DatabaseFactory;
-import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.FileSystemResourceAccessor;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuildStep;
@@ -52,25 +42,27 @@ public class RollbackResultTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    protected String dbUrl;
     protected FreeStyleProject project;
     protected File sunnyDayChangeset;
+    protected String jdbcUrl;
 
     @Before
     public void setup() throws SQLException, IOException, LiquibaseException {
         temporaryFolder.create();
         project = jenkinsRule.createFreeStyleProject();
         sunnyDayChangeset = LiquibaseTestUtil.createErrorFreeChangeset(temporaryFolder);
+        jdbcUrl = LiquibaseTestUtil.composeJdbcUrl(temporaryFolder.newFile());
+
     }
 
     @Test
     public void should_report_success_with_successful_rollbacks()
             throws IOException, ExecutionException, InterruptedException, SQLException, LiquibaseException {
 
-        createDatabase(sunnyDayChangeset);
+        LiquibaseTestUtil.createDatabase(jdbcUrl, sunnyDayChangeset);
 
         RollbackBuildStep buildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, sunnyDayChangeset,
-                dbUrl);
+                jdbcUrl);
         int numberOfChangesetsToRollback = 2;
         buildStep.setNumberOfChangesetsToRollback(String.valueOf(numberOfChangesetsToRollback));
         RolledbackChangesetAction action = launchBuild(buildStep);
@@ -83,10 +75,10 @@ public class RollbackResultTest {
     public void should_rollback_using_tag_sucessfully()
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
 
-        createDatabase(sunnyDayChangeset);
+        LiquibaseTestUtil.createDatabase(jdbcUrl, sunnyDayChangeset);
         RollbackBuildStep rollbackBuildStep =
                 createBaseBuildStep(RollbackBuildStep.RollbackStrategy.TAG, sunnyDayChangeset,
-                        dbUrl);
+                        jdbcUrl);
         rollbackBuildStep.setRollbackToTag(FIRST_TAG);
 
         RolledbackChangesetAction action = launchBuild(rollbackBuildStep);
@@ -99,9 +91,9 @@ public class RollbackResultTest {
     @Test
     public void should_rollback_according_to_date()
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
-        createDatabase(sunnyDayChangeset);
+        LiquibaseTestUtil.createDatabase(jdbcUrl, sunnyDayChangeset);
         RollbackBuildStep rollbackBuildStep =
-                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.DATE, sunnyDayChangeset, dbUrl);
+                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.DATE, sunnyDayChangeset, jdbcUrl);
         Date yesterday = dateBeforeChangesetsApplied();
         rollbackBuildStep.setRollbackToDate(new SimpleDateFormat(RollbackBuildStep.DATE_PATTERN).format(yesterday));
 
@@ -110,11 +102,11 @@ public class RollbackResultTest {
         int totalNumberOfChangesets = 4;
 
         assertThat(resultAction.getRolledbackChangesets(), hasItems(
-                                                            hasId("create-table"),
-                                                            hasId("first_tag"),
-                                                            hasId("create-color-table"),
-                                                            hasId("create-testing-table"))
-                                                            );
+                hasId("create-table"),
+                hasId("first_tag"),
+                hasId("create-color-table"),
+                hasId("create-testing-table"))
+        );
         assertThat(resultAction.getRolledbackChangesets(), hasSize(totalNumberOfChangesets));
     }
 
@@ -125,30 +117,15 @@ public class RollbackResultTest {
         File changesetContainingError = LiquibaseTestUtil
                 .createFileFromResource(temporaryFolder.getRoot(), CHANGELOG_WITH_ROLLBACK_ERROR_RESOURCE_PATH);
 
-        createDatabase(changesetContainingError);
+        LiquibaseTestUtil.createDatabase(jdbcUrl, changesetContainingError);
 
         RollbackBuildStep buildStep =
-                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, changesetContainingError, dbUrl);
+                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, changesetContainingError, jdbcUrl);
         buildStep.setNumberOfChangesetsToRollback(String.valueOf(2));
 
         RolledbackChangesetAction resultAction = launchBuild(buildStep);
         assertThat(resultAction, notNullValue());
         assertThat(resultAction.getBuild().getResult(), is(Result.UNSTABLE));
-    }
-
-    protected void createDatabase(File changeset) throws IOException, SQLException, LiquibaseException {
-        File inmemoryDatabaseFile = temporaryFolder.newFile();
-        InputStream asStream = getClass().getResourceAsStream("/example-changesets/unit-test.h2.liquibase.properties");
-        Properties liquibaseProperties = new Properties();
-        liquibaseProperties.load(asStream);
-
-        dbUrl = "jdbc:h2:file:" + inmemoryDatabaseFile.getAbsolutePath();
-        Connection connection = DriverManager.getConnection(dbUrl, liquibaseProperties);
-        JdbcConnection jdbcConnection = new JdbcConnection(connection);
-        Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-
-        Liquibase liquibase = new Liquibase(changeset.getAbsolutePath(), new FileSystemResourceAccessor(), database);
-        liquibase.update(new Contexts());
     }
 
     protected static RollbackBuildStep createBaseBuildStep(RollbackBuildStep.RollbackStrategy rollbackStrategy,

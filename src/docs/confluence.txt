@@ -43,6 +43,24 @@ The rollback build step invokes liquibase's "rollback" operation on the target d
 
 This build step is intended for use when you're deploying to a real environment, and the need arises to undo a previous liquibase update.
 
+h2. Pipeline Support
+
+Both the plugin's update and rollback operations are available to pipline scripts.  To evaulate changesets, the syntax
+is as follows:
+
+liquibaseUpdate()
+
+Parameters include testRollbacks, tagOnSuccessfulBuild, and dropAll.
+
+Roll back operations may be done thusly:
+
+liquibasaeRollback()
+
+Parameters include:
+
+Common to each operation are the following parameters:
+
+
 h2. Usage Tips
 
 * If you'd like to have only new changesets evaluated, consider using an H2 JDBC url like
