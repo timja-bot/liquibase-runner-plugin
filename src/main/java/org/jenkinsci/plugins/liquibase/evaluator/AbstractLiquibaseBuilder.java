@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -104,6 +105,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                     Properties configProperties)
             throws InterruptedException, IOException, LiquibaseException;
 
+    abstract public Descriptor<Builder> getDescriptor();
+
     @Override
     public void perform(@Nonnull Run<?, ?> build,
                         @Nonnull FilePath workspace,
@@ -130,8 +133,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         }
     }
 
-    abstract public Descriptor<Builder> getDescriptor();
-
     public Liquibase createLiquibase(Run<?, ?> build,
                                      TaskListener listener,
                                      ExecutedChangesetAction action,
@@ -141,30 +142,16 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         String driverName = getProperty(configProperties, LiquibaseProperty.DRIVER);
         String resolvedClasspath = getProperty(configProperties, LiquibaseProperty.CLASSPATH);
 
+        boolean resolveMacros = build instanceof AbstractBuild;
+        EnvVars environment = build.getEnvironment(listener);
+
         try {
             if (!Strings.isNullOrEmpty(resolvedClasspath)) {
                 Util.addClassloader(launcher.isUnix(), workspace, resolvedClasspath);
             }
-
             JdbcConnection jdbcConnection = createJdbcConnection(configProperties, driverName);
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-
-
-            FilePath filePath;
-            String resolvedBasePath = hudson.Util.replaceMacro(basePath, build.getEnvironment(listener));
-            if (Strings.isNullOrEmpty(resolvedBasePath)) {
-                filePath = workspace;
-            } else {
-                filePath = workspace.child(resolvedBasePath);
-            }
-
-            ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
-            CompositeResourceAccessor resourceAccessor =
-                    new CompositeResourceAccessor(filePathAccessor,
-                            new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
-                            new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
-                    );
-
+            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros);
 
             String changeLogFile = getProperty(configProperties, LiquibaseProperty.CHANGELOG_FILE);
             liquibase = new Liquibase(changeLogFile, resourceAccessor, database);
@@ -176,20 +163,51 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         liquibase.setChangeExecListener(buildChangeExecListener);
 
         if (!Strings.isNullOrEmpty(changeLogParameters)) {
-            EnvVars environment = build.getEnvironment(listener);
-            populateChangeLogParameters(liquibase, environment, changeLogParameters);
+            populateChangeLogParameters(liquibase, environment, changeLogParameters, resolveMacros);
         }
         return liquibase;
     }
 
+    private ResourceAccessor createResourceAccessor(FilePath workspace,
+                                                    EnvVars environment,
+                                                    boolean resolveMacros) {
+        String resolvedBasePath;
+        if (resolveMacros) {
+            resolvedBasePath = hudson.Util.replaceMacro(basePath,  environment);
+        } else {
+            resolvedBasePath = basePath;
+        }
+        FilePath filePath;
+        if (Strings.isNullOrEmpty(resolvedBasePath)) {
+            filePath = workspace;
+        } else {
+            filePath = workspace.child(resolvedBasePath);
+        }
+
+        ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
+        return new CompositeResourceAccessor(filePathAccessor,
+                new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
+                new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
+        );
+    }
+
     protected static void populateChangeLogParameters(Liquibase liquibase,
                                                       EnvVars environment,
-                                                      String changeLogParameters) {
+                                                      String changeLogParameters, boolean resolveMacros) {
         Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
         for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
             String value = entry.getValue();
-            String resolvedValue = hudson.Util.replaceMacro(value, environment);
-            String resolvedKey = hudson.Util.replaceMacro(entry.getKey(), environment);
+
+            String resolvedValue;
+            String resolvedKey;
+            String key = entry.getKey();
+            if (resolveMacros) {
+                resolvedValue = hudson.Util.replaceMacro(value, environment);
+                resolvedKey = hudson.Util.replaceMacro(key, environment);
+            } else {
+                resolvedValue = value;
+                resolvedKey = key;
+            }
             liquibase.setChangeLogParameter(resolvedKey, resolvedValue);
         }
     }
