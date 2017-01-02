@@ -95,7 +95,7 @@ public class AbstractLiquibaseBuilderTest {
 
         String parameterValue = "red";
         AbstractLiquibaseBuilder.populateChangeLogParameters(liquibase, new EnvVars(), "color=" + parameterValue,
-                resolveMacros);
+                true);
 
         ChangeLogParameters changeLogParameters = liquibase.getChangeLogParameters();
         File changelog = temporaryFolder.newFile("changelog");
