@@ -29,6 +29,7 @@ public class LiquibaseTestUtil {
     public static final String IN_MEMORY_JDBC_URL = "jdbc:h2:mem:test";
     public static final String H2 = "H2";
 
+
     static File createErrorFreeChangeset(TemporaryFolder temporaryFolder) throws IOException {
         return createFileFromResource(temporaryFolder.getRoot(), SUNNY_DAY_CHANGESET_XML);
     }

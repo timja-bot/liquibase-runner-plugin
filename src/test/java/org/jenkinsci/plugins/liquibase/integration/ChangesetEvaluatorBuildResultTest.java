@@ -198,7 +198,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
         File includedDir = new File(rootChangeset.getParentFile(), "include-all");
         includedDir.mkdirs();
-        LiquibaseTestUtil.createFileFromResource(includedDir, "/example-changesets/sunny-day-changeset.xml");
+        LiquibaseTestUtil.createFileFromResource(includedDir, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML);
 
         FreeStyleProject project = createProjectWithChangelogFile(rootChangeset);
         // use of includeAll means changeset files must reside in project's workspace.
@@ -258,7 +258,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
         File includedDir = new File(rootChangeset.getParentFile(), "include-all");
         includedDir.mkdirs();
-        LiquibaseTestUtil.createFileFromResource(includedDir, "/example-changesets/sunny-day-changeset.xml");
+        LiquibaseTestUtil.createFileFromResource(includedDir, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML);
 
         FreeStyleProject project = createProjectWithChangelogFile(rootChangeset);
         FreeStyleBuild build = launchBuildForProject(project);

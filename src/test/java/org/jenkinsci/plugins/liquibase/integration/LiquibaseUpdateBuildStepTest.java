@@ -71,7 +71,7 @@ public class LiquibaseUpdateBuildStepTest {
     }
 
     private static File copyChangeLogFileToWorkspace(File workspace) throws IOException {
-        return LiquibaseTestUtil.createFileFromResource(workspace, "/example-changesets/sunny-day-changeset.xml");
+        return LiquibaseTestUtil.createFileFromResource(workspace, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML);
     }
 
     private String generateUpdatePipelineScript(File workspace) throws IOException {
