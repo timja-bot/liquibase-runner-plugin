@@ -5,20 +5,23 @@
          xmlns:c="/lib/credentials">
 
     <f:section title="Database Driver">
-        <f:radioBlock inline="true" name="useIncludedDriver" checked="${instance.databaseEngine==null || instance.databaseEngine!=''}" value="true"
+        <f:radioBlock inline="true" name="useIncludedDriver"
+                      checked="${instance.databaseEngine==null || instance.databaseEngine!=''}" value="true"
                       title="${%Use one of the included drivers}">
             <f:entry title="${%Database engine}" field="databaseEngine">
                 <select class="setting-input" name="LiquibaseBuilder.databaseEngine">
                     <option value="">Select included driver</option>
                     <j:forEach var="engine" items="${descriptor.getIncludedDatabaseDrivers()}">
                         <f:option selected="${instance.databaseEngine==engine.displayName}"
-                                  value="${engine.displayName}">${engine.displayName}</f:option>
+                                  value="${engine.displayName}">${engine.displayName}
+                        </f:option>
                     </j:forEach>
                 </select>
             </f:entry>
         </f:radioBlock>
 
-        <f:radioBlock inline="true" name="useIncludedDriver" checked="${instance.driverClassname!=null &amp;&amp; instance.driverClassname!=''}" value="false"
+        <f:radioBlock inline="true" name="useIncludedDriver"
+                      checked="${instance.driverClassname!=null &amp;&amp; instance.driverClassname!=''}" value="false"
                       title="${%Specify driver classname}">
             <f:entry title="${%Database driver classname}" field="driverClassname">
                 <f:textbox value="${instance.driverClassname}"/>
@@ -59,7 +62,8 @@
                  description="Classpath containing migration files and JDBC Driver">
             <f:textbox value="${instance.classpath}"/>
         </f:entry>
-        <f:entry title="Changelog Parameters" field="changeLogParameters">
+        <f:entry title="Changelog Parameters" field="changeLogParameters"
+                 help="help-changeLogParameters.html">
             <f:textarea value="${instance.changeLogProperties}"/>
         </f:entry>
     </f:section>
