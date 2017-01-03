@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.liquibase.workflow;
 
+import java.util.List;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
@@ -16,15 +18,19 @@ public class AbstractLiquibaseStep extends AbstractStepImpl {
     protected String classpath;
     protected String driverClassname;
     protected String labels;
-    private String changeLogParameters;
     private String basePath;
+    private List<String> changeLogParameters;
 
     @CheckForNull
     private String credentialsId;
 
-    public AbstractLiquibaseStep(
-            String changeLogFile) {
+    public AbstractLiquibaseStep(String changeLogFile) {
         this.changeLogFile = changeLogFile;
+    }
+
+    @DataBoundSetter
+    public void setChangeLogParameters(List<String> changeLogParameters) {
+        this.changeLogParameters = changeLogParameters;
     }
 
     @DataBoundSetter
@@ -73,11 +79,6 @@ public class AbstractLiquibaseStep extends AbstractStepImpl {
     }
 
     @DataBoundSetter
-    public void setChangeLogParameters(String changeLogParameters) {
-        this.changeLogParameters = changeLogParameters;
-    }
-
-    @DataBoundSetter
     public void setBasePath(String basePath) {
         this.basePath = basePath;
     }
@@ -90,6 +91,7 @@ public class AbstractLiquibaseStep extends AbstractStepImpl {
     public String getDatabaseEngine() {
         return databaseEngine;
     }
+
 
     public String getChangeLogFile() {
         return changeLogFile;
@@ -123,18 +125,18 @@ public class AbstractLiquibaseStep extends AbstractStepImpl {
         return labels;
     }
 
-    public String getChangeLogParameters() {
-        return changeLogParameters;
-    }
-
     public String getBasePath() {
         return basePath;
+    }
+
+    @CheckForNull
+    public List<String> getChangeLogParameters() {
+        return changeLogParameters;
     }
 
     @Nullable
     public String getCredentialsId() {
         return credentialsId;
     }
-
 
 }

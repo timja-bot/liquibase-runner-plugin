@@ -6,10 +6,14 @@ import liquibase.exception.LiquibaseException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.core.StringContains;
+import org.jenkinsci.plugins.liquibase.evaluator.ChangeSetDetail;
+import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
 import org.jenkinsci.plugins.liquibase.evaluator.RolledbackChangesetAction;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -24,11 +28,13 @@ import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 
 
-public class LiquibaseUpdateBuildStepTest {
-    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseUpdateBuildStepTest.class);
+public class LiquibasePipelineTest {
+    private static final Logger LOG = LoggerFactory.getLogger(LiquibasePipelineTest.class);
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -56,6 +62,25 @@ public class LiquibaseUpdateBuildStepTest {
     }
 
     @Test
+    public void should_allow_changelog_parameters() throws IOException, ExecutionException, InterruptedException {
+        String baseScript = generatePipelineScript(workspace, "/pipeline-with-changelog-params.groovy");
+        String parameterValue = RandomStringUtils.randomAlphabetic(5);
+        String pipelineScript = baseScript.replaceAll("@PARAM_VALUE@", parameterValue);
+        job.setDefinition(new CpsFlowDefinition(pipelineScript));
+        LiquibaseTestUtil.createFileFromResource(workspace, "/example-changesets/with-changelog-property.xml");
+        WorkflowRun workflowRun = job.scheduleBuild2(0).get();
+
+        assertThat(workflowRun.getResult(), is(Result.SUCCESS));
+        ExecutedChangesetAction action = workflowRun.getAction(ExecutedChangesetAction.class);
+        assertThat(action, notNullValue());
+        List<ChangeSetDetail> changeSetDetails = action.getChangeSetDetails();
+        assertThat(changeSetDetails, hasSize(1));
+        String executedSql = changeSetDetails.get(0).getExecutedSql();
+        assertThat(executedSql, StringContains.containsString(parameterValue));
+
+    }
+
+    @Test
     public void should_allow_rollback_dsl()
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
         File databaseFile = temporaryFolder.newFile();
@@ -71,7 +96,8 @@ public class LiquibaseUpdateBuildStepTest {
     }
 
     private static File copyChangeLogFileToWorkspace(File workspace) throws IOException {
-        return LiquibaseTestUtil.createFileFromResource(workspace, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML);
+        String changesetResourcePath = LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML;
+        return LiquibaseTestUtil.createFileFromResource(workspace, changesetResourcePath);
     }
 
     private String generateUpdatePipelineScript(File workspace) throws IOException {

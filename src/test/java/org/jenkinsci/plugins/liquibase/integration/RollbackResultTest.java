@@ -13,7 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
-import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuildStep;
+import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuilder;
 import org.jenkinsci.plugins.liquibase.evaluator.RolledbackChangesetAction;
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,7 +61,7 @@ public class RollbackResultTest {
 
         LiquibaseTestUtil.createDatabase(jdbcUrl, sunnyDayChangeset);
 
-        RollbackBuildStep buildStep = createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, sunnyDayChangeset,
+        RollbackBuilder buildStep = createBaseBuildStep(RollbackBuilder.RollbackStrategy.COUNT, sunnyDayChangeset,
                 jdbcUrl);
         int numberOfChangesetsToRollback = 2;
         buildStep.setNumberOfChangesetsToRollback(String.valueOf(numberOfChangesetsToRollback));
@@ -76,8 +76,8 @@ public class RollbackResultTest {
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
 
         LiquibaseTestUtil.createDatabase(jdbcUrl, sunnyDayChangeset);
-        RollbackBuildStep rollbackBuildStep =
-                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.TAG, sunnyDayChangeset,
+        RollbackBuilder rollbackBuildStep =
+                createBaseBuildStep(RollbackBuilder.RollbackStrategy.TAG, sunnyDayChangeset,
                         jdbcUrl);
         rollbackBuildStep.setRollbackToTag(FIRST_TAG);
 
@@ -92,10 +92,10 @@ public class RollbackResultTest {
     public void should_rollback_according_to_date()
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
         LiquibaseTestUtil.createDatabase(jdbcUrl, sunnyDayChangeset);
-        RollbackBuildStep rollbackBuildStep =
-                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.DATE, sunnyDayChangeset, jdbcUrl);
+        RollbackBuilder rollbackBuildStep =
+                createBaseBuildStep(RollbackBuilder.RollbackStrategy.DATE, sunnyDayChangeset, jdbcUrl);
         Date yesterday = dateBeforeChangesetsApplied();
-        rollbackBuildStep.setRollbackToDate(new SimpleDateFormat(RollbackBuildStep.DATE_PATTERN).format(yesterday));
+        rollbackBuildStep.setRollbackToDate(new SimpleDateFormat(RollbackBuilder.DATE_PATTERN).format(yesterday));
 
         RolledbackChangesetAction resultAction = launchBuild(rollbackBuildStep);
 
@@ -119,8 +119,8 @@ public class RollbackResultTest {
 
         LiquibaseTestUtil.createDatabase(jdbcUrl, changesetContainingError);
 
-        RollbackBuildStep buildStep =
-                createBaseBuildStep(RollbackBuildStep.RollbackStrategy.COUNT, changesetContainingError, jdbcUrl);
+        RollbackBuilder buildStep =
+                createBaseBuildStep(RollbackBuilder.RollbackStrategy.COUNT, changesetContainingError, jdbcUrl);
         buildStep.setNumberOfChangesetsToRollback(String.valueOf(2));
 
         RolledbackChangesetAction resultAction = launchBuild(buildStep);
@@ -128,9 +128,9 @@ public class RollbackResultTest {
         assertThat(resultAction.getBuild().getResult(), is(Result.UNSTABLE));
     }
 
-    protected static RollbackBuildStep createBaseBuildStep(RollbackBuildStep.RollbackStrategy rollbackStrategy,
-                                                           File changelogFile, String dbUrl) {
-        RollbackBuildStep rollbackBuildStep = new RollbackBuildStep();
+    protected static RollbackBuilder createBaseBuildStep(RollbackBuilder.RollbackStrategy rollbackStrategy,
+                                                         File changelogFile, String dbUrl) {
+        RollbackBuilder rollbackBuildStep = new RollbackBuilder();
         rollbackBuildStep.setChangeLogFile(changelogFile.getAbsolutePath());
         rollbackBuildStep.setUrl(dbUrl);
         rollbackBuildStep.setDatabaseEngine("H2");
@@ -138,7 +138,7 @@ public class RollbackResultTest {
         return rollbackBuildStep;
     }
 
-    protected RolledbackChangesetAction launchBuild(RollbackBuildStep buildStep)
+    protected RolledbackChangesetAction launchBuild(RollbackBuilder buildStep)
             throws InterruptedException, ExecutionException {
         project.getBuildersList().add(buildStep);
         FreeStyleBuild build = project.scheduleBuild2(0).get();

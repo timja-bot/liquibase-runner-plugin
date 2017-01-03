@@ -6,7 +6,7 @@ import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
-import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuildStep;
+import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuilder;
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousStepExecution;
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 
@@ -34,24 +34,24 @@ public class RollbackStepExecution extends AbstractSynchronousStepExecution<Void
 
     @Override
     protected Void run() throws Exception {
-        RollbackBuildStep rollbackBuildStep  = new RollbackBuildStep();
+        RollbackBuilder rollbackBuildStep  = new RollbackBuilder();
         LiquibaseWorkflowUtil.setCommonConfiguration(rollbackBuildStep, step);
 
         if (step.getRollbackCount() != null) {
             rollbackBuildStep.setNumberOfChangesetsToRollback(String.valueOf(step.getRollbackCount()));
-            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.COUNT.name());
+            rollbackBuildStep.setRollbackType(RollbackBuilder.RollbackStrategy.COUNT.name());
         }
         if (step.getRollbackToDate() != null) {
             rollbackBuildStep.setRollbackToDate(step.getRollbackToDate());
-            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.DATE.name());
+            rollbackBuildStep.setRollbackType(RollbackBuilder.RollbackStrategy.DATE.name());
         }
         if (step.getRollbackToTag() != null) {
             rollbackBuildStep.setRollbackToTag(step.getRollbackToTag());
-            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.TAG.name());
+            rollbackBuildStep.setRollbackType(RollbackBuilder.RollbackStrategy.TAG.name());
         }
         if (step.getRollbackLastHours() != null) {
             rollbackBuildStep.setRollbackLastHours(step.getRollbackLastHours());
-            rollbackBuildStep.setRollbackType(RollbackBuildStep.RollbackStrategy.RELATIVE.name());
+            rollbackBuildStep.setRollbackType(RollbackBuilder.RollbackStrategy.RELATIVE.name());
         }
 
         rollbackBuildStep.perform(run, ws, launcher, listener);
