@@ -10,7 +10,7 @@ node {
           liquibasePropertiesPath: '/etc/liquibase.properties',
           contexts: 'staging',
           changeLogParameterList: [          // changelog parameters are a list of strings,
-                  'color=blue',              // each in the form of [parameter=value].
+                  'color=blue',              // each in the format of [parameter=value].
                   'shape=circle'
           ],
           changeLogParameters:  'subject=english'   // alternatively, changelog parameters can be
