@@ -42,7 +42,6 @@ public class LiquibaseUpdateExecution extends AbstractSynchronousStepExecution<V
         changesetEvaluator.setDropAll(step.isDropAll());
         changesetEvaluator.setTagOnSuccessfulBuild(step.isTagOnSuccessfulBuild());
 
-
         changesetEvaluator.perform(run, ws, launcher, listener);
         return null;
 

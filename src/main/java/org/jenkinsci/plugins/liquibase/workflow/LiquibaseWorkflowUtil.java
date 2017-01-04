@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.liquibase.workflow;
 
+import hudson.Util;
+
 import java.util.List;
 
 import org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder;
@@ -17,9 +19,9 @@ public class LiquibaseWorkflowUtil {
         builder.setCredentialsId(step.getCredentialsId());
         builder.setBasePath(step.getBasePath());
 
-        if (step.getChangeLogParameters()!=null) {
-            String parameterString = composeParameters(step.getChangeLogParameters());
-            builder.setChangeLogParameters(parameterString);
+        String parameterList = composeParameters(step);
+        if (parameterList != null) {
+            builder.setChangeLogParameters(parameterList);
         }
         builder.setDatabaseEngine(step.getDatabaseEngine());
         if (step.getDatabaseEngine() != null) {
@@ -27,11 +29,25 @@ public class LiquibaseWorkflowUtil {
         }
     }
 
-    protected static String composeParameters(List<String> params) {
-        StringBuilder sb = new StringBuilder();
-        for (String param : params) {
-            sb.append(param).append("\n");
+    protected static String composeParameters(AbstractLiquibaseStep step) {
+
+        List<String> params = step.getChangeLogParameterList();
+        String fromList = "";
+        if (params !=null && !params.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (String param : params) {
+                sb.append(param).append("\n");
+            }
+            if (sb.length() > 0) {
+                fromList = sb.substring(0, sb.length() - 1);
+            }
         }
-        return sb.substring(0, sb.length() - 1);
+        String result;
+        if (step.getChangeLogParameters() != null) {
+            result = step.getChangeLogParameters() + "\n" + fromList;
+        } else {
+            result = fromList;
+        }
+        return Util.fixEmptyAndTrim(result);
     }
 }

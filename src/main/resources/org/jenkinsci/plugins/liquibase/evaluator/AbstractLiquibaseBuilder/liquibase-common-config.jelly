@@ -39,7 +39,7 @@
     </f:section>
 
     <f:section title="Liquibase Configuration">
-        <f:entry help="help-basePath.html" title="Directory containing change log file" field="basePath"
+        <f:entry help="/plugin/liquibase-runner/help-basePath.html" title="Directory containing change log file" field="basePath"
                  description="Leave blank for workspace root.  May be relative to workspace or an absolute path.">
             <f:textbox value="${instance.basePath}"/>
         </f:entry>
@@ -63,7 +63,7 @@
             <f:textbox value="${instance.classpath}"/>
         </f:entry>
         <f:entry title="Changelog Parameters" field="changeLogParameters"
-                 help="help-changeLogParameters.html">
+                 help="/plugin/liquibase-runner/help-changeLogParameters.html">
             <f:textarea value="${instance.changeLogProperties}"/>
         </f:entry>
     </f:section>

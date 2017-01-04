@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.liquibase.workflow;
 
 import hudson.Extension;
+import hudson.Util;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -10,10 +11,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 public class RollbackStep extends AbstractLiquibaseStep {
-    protected Integer rollbackCount;
-    private String rollbackLastHours;
-    private String rollbackToTag;
-    private String rollbackToDate;
+    protected int rollbackCount = 0;
+    private String rollbackLastHours = null;
+    private String rollbackToTag = null;
+    private String rollbackToDate = null;
 
     @DataBoundConstructor
     public RollbackStep(String changeLogFile) {
@@ -47,21 +48,20 @@ public class RollbackStep extends AbstractLiquibaseStep {
 
     @DataBoundSetter
     public void setRollbackLastHours(String rollbackLastHours) {
-        this.rollbackLastHours = rollbackLastHours;
+        this.rollbackLastHours = Util.fixEmptyAndTrim(rollbackLastHours);
     }
 
     @DataBoundSetter
     public void setRollbackToTag(String rollbackToTag) {
-        this.rollbackToTag = rollbackToTag;
+        this.rollbackToTag = Util.fixEmptyAndTrim(rollbackToTag);
     }
 
     @DataBoundSetter
     public void setRollbackToDate(String rollbackToDate) {
-        this.rollbackToDate = rollbackToDate;
+        this.rollbackToDate = Util.fixEmptyAndTrim(rollbackToDate);
     }
 
-    @CheckForNull
-    public Integer getRollbackCount() {
+    public int getRollbackCount() {
         return rollbackCount;
     }
 

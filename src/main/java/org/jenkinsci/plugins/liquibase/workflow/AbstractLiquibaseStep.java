@@ -1,27 +1,26 @@
 package org.jenkinsci.plugins.liquibase.workflow;
 
-import java.util.List;
+import hudson.Util;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import java.util.List;
 
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.kohsuke.stapler.DataBoundSetter;
 
-public class AbstractLiquibaseStep extends AbstractStepImpl {
-    protected String databaseEngine;
-    protected String changeLogFile;
-    protected String url;
-    protected String defaultSchemaName;
-    protected String contexts;
-    protected String liquibasePropertiesPath;
-    protected String classpath;
-    protected String driverClassname;
-    protected String labels;
-    private String basePath;
-    private List<String> changeLogParameters;
+public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
+    protected final String changeLogFile;
+    protected String databaseEngine = null;
+    protected String url = null;
+    protected String defaultSchemaName = null;
+    protected String contexts = null;
+    protected String liquibasePropertiesPath = null;
+    protected String classpath = null;
+    protected String driverClassname = null;
+    protected String labels = null;
+    private String basePath = null;
+    private List<String> changeLogParameterList = null;
+    private String changeLogParameters = null;
 
-    @CheckForNull
     private String credentialsId;
 
     public AbstractLiquibaseStep(String changeLogFile) {
@@ -29,63 +28,63 @@ public class AbstractLiquibaseStep extends AbstractStepImpl {
     }
 
     @DataBoundSetter
-    public void setChangeLogParameters(List<String> changeLogParameters) {
-        this.changeLogParameters = changeLogParameters;
+    public void setChangeLogParameterList(List<String> changeLogParameterList) {
+        this.changeLogParameterList = changeLogParameterList;
     }
 
     @DataBoundSetter
     public void setDatabaseEngine(String databaseEngine) {
-        this.databaseEngine = databaseEngine;
-    }
-
-    @DataBoundSetter
-    public void setChangeLogFile(String changeLogFile) {
-        this.changeLogFile = changeLogFile;
+        this.databaseEngine = Util.fixEmptyAndTrim(Util.fixEmptyAndTrim(databaseEngine));
     }
 
     @DataBoundSetter
     public void setUrl(String url) {
-        this.url = url;
+        this.url = Util.fixEmptyAndTrim(url);
     }
 
     @DataBoundSetter
     public void setDefaultSchemaName(String defaultSchemaName) {
-        this.defaultSchemaName = defaultSchemaName;
+        this.defaultSchemaName = Util.fixEmptyAndTrim(defaultSchemaName);
     }
 
     @DataBoundSetter
     public void setContexts(String contexts) {
-        this.contexts = contexts;
+        this.contexts = Util.fixEmptyAndTrim(contexts);
     }
 
     @DataBoundSetter
     public void setLiquibasePropertiesPath(String liquibasePropertiesPath) {
-        this.liquibasePropertiesPath = liquibasePropertiesPath;
+        this.liquibasePropertiesPath = Util.fixEmptyAndTrim(liquibasePropertiesPath);
     }
 
     @DataBoundSetter
     public void setClasspath(String classpath) {
-        this.classpath = classpath;
+        this.classpath = Util.fixEmptyAndTrim(classpath);
     }
 
     @DataBoundSetter
     public void setDriverClassname(String driverClassname) {
-        this.driverClassname = driverClassname;
+        this.driverClassname = Util.fixEmptyAndTrim(driverClassname);
     }
 
     @DataBoundSetter
     public void setLabels(String labels) {
-        this.labels = labels;
+        this.labels = Util.fixEmptyAndTrim(labels);
     }
 
     @DataBoundSetter
     public void setBasePath(String basePath) {
-        this.basePath = basePath;
+        this.basePath = Util.fixEmptyAndTrim(basePath);
     }
 
     @DataBoundSetter
     public void setCredentialsId(String credentialsId) {
-        this.credentialsId = credentialsId;
+        this.credentialsId = Util.fixEmptyAndTrim(credentialsId);
+    }
+
+    @DataBoundSetter
+    public void setChangeLogParameters(String changeLogParameters) {
+        this.changeLogParameters = Util.fixEmptyAndTrim(changeLogParameters);
     }
 
     public String getDatabaseEngine() {
@@ -129,12 +128,14 @@ public class AbstractLiquibaseStep extends AbstractStepImpl {
         return basePath;
     }
 
-    @CheckForNull
-    public List<String> getChangeLogParameters() {
+    public List<String> getChangeLogParameterList() {
+        return changeLogParameterList;
+    }
+
+    public String getChangeLogParameters() {
         return changeLogParameters;
     }
 
-    @Nullable
     public String getCredentialsId() {
         return credentialsId;
     }

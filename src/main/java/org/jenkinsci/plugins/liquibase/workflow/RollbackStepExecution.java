@@ -37,7 +37,7 @@ public class RollbackStepExecution extends AbstractSynchronousStepExecution<Void
         RollbackBuilder rollbackBuildStep  = new RollbackBuilder();
         LiquibaseWorkflowUtil.setCommonConfiguration(rollbackBuildStep, step);
 
-        if (step.getRollbackCount() != null) {
+        if (step.getRollbackCount() != 0) {
             rollbackBuildStep.setNumberOfChangesetsToRollback(String.valueOf(step.getRollbackCount()));
             rollbackBuildStep.setRollbackType(RollbackBuilder.RollbackStrategy.COUNT.name());
         }

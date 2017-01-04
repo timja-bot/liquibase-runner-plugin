@@ -1,0 +1,38 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form"
+         xmlns:st="jelly:stapler">
+
+
+    <f:entry title="Change Log File" field="changeLogFile"
+             description="Root changeset file.">
+        <f:textbox/>
+    </f:entry>
+    <f:block>Roll back strategy:
+        <f:entry title="Number of changesets" field="rollbackCount"
+                 description="Number of changesets to roll back">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="To Tag" field="rollbackToTag"
+                 description="tag name">
+            <f:textbox field="rollbackToTag"/>
+        </f:entry>
+        <f:entry title="To Date" field="rollbackToDate"
+                 description="format: yyyy-MM-dd'T'HH:mm:ss">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Last x hours" field="rollbackLastHours"
+                 description="Number of hours">
+            <f:textbox/>
+        </f:entry>
+    </f:block>
+
+
+    <f:advanced>
+        <st:include
+                page="config.jelly"
+                class="org.jenkinsci.plugins.liquibase.workflow.AbstractLiquibaseStep"/>
+    </f:advanced>
+</j:jelly>
+
