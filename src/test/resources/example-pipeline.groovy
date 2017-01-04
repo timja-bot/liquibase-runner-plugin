@@ -19,6 +19,7 @@ node {
 
   liquibaseUpdate('changeset.xml')  // using minimum configuration will cause the plugin to use an H2 inmemory database.
 
+  // rollback has many of the same parameters as update, with additional ones that control rollback behavior
   liquibaseRollback(changeLogFile: 'changeset.yml',
           rollbackToTag: 'deploy-2.5',
           url: 'jdbc:postgresql://localhost:5432/sample-db',
