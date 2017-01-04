@@ -63,7 +63,7 @@ public class LiquibasePipelineTest {
 
     @Test
     public void should_allow_changelog_parameters() throws IOException, ExecutionException, InterruptedException {
-        String baseScript = generatePipelineScript(workspace, "/pipeline-with-changelog-params.groovy");
+        String baseScript = generatePipelineScript(workspace, "/pipeline-scripts/pipeline-with-changelog-params.groovy");
         String parameterValue = RandomStringUtils.randomAlphabetic(5);
         String pipelineScript = baseScript.replaceAll("@PARAM_VALUE@", parameterValue);
         job.setDefinition(new CpsFlowDefinition(pipelineScript));
@@ -85,7 +85,7 @@ public class LiquibasePipelineTest {
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
         File databaseFile = temporaryFolder.newFile();
         String jdbcUrl = LiquibaseTestUtil.composeJdbcUrl(databaseFile);
-        String baseScript = generatePipelineScript(workspace, "/rollback-pipeline-template.groovy");
+        String baseScript = generatePipelineScript(workspace, "/pipeline-scripts/rollback-pipeline-template.groovy");
         String script = baseScript.replaceAll("@DB_URL@", jdbcUrl);
         CpsFlowDefinition cpsFlowDefinition = new CpsFlowDefinition(script);
         job.setDefinition(cpsFlowDefinition);
@@ -101,8 +101,7 @@ public class LiquibasePipelineTest {
     }
 
     private String generateUpdatePipelineScript(File workspace) throws IOException {
-        String resourcePath = "/pipeline-with-ws-token.groovy";
-        return generatePipelineScript(workspace, resourcePath);
+        return generatePipelineScript(workspace, "/pipeline-scripts/pipeline-template.groovy");
     }
 
     private String generatePipelineScript(File workspace, String resourcePath) throws IOException {

@@ -5,12 +5,14 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import liquibase.Liquibase;
 import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -83,6 +85,31 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(build.getResult(), is(Result.SUCCESS));
     }
 
+    @Test
+    public void should_mark_liquibase_setup_problem_as_failure()
+            throws IOException, ExecutionException, InterruptedException {
+
+        Properties properties = new Properties();
+        properties.setProperty("driver", "nosuch.driver");
+        properties.setProperty("changeLogFile", "sunny-day-changeset.xml");
+        LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(), "/example-changesets/sunny-day-changeset.xml");
+
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        project.setCustomWorkspace(temporaryFolder.getRoot().getAbsolutePath());
+
+        File propertiesFile = temporaryFolder.newFile();
+        properties.store(new FileOutputStream(propertiesFile), "Liquibase Test Properties");
+
+        ChangesetEvaluator evaluator = new ChangesetEvaluator();
+        evaluator.setLiquibasePropertiesPath(propertiesFile.getAbsolutePath());
+
+        project.getBuildersList().add(evaluator);
+        FreeStyleBuild build = launchBuildForProject(project);
+        assertThat(build.getResult(), is(Result.FAILURE));
+    }
+
+
+
     /**
      * Covers https://github.com/jenkinsci/liquibase-runner-plugin/issues/8
      */
@@ -129,8 +156,6 @@ public class ChangesetEvaluatorBuildResultTest {
 
         assertThat(build.getAction(ExecutedChangesetAction.class), CoreMatchers.notNullValue());
         assertThat(action.getSuccessfulChangeSets(), contains(IsChangeSetDetail.hasId("create-table")));
-
-
     }
 
     @Test
@@ -235,7 +260,7 @@ public class ChangesetEvaluatorBuildResultTest {
         Properties liquibaseProperties = new Properties();
         liquibaseProperties.load(getClass().getResourceAsStream("/example-changesets/unit-test.h2.liquibase.properties"));
         Connection connection = DriverManager.getConnection(dbUrl, liquibaseProperties);
-        JdbcConnection jdbcConnection = new JdbcConnection(connection);
+        DatabaseConnection jdbcConnection = new JdbcConnection(connection);
 
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
 

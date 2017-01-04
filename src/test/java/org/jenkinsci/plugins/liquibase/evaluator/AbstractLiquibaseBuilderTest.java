@@ -9,6 +9,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
+import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.changelog.ChangeLogParameters;
 import liquibase.changelog.ChangeSet;
@@ -107,8 +108,9 @@ public class AbstractLiquibaseBuilderTest {
 
         assertThat(resolvedValue, instanceOf(String.class));
         assertThat((String) resolvedValue, is(parameterValue));
-
     }
+
+
 
     @Test
     public void should_load_changeset_from_dynamic_classpath()
@@ -157,8 +159,7 @@ public class AbstractLiquibaseBuilderTest {
                                TaskListener listener,
                                Liquibase liquibase,
                                Contexts contexts,
-                               ExecutedChangesetAction executedChangesetAction,
-                               Properties configProperties)
+                               LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction)
                 throws InterruptedException, IOException, LiquibaseException {
 
         }
