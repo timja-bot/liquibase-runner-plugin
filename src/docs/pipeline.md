@@ -1,8 +1,22 @@
+Pipeline Support
+================
+
+As of version 1.2.0, the liquibase runner avails itself to pipeline scripts.  Configuration is nearly identical to traditional use of the plugin.
+ 
+Here are a couple of example pipeline scripts that utilize almost all the available options:
+
+Minimal Update
+-------
+```
 node {
   // using minimum configuration will cause the plugin to use an H2 inmemory database.
   liquibaseUpdate('changeset.xml')
 }
+```
 
+Update with many parameters
+-----------
+```
 node {
   liquibaseUpdate(changeLogFile: 'changeset.yml',
           testRollbacks: true,
@@ -13,16 +27,19 @@ node {
           credentialsId: 'database_password_credentials_id',
           liquibasePropertiesPath: '/etc/liquibase.properties',
           contexts: 'staging',
-          changeLogParameterList: [                  // changelog parameters are a list of strings,
-                                   'color=blue',     // each in the format of [parameter=value].
-                                   'shape=circle'],
+          changeLogParameterList: ['color=blue',     // changelog parameters are a list of strings,
+                                   'shape=circle'],  // each in the format of 'parameter=value'.
           // alternatively, changelog parameters can be supplied as a single string,
           // each key / value pair on a new line
           changeLogParameters: ''''subject=english
                                    planet=earth'''
   )
 }
+```
 
+Rollback
+---------
+```
 node {
   // rollback has many of the same parameters as update, with additional ones that control rollback behavior.
   // Note that the below example has mutually exclusive rollback options.  In practice, you'd either specify
@@ -38,3 +55,4 @@ node {
           rollbackLastHours: 3
   )
 }
+```
