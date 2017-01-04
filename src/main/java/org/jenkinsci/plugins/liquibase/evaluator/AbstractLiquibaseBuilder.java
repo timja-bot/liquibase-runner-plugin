@@ -11,6 +11,7 @@ import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import jenkins.tasks.SimpleBuildStep;
 import liquibase.Contexts;
+import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
@@ -101,8 +102,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                     TaskListener listener,
                                     Liquibase liquibase,
                                     Contexts contexts,
-                                    ExecutedChangesetAction executedChangesetAction,
-                                    Properties configProperties)
+                                    LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction)
             throws InterruptedException, IOException, LiquibaseException;
 
     abstract public Descriptor<Builder> getDescriptor();
@@ -120,8 +120,11 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                 createLiquibase(build, listener, executedChangesetAction, configProperties, launcher, workspace);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
         Contexts contexts = new Contexts(liqContexts);
+        LabelExpression labelExpression =
+                new LabelExpression(getProperty(configProperties, LiquibaseProperty.LABELS));
+
         try {
-            runPerform(build, listener, liquibase, contexts, executedChangesetAction, configProperties);
+            runPerform(build, listener, liquibase, contexts, labelExpression, executedChangesetAction);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
@@ -192,11 +195,10 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
     protected static void populateChangeLogParameters(Liquibase liquibase,
                                                       Map environment,
-                                                      String changeLogParameters, boolean resolveMacros) {
-        Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
+                                                      CharSequence changeLogParameters, boolean resolveMacros) {
+        Map<String, String> keyValuePairs = Splitter.on("\n").trimResults().withKeyValueSeparator("=").split(changeLogParameters);
         for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
             String value = entry.getValue();
-
             String resolvedValue;
             String resolvedKey;
             String key = entry.getKey();

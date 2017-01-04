@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.liquibase.common;
 
-import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -8,6 +7,7 @@ import hudson.model.Run;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
@@ -46,7 +46,7 @@ public class PropertiesAssembler {
      * @return
      */
     public static Properties createLiquibaseProperties(AbstractLiquibaseBuilder liquibaseBuilder,
-                                                       Run<?, ?> build, EnvVars environment, FilePath workspace)
+                                                       Run<?, ?> build, Map environment, FilePath workspace)
             throws IOException, InterruptedException {
         Properties properties = new Properties();
         assembleDefaults(properties);
@@ -65,20 +65,22 @@ public class PropertiesAssembler {
 
     protected static void assembleFromProjectConfiguration(AbstractLiquibaseBuilder liquibaseBuilder,
                                                            Properties properties,
-                                                           EnvVars environment, Run<?, ?> build)
+                                                           Map environment, Run<?, ?> build)
             throws IOException, InterruptedException {
 
 
         if (!Strings.isNullOrEmpty(liquibaseBuilder.getCredentialsId())) {
-            StandardUsernamePasswordCredentials credentialById =
+            StandardUsernamePasswordCredentials credentials =
                     CredentialsProvider.findCredentialById(liquibaseBuilder.getCredentialsId(),
                             StandardUsernamePasswordCredentials.class, build,
                             Lists.<DomainRequirement>newArrayList());
 
-            if (credentialById!=null) {
-                addPropertyIfDefined(properties, LiquibaseProperty.USERNAME, credentialById.getUsername(), environment, build);
-                addPropertyIfDefined(properties, LiquibaseProperty.PASSWORD, credentialById.getPassword().getPlainText(), environment,
-                        build);
+            if (credentials!=null) {
+                String username = credentials.getUsername();
+                if (!Strings.isNullOrEmpty(username)) {
+                    setProperty(properties, LiquibaseProperty.USERNAME, username);
+                }
+                setProperty(properties, LiquibaseProperty.PASSWORD, credentials.getPassword().getPlainText());
             }
         }
         addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile(),
@@ -98,19 +100,19 @@ public class PropertiesAssembler {
 
     private static void resolveDatabaseDriver(AbstractLiquibaseBuilder liquibaseBuilder,
                                               Properties properties,
-                                              EnvVars environment, Run<?, ?> build) {
+                                              Map environment, Run<?, ?> build) {
 
 
-        boolean useIncludedDriver = useIncludedDriver(liquibaseBuilder);
+        boolean useIncludedDriver = isBuilderUsingIncludedDriver(liquibaseBuilder);
         if (useIncludedDriver) {
-            PropertiesAssembler.setDriverFromDBEngine(liquibaseBuilder, properties);
+            setDriverFromDBEngine(liquibaseBuilder, properties);
         } else {
             addPropertyIfDefined(properties, LiquibaseProperty.DRIVER, liquibaseBuilder.getDriverClassname(),
                     environment, build);
         }
     }
 
-    private static boolean useIncludedDriver(AbstractLiquibaseBuilder liquibaseBuilder) {
+    private static boolean isBuilderUsingIncludedDriver(AbstractLiquibaseBuilder liquibaseBuilder) {
         boolean useIncludedDriver =
                 liquibaseBuilder.hasUseIncludedDriverBeenSet() && liquibaseBuilder.isUseIncludedDriver();
         return useIncludedDriver && !Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine());
@@ -146,29 +148,6 @@ public class PropertiesAssembler {
         }
     }
 
-    private static void assembleDefaults(Properties properties) {
-        setProperty(properties, LiquibaseProperty.DRIVER, DEFAULT_DB_DRIVER);
-        setProperty(properties, LiquibaseProperty.URL, DEFAULT_JDBC_URL);
-    }
-
-    private static void setProperty(Properties properties, LiquibaseProperty liquibaseProperty, String value) {
-        properties.setProperty(liquibaseProperty.propertyName(), value);
-    }
-
-    protected static void addPropertyIfDefined(Properties properties,
-                                               LiquibaseProperty liquibaseProperty,
-                                               String value, EnvVars environment, Run<?, ?> build) {
-        if (!Strings.isNullOrEmpty(value)) {
-            String resolvedValue;
-            if (build instanceof AbstractBuild) {
-                resolvedValue = hudson.Util.replaceMacro(value, environment);
-            } else {
-                resolvedValue = value;
-            }
-            properties.setProperty(liquibaseProperty.propertyName(), resolvedValue);
-        }
-    }
-
     public static void setDriverFromDBEngine(AbstractLiquibaseBuilder liquibaseBuilder, Properties properties) {
         if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
             for (IncludedDatabaseDriver includedDatabaseDriver : liquibaseBuilder.getDrivers()) {
@@ -180,6 +159,29 @@ public class PropertiesAssembler {
                     break;
                 }
             }
+        }
+    }
+
+    private static void assembleDefaults(Properties properties) {
+        setProperty(properties, LiquibaseProperty.DRIVER, DEFAULT_DB_DRIVER);
+        setProperty(properties, LiquibaseProperty.URL, DEFAULT_JDBC_URL);
+    }
+
+    private static void setProperty(Properties properties, LiquibaseProperty liquibaseProperty, String value) {
+        properties.setProperty(liquibaseProperty.propertyName(), value);
+    }
+
+    protected static void addPropertyIfDefined(Properties properties,
+                                               LiquibaseProperty liquibaseProperty,
+                                               String value, Map environment, Run<?, ?> build) {
+        if (!Strings.isNullOrEmpty(value)) {
+            String resolvedValue;
+            if (build instanceof AbstractBuild) {
+                resolvedValue = hudson.Util.replaceMacro(value, environment);
+            } else {
+                resolvedValue = value;
+            }
+            properties.setProperty(liquibaseProperty.propertyName(), resolvedValue);
         }
     }
 }

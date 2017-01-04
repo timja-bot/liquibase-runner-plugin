@@ -21,9 +21,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 
-import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -58,15 +56,13 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
                            TaskListener listener,
                            Liquibase liquibase,
                            Contexts contexts,
-                           ExecutedChangesetAction executedChangesetAction,
-                           Properties configProperties) throws InterruptedException, IOException, LiquibaseException {
+                           LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction) throws InterruptedException, IOException, LiquibaseException {
         executedChangesetAction.setRollbackOnly(true);
         RolledbackChangesetAction action = new RolledbackChangesetAction(build);
         RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
         build.addAction(action);
 
         EnvVars environment = build.getEnvironment(listener);
-        LabelExpression labelExpression = new LabelExpression(getProperty(configProperties, LiquibaseProperty.LABELS));
 
         if (rollbackStrategy == RollbackStrategy.COUNT) {
             String resolvedRollbackCount = Util.replaceMacro(numberOfChangesetsToRollback, environment);

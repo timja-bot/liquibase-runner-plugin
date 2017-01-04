@@ -5,6 +5,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import liquibase.Liquibase;
 import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
@@ -129,8 +130,6 @@ public class ChangesetEvaluatorBuildResultTest {
 
         assertThat(build.getAction(ExecutedChangesetAction.class), CoreMatchers.notNullValue());
         assertThat(action.getSuccessfulChangeSets(), contains(IsChangeSetDetail.hasId("create-table")));
-
-
     }
 
     @Test
@@ -235,7 +234,7 @@ public class ChangesetEvaluatorBuildResultTest {
         Properties liquibaseProperties = new Properties();
         liquibaseProperties.load(getClass().getResourceAsStream("/example-changesets/unit-test.h2.liquibase.properties"));
         Connection connection = DriverManager.getConnection(dbUrl, liquibaseProperties);
-        JdbcConnection jdbcConnection = new JdbcConnection(connection);
+        DatabaseConnection jdbcConnection = new JdbcConnection(connection);
 
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
 
