@@ -159,8 +159,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         } catch (LiquibaseException e) {
             throw new RuntimeException("Error creating liquibase database.", e);
         }
-        BuildChangeExecListener buildChangeExecListener = new BuildChangeExecListener(action, listener);
-        liquibase.setChangeExecListener(buildChangeExecListener);
+        liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
 
         if (!Strings.isNullOrEmpty(changeLogParameters)) {
             populateChangeLogParameters(liquibase, environment, changeLogParameters, resolveMacros);
@@ -169,7 +168,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     }
 
     private ResourceAccessor createResourceAccessor(FilePath workspace,
-                                                    EnvVars environment,
+                                                    Map environment,
                                                     boolean resolveMacros) {
         String resolvedBasePath;
         if (resolveMacros) {
@@ -192,7 +191,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     }
 
     protected static void populateChangeLogParameters(Liquibase liquibase,
-                                                      EnvVars environment,
+                                                      Map environment,
                                                       String changeLogParameters, boolean resolveMacros) {
         Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
         for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
