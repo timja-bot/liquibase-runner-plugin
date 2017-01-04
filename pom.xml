@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.9</version>
-        <relativePath />
+        <version>1.596.1</version>
+        <relativePath/>
     </parent>
     <artifactId>liquibase-runner</artifactId>
     <version>1.2.0-SNAPSHOT</version>
@@ -49,12 +50,38 @@
     </pluginRepositories>
     <properties>
         <jenkins.version>1.596.1</jenkins.version>
+        <workflow.version>1.7</workflow.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
             <version>1.16.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
+            <version>${workflow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-aggregator</artifactId>
+            <version>${workflow.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
+            <version>${workflow.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-support</artifactId>
+            <version>${workflow.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -171,10 +198,10 @@
     </build>
     <profiles>
         <profile>
-            <id>jenkins_2_7_2</id>
+            <id>jenkins_2_x</id>
             <!-- for testing against a later version of jenkins -->
             <properties>
-                <jenkins.version>2.7.2</jenkins.version>
+                <jenkins.version>2.38</jenkins.version>
             </properties>
         </profile>
         <profile>
@@ -192,6 +219,5 @@
                 </dependency>
             </dependencies>
         </profile>
-
     </profiles>
 </project>

@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.exparity.hamcrest.date.IsSameInstant.sameInstant;
 import static org.junit.Assert.assertThat;
 
-public class RollbackBuildStepTest {
+public class RollbackBuilderTest {
 
     private static final String RESOLVE_FROM_DATE = "13/10/1973 8:00";
     private static final String HOURS_IN_DAY = "24";
@@ -20,10 +20,10 @@ public class RollbackBuildStepTest {
 
     @Test
     public void should_resolve_date_to_one_day_ago() throws ParseException {
-        RollbackBuildStep rollbackBuildStep = new RollbackBuildStep();
+        RollbackBuilder rollbackBuildStep = new RollbackBuilder();
         rollbackBuildStep.setRollbackLastHours(HOURS_IN_DAY);
         Date resolveFrom = sdf.parse(RESOLVE_FROM_DATE);
-        Date result = rollbackBuildStep.resolveTargetDate(RollbackBuildStep.RollbackStrategy.RELATIVE,resolveFrom, new EnvVars());
+        Date result = rollbackBuildStep.resolveTargetDate(RollbackBuilder.RollbackStrategy.RELATIVE,resolveFrom, new EnvVars());
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(resolveFrom);

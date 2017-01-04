@@ -1,11 +1,11 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -13,7 +13,6 @@ import liquibase.Liquibase;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.jenkinsci.plugins.liquibase.common.LiquibaseCommand;
@@ -37,42 +36,18 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
     private boolean dropAll;
     protected boolean tagOnSuccessfulBuild;
 
+    @DataBoundConstructor
     public ChangesetEvaluator() {
         super();
     }
 
-    @DataBoundConstructor
-    public ChangesetEvaluator(String databaseEngine,
-                              String changeLogFile,
-                              String url,
-                              String defaultSchemaName,
-                              String contexts,
-                              String liquibasePropertiesPath,
-                              String classpath,
-                              String driverClassname,
-                              String changeLogParameters,
-                              boolean testRollbacks,
-                              boolean dropAll,
-                              String labels,
-                              String basePath,
-                              boolean tagOnSuccessfulBuild,
-                              boolean useIncludedDriver,
-                              String credentialsId) {
-        super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
-                liquibasePropertiesPath,
-                classpath, driverClassname, changeLogParameters, labels, basePath, useIncludedDriver, credentialsId);
-        this.testRollbacks = testRollbacks;
-        this.dropAll = dropAll;
-        this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
-    }
-
     @Override
-    public void doPerform(AbstractBuild<?, ?> build,
-                          BuildListener listener,
-                          Liquibase liquibase,
-                          Contexts contexts,
-                          ExecutedChangesetAction executedChangesetAction, Properties configProperties)
-            throws InterruptedException, IOException {
+    public void runPerform(Run<?, ?> build,
+                           TaskListener listener,
+                           Liquibase liquibase,
+                           Contexts contexts,
+                           ExecutedChangesetAction executedChangesetAction,
+                           Properties configProperties) {
 
         executedChangesetAction.setRollbacksTested(testRollbacks);
 
@@ -100,7 +75,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
             }
 
             if (tagOnSuccessfulBuild) {
-                String tagString = build.getProject().getName() + "-" + build.getNumber();
+                String tagString = build.getParent().getName() + "-" + build.getNumber();
                 listener.getLogger().println("Applying tag '" + tagString + "' to schema");
                 liquibase.tag(tagString);
                 executedChangesetAction.setAppliedTag(tagString);
@@ -112,6 +87,32 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.FAILURE);
         }
+
+    }
+
+    @Deprecated
+    public ChangesetEvaluator(String databaseEngine,
+                              String changeLogFile,
+                              String url,
+                              String defaultSchemaName,
+                              String contexts,
+                              String liquibasePropertiesPath,
+                              String classpath,
+                              String driverClassname,
+                              String changeLogParameters,
+                              boolean testRollbacks,
+                              boolean dropAll,
+                              String labels,
+                              String basePath,
+                              boolean tagOnSuccessfulBuild,
+                              boolean useIncludedDriver,
+                              String credentialsId) {
+        super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
+                liquibasePropertiesPath,
+                classpath, driverClassname, changeLogParameters, labels, basePath, useIncludedDriver, credentialsId);
+        this.testRollbacks = testRollbacks;
+        this.dropAll = dropAll;
+        this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
     }
 
     @Override

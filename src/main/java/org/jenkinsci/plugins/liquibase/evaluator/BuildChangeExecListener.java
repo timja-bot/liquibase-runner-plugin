@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
-import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import liquibase.change.Change;
 import liquibase.changelog.ChangeSet;
 import liquibase.changelog.DatabaseChangeLog;
@@ -28,16 +28,16 @@ import com.google.common.collect.Lists;
 public class BuildChangeExecListener implements ChangeExecListener {
     private final ExecutedChangesetAction action;
     private static final Logger LOG = LoggerFactory.getLogger(BuildChangeExecListener.class);
-    private BuildListener buildListener;
+    private TaskListener taskListener;
     private static final String RAN_CHANGESET_MSG = "Ran changeset: ";
 
     public BuildChangeExecListener(ExecutedChangesetAction action) {
         this.action = action;
     }
 
-    public BuildChangeExecListener(ExecutedChangesetAction action, BuildListener buildListener) {
+    public BuildChangeExecListener(ExecutedChangesetAction action, TaskListener taskListener) {
         this.action = action;
-        this.buildListener = buildListener;
+        this.taskListener = taskListener;
     }
 
     public void willRun(ChangeSet changeSet,
@@ -58,7 +58,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
         }
 
         String logMessage = formatChangesetForLog(changeSet, "Rolled back");
-        buildListener.getLogger().println(logMessage);
+        taskListener.getLogger().println(logMessage);
         ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet);
         action.addRolledBackChangesetDetail(changeSetDetail);
         if (action.hasChangesetWithId(changeSetDetail.getId())) {
@@ -102,7 +102,7 @@ public class BuildChangeExecListener implements ChangeExecListener {
 
     protected void printConsoleLogMessage(ChangeSet changeSet) {
         String logMessage = Util.formatChangeset(changeSet);
-        buildListener.getLogger().println(RAN_CHANGESET_MSG + logMessage);
+        taskListener.getLogger().println(RAN_CHANGESET_MSG + logMessage);
     }
 
     public void runFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, Exception e) {

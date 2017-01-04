@@ -3,10 +3,13 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
-import hudson.model.AbstractBuild;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Items;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -28,7 +31,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 /**
  * Build step that invoke's liquibase's rollback against a target database.
  */
-public class RollbackBuildStep extends AbstractLiquibaseBuilder {
+public class RollbackBuilder extends AbstractLiquibaseBuilder {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
     public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
@@ -39,56 +42,24 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     private String rollbackToTag;
     private String rollbackToDate;
 
-
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
 
     public enum RollbackStrategy {
         TAG, DATE, RELATIVE, COUNT
     }
 
-    public RollbackBuildStep() {
-
-
-    }
-
     @DataBoundConstructor
-    public RollbackBuildStep(String databaseEngine,
-                             String changeLogFile,
-                             String username,
-                             String password,
-                             String url,
-                             String defaultSchemaName,
-                             String contexts,
-                             String liquibasePropertiesPath,
-                             String classpath,
-                             String driverClassname,
-                             String changeLogParameters,
-                             String labels,
-                             String basePath,
-                             String rollbackType,
-                             String numberOfChangesetsToRollback,
-                             String rollbackLastHours,
-                             String rollbackToTag, String rollbackToDate, boolean useIncludedDriver,
-                             String credentialsId) {
-        super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
-                liquibasePropertiesPath,
-                classpath, driverClassname, changeLogParameters, labels, basePath, useIncludedDriver, credentialsId);
+    public RollbackBuilder() {
 
-        this.rollbackType = rollbackType;
-        this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;
-        this.rollbackLastHours = rollbackLastHours;
-        this.rollbackToTag = rollbackToTag;
-        this.rollbackToDate = rollbackToDate;
     }
 
     @Override
-    public void doPerform(AbstractBuild<?, ?> build,
-                          BuildListener listener,
-                          Liquibase liquibase,
-                          Contexts contexts,
-                          ExecutedChangesetAction executedChangesetAction, Properties configProperties)
-            throws InterruptedException, IOException, LiquibaseException {
-
+    public void runPerform(Run<?, ?> build,
+                           TaskListener listener,
+                           Liquibase liquibase,
+                           Contexts contexts,
+                           ExecutedChangesetAction executedChangesetAction,
+                           Properties configProperties) throws InterruptedException, IOException, LiquibaseException {
         executedChangesetAction.setRollbackOnly(true);
         RolledbackChangesetAction action = new RolledbackChangesetAction(build);
         RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
@@ -124,6 +95,36 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         }
 
         action.setRolledbackChangesets(executedChangesetAction.getRolledBackChangesets());
+    }
+
+    @Deprecated
+    public RollbackBuilder(String databaseEngine,
+                           String changeLogFile,
+                           String username,
+                           String password,
+                           String url,
+                           String defaultSchemaName,
+                           String contexts,
+                           String liquibasePropertiesPath,
+                           String classpath,
+                           String driverClassname,
+                           String changeLogParameters,
+                           String labels,
+                           String basePath,
+                           String rollbackType,
+                           String numberOfChangesetsToRollback,
+                           String rollbackLastHours,
+                           String rollbackToTag, String rollbackToDate, boolean useIncludedDriver,
+                           String credentialsId) {
+        super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
+                liquibasePropertiesPath,
+                classpath, driverClassname, changeLogParameters, labels, basePath, useIncludedDriver, credentialsId);
+
+        this.rollbackType = rollbackType;
+        this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;
+        this.rollbackLastHours = rollbackLastHours;
+        this.rollbackToTag = rollbackToTag;
+        this.rollbackToDate = rollbackToDate;
     }
 
 
@@ -196,7 +197,6 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         this.rollbackType = rollbackType;
     }
 
-
     public String getRollbackLastHours() {
         return rollbackLastHours;
     }
@@ -207,6 +207,12 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
     }
 
     public static class DescriptorImpl extends AbstractLiquibaseDescriptor {
+
+        @Initializer(before = InitMilestone.PLUGINS_STARTED)
+        public static void addAliases() {
+            Items.XSTREAM2.addCompatibilityAlias("org.jenkinsci.plugins.liquibase.evaluator.RollbackBuildStep",
+                    RollbackBuilder.class);
+        }
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -219,5 +225,4 @@ public class RollbackBuildStep extends AbstractLiquibaseBuilder {
         }
 
     }
-
 }

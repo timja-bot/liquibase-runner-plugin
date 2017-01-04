@@ -1,0 +1,49 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form"
+         xmlns:c="/lib/credentials">
+
+    <f:section title="Connection Details">
+        <f:entry title="${%Database driver classname}" field="driverClassname">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb">
+            <f:textbox/>
+        </f:entry>
+        <f:entry field="credentialsId" title="Credentials">
+            <c:select/>
+        </f:entry>
+    </f:section>
+
+    <f:section title="Liquibase Configuration">
+        <f:entry help="/plugin/liquibase-runner/help-basePath.html" title="Directory containing change log file"
+                 field="basePath"
+                 description="Leave blank for workspace root.  May be relative to workspace or an absolute path.">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Contexts" field="contexts" description="Comma separated list of liquibase contexts to execute.">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Liquibase Defaults File" field="liquibasePropertiesPath"
+                 description="Properties file defining liquibase configuration.  You can use this instead of defining above configuration.">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Default Schema" field="defaultSchemaName"
+                 description="Default database schema to use.  Leave blank to default to that defined by the URL.">
+            <f:textbox/>
+        </f:entry>
+
+        <f:entry title="Label Expression" description="Expression defining labeled ChangeSet to execute">
+            <f:expandableTextbox name="labels"/>
+        </f:entry>
+        <f:entry title="Classpath" field="classpath"
+                 description="Classpath containing migration files and JDBC Driver">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Changelog Parameters" field="changeLogParameters"
+                 help="/plugin/liquibase-runner/help-changeLogParameters.html">
+            <f:textarea/>
+        </f:entry>
+    </f:section>
+</j:jelly>

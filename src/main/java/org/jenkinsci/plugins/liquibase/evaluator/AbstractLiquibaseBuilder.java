@@ -4,10 +4,12 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.Builder;
+import jenkins.tasks.SimpleBuildStep;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -28,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
+
 import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.jenkinsci.plugins.liquibase.common.PropertiesAssembler;
 import org.jenkinsci.plugins.liquibase.common.Util;
@@ -38,7 +42,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
-public abstract class AbstractLiquibaseBuilder extends Builder {
+public abstract class AbstractLiquibaseBuilder extends Builder implements SimpleBuildStep {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractLiquibaseBuilder.class);
 
     protected String databaseEngine;
@@ -54,9 +58,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     private String basePath;
     private Boolean useIncludedDriver;
     private String credentialsId;
-
-
-
 
     public AbstractLiquibaseBuilder(String databaseEngine,
                                     String changeLogFile,
@@ -82,7 +83,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         this.labels = labels;
         this.basePath = basePath;
         this.useIncludedDriver = useIncludedDriver;
-
         this.credentialsId = credentialsId;
     }
 
@@ -97,28 +97,31 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         return this;
     }
 
-    public abstract void doPerform(AbstractBuild<?, ?> build,
-                                   BuildListener listener,
-                                   Liquibase liquibase,
-                                   Contexts contexts,
-                                   ExecutedChangesetAction executedChangesetAction, Properties configProperties)
-    throws InterruptedException, IOException, LiquibaseException;
+    public abstract void runPerform(Run<?, ?> build,
+                                    TaskListener listener,
+                                    Liquibase liquibase,
+                                    Contexts contexts,
+                                    ExecutedChangesetAction executedChangesetAction,
+                                    Properties configProperties)
+            throws InterruptedException, IOException, LiquibaseException;
 
     abstract public Descriptor<Builder> getDescriptor();
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-            throws InterruptedException, IOException {
-
+    public void perform(@Nonnull Run<?, ?> build,
+                        @Nonnull FilePath workspace,
+                        @Nonnull Launcher launcher,
+                        @Nonnull TaskListener listener) throws InterruptedException, IOException {
 
         Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build,
-                build.getEnvironment(listener));
+                build.getEnvironment(listener), workspace);
         ExecutedChangesetAction executedChangesetAction = new ExecutedChangesetAction(build);
-        Liquibase liquibase = createLiquibase(build, listener, executedChangesetAction, configProperties, launcher);
+        Liquibase liquibase =
+                createLiquibase(build, listener, executedChangesetAction, configProperties, launcher, workspace);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
         Contexts contexts = new Contexts(liqContexts);
         try {
-            doPerform(build, listener, liquibase, contexts, executedChangesetAction, configProperties);
+            runPerform(build, listener, liquibase, contexts, executedChangesetAction, configProperties);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
@@ -128,43 +131,27 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         if (!executedChangesetAction.isRollbackOnly()) {
             build.addAction(executedChangesetAction);
         }
-        return true;
     }
 
-    public Liquibase createLiquibase(AbstractBuild<?, ?> build,
-                                     BuildListener listener,
+    public Liquibase createLiquibase(Run<?, ?> build,
+                                     TaskListener listener,
                                      ExecutedChangesetAction action,
                                      Properties configProperties,
-                                     Launcher launcher) throws IOException, InterruptedException {
+                                     Launcher launcher, FilePath workspace) throws IOException, InterruptedException {
         Liquibase liquibase;
         String driverName = getProperty(configProperties, LiquibaseProperty.DRIVER);
         String resolvedClasspath = getProperty(configProperties, LiquibaseProperty.CLASSPATH);
 
+        boolean resolveMacros = build instanceof AbstractBuild;
+        EnvVars environment = build.getEnvironment(listener);
+
         try {
-            FilePath workspace = build.getWorkspace();
             if (!Strings.isNullOrEmpty(resolvedClasspath)) {
                 Util.addClassloader(launcher.isUnix(), workspace, resolvedClasspath);
             }
-
             JdbcConnection jdbcConnection = createJdbcConnection(configProperties, driverName);
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-
-
-            FilePath filePath;
-            String resolvedBasePath = hudson.Util.replaceMacro(basePath, build.getEnvironment(listener));
-            if (Strings.isNullOrEmpty(resolvedBasePath)) {
-                filePath = workspace;
-            } else {
-                filePath = workspace.child(resolvedBasePath);
-            }
-
-            ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
-            CompositeResourceAccessor resourceAccessor =
-                    new CompositeResourceAccessor(filePathAccessor,
-                            new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
-                            new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
-                    );
-
+            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros);
 
             String changeLogFile = getProperty(configProperties, LiquibaseProperty.CHANGELOG_FILE);
             liquibase = new Liquibase(changeLogFile, resourceAccessor, database);
@@ -176,25 +163,56 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
         liquibase.setChangeExecListener(buildChangeExecListener);
 
         if (!Strings.isNullOrEmpty(changeLogParameters)) {
-            EnvVars environment = build.getEnvironment(listener);
-            populateChangeLogParameters(liquibase, environment, changeLogParameters);
+            populateChangeLogParameters(liquibase, environment, changeLogParameters, resolveMacros);
         }
         return liquibase;
     }
 
+    private ResourceAccessor createResourceAccessor(FilePath workspace,
+                                                    EnvVars environment,
+                                                    boolean resolveMacros) {
+        String resolvedBasePath;
+        if (resolveMacros) {
+            resolvedBasePath = hudson.Util.replaceMacro(basePath,  environment);
+        } else {
+            resolvedBasePath = basePath;
+        }
+        FilePath filePath;
+        if (Strings.isNullOrEmpty(resolvedBasePath)) {
+            filePath = workspace;
+        } else {
+            filePath = workspace.child(resolvedBasePath);
+        }
+
+        ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
+        return new CompositeResourceAccessor(filePathAccessor,
+                new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
+                new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
+        );
+    }
+
     protected static void populateChangeLogParameters(Liquibase liquibase,
                                                       EnvVars environment,
-                                                      String changeLogParameters) {
+                                                      String changeLogParameters, boolean resolveMacros) {
         Map<String, String> keyValuePairs = Splitter.on("\n").withKeyValueSeparator("=").split(changeLogParameters);
         for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
             String value = entry.getValue();
-            String resolvedValue = hudson.Util.replaceMacro(value, environment);
-            String resolvedKey = hudson.Util.replaceMacro(entry.getKey(), environment);
+
+            String resolvedValue;
+            String resolvedKey;
+            String key = entry.getKey();
+            if (resolveMacros) {
+                resolvedValue = hudson.Util.replaceMacro(value, environment);
+                resolvedKey = hudson.Util.replaceMacro(key, environment);
+            } else {
+                resolvedValue = value;
+                resolvedKey = key;
+            }
             liquibase.setChangeLogParameter(resolvedKey, resolvedValue);
         }
     }
 
-    private JdbcConnection createJdbcConnection(Properties configProperties, String driverName) {
+    private static JdbcConnection createJdbcConnection(Properties configProperties, String driverName) {
         Connection connection;
         String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
         try {
@@ -340,17 +358,17 @@ public abstract class AbstractLiquibaseBuilder extends Builder {
     public void setBasePath(String basePath) {
         this.basePath = basePath;
     }
-
     public void clearDriverClassname() {
         driverClassname = null;
     }
+
     public void clearDatabaseEngine() {
         databaseEngine=null;
     }
-
     public boolean hasUseIncludedDriverBeenSet() {
         return useIncludedDriver!=null;
     }
+
     public boolean isUseIncludedDriver() {
         return useIncludedDriver;
     }
