@@ -60,6 +60,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     private Boolean useIncludedDriver;
     private String credentialsId;
 
+    @Deprecated
     public AbstractLiquibaseBuilder(String databaseEngine,
                                     String changeLogFile,
                                     String url,

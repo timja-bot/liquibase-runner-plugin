@@ -49,8 +49,16 @@ public class PropertiesAssembler {
                                                        Run<?, ?> build, Map environment, FilePath workspace)
             throws IOException, InterruptedException {
         Properties properties = new Properties();
-        assembleDefaults(properties);
 
+        assembleDefaults(properties);
+        assembleFromPropertiesFile(liquibaseBuilder, build, environment, workspace, properties);
+        assembleFromProjectConfiguration(liquibaseBuilder, properties, environment, build);
+        return properties;
+    }
+
+    private static void assembleFromPropertiesFile(AbstractLiquibaseBuilder liquibaseBuilder,
+                                                   Run<?, ?> build,
+                                                   Map environment, FilePath workspace, Properties properties) {
         String propertiesPath;
         if (build instanceof AbstractBuild) {
             propertiesPath = hudson.Util.replaceMacro(liquibaseBuilder.getLiquibasePropertiesPath(), environment);
@@ -58,9 +66,6 @@ public class PropertiesAssembler {
             propertiesPath = liquibaseBuilder.getLiquibasePropertiesPath();
         }
         assembleFromPropertiesFile(properties, propertiesPath, workspace);
-
-        assembleFromProjectConfiguration(liquibaseBuilder, properties, environment, build);
-        return properties;
     }
 
     protected static void assembleFromProjectConfiguration(AbstractLiquibaseBuilder liquibaseBuilder,
