@@ -15,8 +15,10 @@ node {
           ],
           changeLogParameters:  'subject=english'   // alternatively, changelog parameters can be
                                                     // supplied as a string, each key/value pair on a new line
-
   )
+
+  liquibaseUpdate('changeset.xml')  // using minimum configuration will cause the plugin to use an H2 inmemory database.
+
   liquibaseRollback(changeLogFile: 'changeset.yml',
           rollbackToTag: 'deploy-2.5',
           url: 'jdbc:postgresql://localhost:5432/sample-db',
@@ -24,6 +26,4 @@ node {
           credentialsId: 'database_password_credentials_id',
           liquibasePropertiesPath: '/etc/liquibase.properties'
   )
-
-  liquibaseUpdate('changeset.xml')  // using minimum configuration will cause the plugin to use an H2 inmemory database.
 }
