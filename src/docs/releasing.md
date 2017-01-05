@@ -5,8 +5,8 @@ This plugin uses the Maven jgitflow plugin for release.  The following maven exe
 operations:
  
  ```
-mvn jgitflow:release-start jgitflow:release-finish
+mvn clean jgitflow:release-start jgitflow:release-finish -DdevelopmentVersion=(next snapshot version)
 
  ```
  
-Note that write access to the Jenkins repository is required. 
+Note that write access to the Jenkins maven repository is required. 
