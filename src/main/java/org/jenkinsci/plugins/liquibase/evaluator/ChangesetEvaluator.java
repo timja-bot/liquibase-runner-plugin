@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Result;
@@ -43,7 +44,9 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                            TaskListener listener,
                            Liquibase liquibase,
                            Contexts contexts,
-                           LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction) {
+                           LabelExpression labelExpression,
+                           ExecutedChangesetAction executedChangesetAction,
+                           FilePath workspace) {
 
         executedChangesetAction.setRollbacksTested(testRollbacks);
 

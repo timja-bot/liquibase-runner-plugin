@@ -103,7 +103,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                     TaskListener listener,
                                     Liquibase liquibase,
                                     Contexts contexts,
-                                    LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction)
+                                    LabelExpression labelExpression,
+                                    ExecutedChangesetAction executedChangesetAction,
+                                    FilePath workspace)
             throws InterruptedException, IOException, LiquibaseException;
 
     abstract public Descriptor<Builder> getDescriptor();
@@ -125,14 +127,14 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                 new LabelExpression(getProperty(configProperties, LiquibaseProperty.LABELS));
 
         try {
-            runPerform(build, listener, liquibase, contexts, labelExpression, executedChangesetAction);
+            runPerform(build, listener, liquibase, contexts, labelExpression, executedChangesetAction, workspace);
         } catch (LiquibaseException e) {
             e.printStackTrace(listener.getLogger());
             build.setResult(Result.UNSTABLE);
         } finally {
             closeLiquibase(liquibase);
         }
-        if (!executedChangesetAction.isRollbackOnly()) {
+        if (!executedChangesetAction.isNoExecutionsExpected()) {
             build.addAction(executedChangesetAction);
         }
     }
@@ -388,4 +390,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     public void setCredentialsId(String credentialsId) {
         this.credentialsId = credentialsId;
     }
+
+
 }

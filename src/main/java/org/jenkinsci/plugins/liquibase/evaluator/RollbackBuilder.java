@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -56,8 +57,10 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
                            TaskListener listener,
                            Liquibase liquibase,
                            Contexts contexts,
-                           LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction) throws InterruptedException, IOException, LiquibaseException {
-        executedChangesetAction.setRollbackOnly(true);
+                           LabelExpression labelExpression,
+                           ExecutedChangesetAction executedChangesetAction,
+                           FilePath workspace) throws InterruptedException, IOException, LiquibaseException {
+        executedChangesetAction.setNoExecutionsExpected(true);
         RolledbackChangesetAction action = new RolledbackChangesetAction(build);
         RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
         build.addAction(action);

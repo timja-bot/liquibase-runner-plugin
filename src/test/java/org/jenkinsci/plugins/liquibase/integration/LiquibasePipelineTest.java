@@ -11,6 +11,9 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.StringContains;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangeSetDetail;
 import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
@@ -62,6 +65,20 @@ public class LiquibasePipelineTest {
     }
 
     @Test
+    public void should_allow_dbdoc_generation() throws IOException, ExecutionException, InterruptedException {
+        String script = generatePipelineScript(workspace, "/pipeline-scripts/db-doc-template.groovy");
+        LiquibaseTestUtil.createFileFromResource(workspace, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML);
+        job.setDefinition(new CpsFlowDefinition(script));
+        WorkflowRun workflowRun = job.scheduleBuild2(0).get();
+
+        assertThat(workflowRun.getResult(), is(Result.SUCCESS));
+
+        File reportIndex = new File(new File(workspace, "doc"), "index.html");
+
+        assertThat(reportIndex, exists());
+
+    }
+    @Test
     public void should_allow_changelog_parameters() throws IOException, ExecutionException, InterruptedException {
         String baseScript = generatePipelineScript(workspace, "/pipeline-scripts/pipeline-with-changelog-params.groovy");
         String parameterValue = RandomStringUtils.randomAlphabetic(5);
@@ -107,5 +124,19 @@ public class LiquibasePipelineTest {
     private String generatePipelineScript(File workspace, String resourcePath) throws IOException {
         String template = IOUtils.toString(getClass().getResourceAsStream(resourcePath));
         return template.replaceAll("@WORKSPACE@", workspace.getAbsolutePath());
+    }
+
+    private static Matcher<File> exists() {
+        return new TypeSafeMatcher<File>() {
+            @Override
+            protected boolean matchesSafely(File item) {
+                return item.exists();
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("file which exists");
+            }
+        };
     }
 }

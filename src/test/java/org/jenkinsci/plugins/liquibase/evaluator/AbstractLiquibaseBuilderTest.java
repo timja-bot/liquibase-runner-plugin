@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -159,7 +160,9 @@ public class AbstractLiquibaseBuilderTest {
                                TaskListener listener,
                                Liquibase liquibase,
                                Contexts contexts,
-                               LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction)
+                               LabelExpression labelExpression,
+                               ExecutedChangesetAction executedChangesetAction,
+                               FilePath workspace)
                 throws InterruptedException, IOException, LiquibaseException {
 
         }

@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.common;
 
+import hudson.FilePath;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -21,7 +22,9 @@ public class BuilderStub extends AbstractLiquibaseBuilder {
                            TaskListener listener,
                            Liquibase liquibase,
                            Contexts contexts,
-                           LabelExpression labelExpression, ExecutedChangesetAction executedChangesetAction)
+                           LabelExpression labelExpression,
+                           ExecutedChangesetAction executedChangesetAction,
+                           FilePath workspace)
             throws InterruptedException, IOException, LiquibaseException {
 
     }

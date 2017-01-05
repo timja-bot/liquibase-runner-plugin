@@ -43,50 +43,15 @@ The rollback build step invokes liquibase's "rollback" operation on the target d
 
 This build step is intended for use when you're deploying to a real environment, and the need arises to undo a previous liquibase update.
 
+h2. DbDoc Generation
+
+This build step generates Liquibase's dbDoc based on the supplied changelog.  See [liquibase documentation|http://www.liquibase.org/dbdoc/index.html].
+
+It is recommended to use this in conjunction with the [HTMLPublisher plugin|https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin]
+
 h2. Pipeline Support
 
-Both the plugin's update and rollback operations are available to pipline scripts.  To evaulate changesets, the syntax
-is as follows:
-
-liquibaseUpdate()
-
-Available parameters:
-testRollbacks
-tagOnSuccessfulBuild
-dropAll.
-
-Roll back operations may be done thusly:
-
-liquibasaeRollback()
-
-Available parameters:
-
-rollbackCount
-rollbackToTag
-rollbackToDate
-rollbackLastHours
-
-
-
-
-Common to each operation are the following parameters:
-    databaseEngine: Can be set to "MySQL", "PostgreSQL", "Derby", "H2", or "Hypersonic".  Providing this value
-       eliminates the need to supply driverClassname.
-    credentialsId:  The ID of the Jenkins credentials to use when the database requires username & password
-    changeLogFile:  Path to the change log file
-    url: Database JDBC URL
-    See liquibase execution for an explaination for these configuration elements:
-    defaultSchemaName
-    contexts
-    liquibasePropertiesPath
-    classpath
-    driverClassname
-    labels
-    changeLogParameters
-    basePath
-
-Supplying only "changeLogFile" will cause the buildstep to use an H2 in-memory database.
-
+All liquibase operations are available to pipeline scripts.  See [documentation|https://github.com/jenkinsci/liquibase-runner-plugin/blob/develop/src/docs/pipeline.md] for information and examples.
 
 h2. Usage Tips
 
@@ -97,10 +62,12 @@ build slave runs your project, that file will no longer be available, and all ch
 
 h3. Version History
 
-h4. Version 1.2.0
+h4. Version 1.2.0 (Jan 5, 2017)
 
-* Credentials integration
+* [JENKINS-33401|https://issues.jenkins-ci.org/browse/JENKINS-33401] Credentials Integration
+* [JENKINS-40816|https://issues.jenkins-ci.org/browse/JENKINS-40816 ] Provide liquibase dbdoc generation build step
 * [JENKINS-40707|https://issues.jenkins-ci.org/browse/JENKINS-40707] Pipeline Support
+
 
 h4. Version 1.1.0 (Aug 25, 2016)
 

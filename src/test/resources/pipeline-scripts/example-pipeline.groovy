@@ -38,3 +38,14 @@ node {
           rollbackLastHours: 3
   )
 }
+
+node {
+  // generate db doc
+  liquibaseDbDoc(changeLogFile: 'changeset.yml', outputDirectory: 'dbdoc')
+  // publishing requires installation of the PublishHTML plugin:
+  publishHTML(target: [reportDir  : 'dbdoc',
+                       reportFiles: 'index.html',
+                       reportName : 'DbDoc',
+                       keepAll    : true])
+
+}

@@ -26,7 +26,7 @@ public class ExecutedChangesetAction implements Action {
 
     private List<ChangeSetDetail> rolledBackChangesets = Lists.newArrayList();
 
-    private boolean rollbackOnly;
+    private boolean noExecutionsExpected;
 
     private String appliedTag;
 
@@ -179,11 +179,11 @@ public class ExecutedChangesetAction implements Action {
     }
 
 
-    public void setRollbackOnly(boolean rollbackOnly) {
-        this.rollbackOnly = rollbackOnly;
+    public void setNoExecutionsExpected(boolean noExecutionsExpected) {
+        this.noExecutionsExpected = noExecutionsExpected;
     }
 
-    public boolean isRollbackOnly() {
-        return rollbackOnly;
+    public boolean isNoExecutionsExpected() {
+        return noExecutionsExpected;
     }
 }

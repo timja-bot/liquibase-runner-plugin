@@ -56,3 +56,23 @@ node {
   )
 }
 ```
+
+DbDoc Generation
+-----------------
+
+```
+node {
+   liquibaseDbDoc( changeLogFile: 'changeset.yml',   // same basic configuration parameters
+                   url: 'jdbc:postgresql://localhost:5432/sample-db',
+                   driverClassname: 'org.postgresql.Driver',
+                   outputDirectory: 'dbdoc')
+                   
+   // works great with the HTML publisher plugin (sold separately)                   
+   publishHTML(target: [reportDir  : 'dbdoc',
+                        reportFiles: 'index.html',
+                        reportName : 'DbDoc',
+                        keepAll    : true])               
+                   
+
+}
+```
