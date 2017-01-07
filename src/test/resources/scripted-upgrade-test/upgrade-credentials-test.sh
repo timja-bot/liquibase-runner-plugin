@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# scripted test for covering plugin upgrade to 1.2.0.
+# scripted test for covering plugin upgrade from 1.1.0 to 1.2.0, which has credentials migration logic.
 # Maybe possible to use JenkinsRule in unit test for this, but I just couldn't find how.
 
 # Some notes:
