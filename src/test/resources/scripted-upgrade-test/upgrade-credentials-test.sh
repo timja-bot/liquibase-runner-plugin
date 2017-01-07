@@ -4,9 +4,9 @@
 # Maybe possible to use JenkinsRule in unit test for this, but I just couldn't find how.
 
 # Some notes:
+#    - assumes 1.1.0 version of the plugin is in the update center.
 #   - Locally I was using jenkins 2.32.1
 #   - due to cli auth errors, copies an unsecured jenkins config file to jenkins home.
-#   - requires that built hpi file exists
 #   - intended to be run in directory which script lives
 #   - assumes jenkins home existing at "$HOME/.jenkins"
 #   - This is a pretty hacky script!  Nevertheless I wanted to have some test regarding upgrade.
