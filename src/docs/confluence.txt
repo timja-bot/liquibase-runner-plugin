@@ -43,6 +43,16 @@ The rollback build step invokes liquibase's "rollback" operation on the target d
 
 This build step is intended for use when you're deploying to a real environment, and the need arises to undo a previous liquibase update.
 
+h2. DbDoc Generation
+
+This build step generates Liquibase's dbDoc based on the supplied changelog.  See [liquibase documentation|http://www.liquibase.org/dbdoc/index.html].
+
+It is recommended to use this in conjunction with the [HTMLPublisher plugin|https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin]
+
+h2. Pipeline Support
+
+All liquibase operations are available to pipeline scripts.  See [documentation|https://github.com/jenkinsci/liquibase-runner-plugin/blob/develop/src/docs/pipeline.md] for information and examples.
+
 h2. Usage Tips
 
 * If you'd like to have only new changesets evaluated, consider using an H2 JDBC url like
@@ -51,6 +61,13 @@ build slave runs your project, that file will no longer be available, and all ch
 
 
 h3. Version History
+
+h4. Version 1.2.0 (Jan 5, 2017)
+
+* [JENKINS-33401|https://issues.jenkins-ci.org/browse/JENKINS-33401] Credentials Integration
+* [JENKINS-40816|https://issues.jenkins-ci.org/browse/JENKINS-40816 ] Provide liquibase dbdoc generation build step
+* [JENKINS-40707|https://issues.jenkins-ci.org/browse/JENKINS-40707] Pipeline Support
+
 
 h4. Version 1.1.0 (Aug 25, 2016)
 

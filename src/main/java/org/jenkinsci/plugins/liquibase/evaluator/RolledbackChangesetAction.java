@@ -1,7 +1,7 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
-import hudson.model.AbstractBuild;
 import hudson.model.Action;
+import hudson.model.Run;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 
 public class RolledbackChangesetAction implements Action  {
 
-    private AbstractBuild<?, ?> build;
+    private Run<?, ?> build;
 
     List<ChangeSetDetail> rolledbackChangesets = Lists.newArrayList();
 
@@ -17,7 +17,7 @@ public class RolledbackChangesetAction implements Action  {
     public RolledbackChangesetAction() {
     }
 
-    public RolledbackChangesetAction(AbstractBuild<?, ?> build) {
+    public RolledbackChangesetAction(Run<?, ?> build) {
         this.build = build;
     }
 
@@ -29,7 +29,7 @@ public class RolledbackChangesetAction implements Action  {
         return rolledbackChangesets;
     }
 
-    public AbstractBuild<?, ?> getBuild() {
+    public Run<?, ?> getBuild() {
         return build;
     }
 

@@ -1,0 +1,21 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form"
+         xmlns:st="jelly:stapler">
+
+    <f:entry title="Change Log File" field="changeLogFile"
+             description="Root changeset file.">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="Output Directory" field="outputDirectory"
+             description="Output Directory. May be relative to workspace or an absolute path." >
+        <f:textbox/>
+    </f:entry>
+    <f:advanced>
+        <st:include
+                page="config.jelly"
+                class="org.jenkinsci.plugins.liquibase.workflow.AbstractLiquibaseStep"/>
+    </f:advanced>
+</j:jelly>
+
