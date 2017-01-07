@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator plugin="liquibase-runner@1.1.0">
+      <databaseEngine>H2</databaseEngine>
+      <changeLogFile>@CHANGELOG_FILEPATH@</changeLogFile>
+      <url>jdbc:h2:file:@H2_FILE@</url>
+      <defaultSchemaName></defaultSchemaName>
+      <contexts></contexts>
+      <liquibasePropertiesPath></liquibasePropertiesPath>
+      <classpath></classpath>
+      <driverClassname></driverClassname>
+      <labels></labels>
+      <changeLogParameters></changeLogParameters>
+      <basePath>@BASE_PATH@</basePath>
+      <useIncludedDriver>true</useIncludedDriver>
+      <username>sa</username>
+      <password></password>
+      <testRollbacks>true</testRollbacks>
+      <dropAll>true</dropAll>
+      <tagOnSuccessfulBuild>false</tagOnSuccessfulBuild>
+    </org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
