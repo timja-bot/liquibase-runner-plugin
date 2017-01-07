@@ -1,47 +1,48 @@
- {jenkins-plugin-info:pluginId=liquibase-runner}
-{excerpt}Provides [Liquibase|http://www.liquibase.org] build steps that perform liquibase operations.{excerpt}
+{jenkins-plugin-info:pluginId=liquibase-runner}
+{excerpt}Provides [Liquibase|http://www.liquibase.org] build steps that evaluate liquibase changesets.{excerpt}
+
+{color:#ff0000}{*}Important Upgrade Information{*}{color}
+Version 1.2.0 now uses the [Credentials Plugin|https://wiki.jenkins-ci.org/display/JENKINS/Credentials+Plugin] to manage usernames and passwords to connect to the database.  If you were using username & password configuration in the previous version of this plugin, be aware that credentials will be automatically created upon plugin update.
+
 
 h2. Features
 
-Adds liquibase changeset evaluation as an available build step. See Liquibase documentation at [http://www.liquibase.org].  In addition, supplies a build step to roll back applied changesets.
-Any evaluated changesets are listed on the build's summary page, as well as details about each changeset (including the SQL used to apply the changeset).
+Adds liquibase changeset evaluation as an available build step.  See Liquibase documentation at [http://www.liquibase.org].
+Any evaluated changesets are listed on the build's summary page, as well as details about each changeset.&nbsp; In addition, supplies a build step to roll back applied changesets.
 
 Uses liquibase version 3.5.1.
 {gallery}
 
+
 h2. Installation
 
-* Install the liquibase-runner plugin using Jenkins' plugin manager. Depending on how you use and configure the plugin,
-you may need to install a database server, and potentially your target schema.
+* Install the liquibase-runner plugin using Jenkins' plugin manager. Depending on how you use and configure the plugin, you may need to install a database server, and potentially your target schema.
+* Once installed, three build steps are made available: "Evaluate liquibase changesets", "Generate Liquibase dbDoc", and "Rollback liquibase changes".
 
-* Once installed, two build steps are made available: "Evaluate liquibase changesets" and "Rollback liquibase changes".
-
-h2. Common Configuration
+h2. Common Configuration Amongst Builders
 
 h3. Simplest
 
-By default, the plugin will use an instance of an H2 in-memory database, so you need only define the location of your changeset file.   Note that changes won't be persisted across builds (though you may persist the H2 database to disk, see tips).
+By default, the plugin will use an instance of an [H2|http://www.h2database.com] in-memory database, so you need only define the location of your changeset file.&nbsp;&nbsp; Note that changes won't be persisted across builds (though you may persist the H2 database to disk, see tips).
 
 h3. Advanced
 
-Those who would like more control over liquibase configuration may do so using options presented when using the "advanced"
-section of the builder configuration. Here you'll find most of liquibase's configuration exposed, including contexts and
-the JDBC URL used to access the database.
+Those who would like more control over liquibase configuration may do so using options presented when using the "advanced" section of the builder configuration. Here you'll find most of liquibase's configuration exposed, including contexts and the JDBC URL used to access the database.
 
-For convenience, the plugin includes a few database drivers for use. Alternatively, you may
-also define a classpath where a database driver may be loaded, and the driver classname.
+For convenience, the plugin includes a few database drivers for use. Alternatively, you may also define a classpath where a database driver may be loaded, and the driver classname.
 
-Note that individual configuration values will override any found in a defined liquibase properties file.  This emulates how command-line usage of liquibase works.
+Note that individual configuration values will override any found in a defined liquibase properties file.&nbsp; This emulates how command-line usage of liquibase works.
 
 h2. Evaluate liquibase changesets step
 
-Creating a job with this build step will run liquibase's update on the target database.  Alternatively, by checking "Test Rollbacks", liquibase's updateTestingRollbacks is executed.  Once a build has executed, details are provided about each changeset on the build summary.
+Creating a job with this build step will run liquibase's update on the target database.&nbsp; Alternatively, by checking "Test Rollbacks", liquibase's updateTestingRollbacks is executed.&nbsp; Once a build has executed, details are provided about each changeset on the build summary.
 
 h2. Rollback liquibase changes step
 
-The rollback build step invokes liquibase's "rollback" operation on the target database.  There are a few rollback strategies to choose from that correspond to liquibase's rollback commands (by tag, by date, and by count).
+The rollback build step invokes liquibase's "rollback" operation on the target database.&nbsp; There are a few rollback strategies to choose from that correspond to liquibase's rollback commands (by tag, by date, and by count).
 
 This build step is intended for use when you're deploying to a real environment, and the need arises to undo a previous liquibase update.
+
 
 h2. DbDoc Generation
 
@@ -49,38 +50,40 @@ This build step generates Liquibase's dbDoc based on the supplied changelog.  Se
 
 It is recommended to use this in conjunction with the [HTMLPublisher plugin|https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin]
 
+
+
+
+
+
 h2. Pipeline Support
 
 All liquibase operations are available to pipeline scripts.  See [documentation|https://github.com/jenkinsci/liquibase-runner-plugin/blob/develop/src/docs/pipeline.md] for information and examples.
 
+
 h2. Usage Tips
 
 * If you'd like to have only new changesets evaluated, consider using an H2 JDBC url like
-"jdbc:h2:[file:./data/sample]". This instructs H2 to persist the database to a file. Note, however, if a different
+"jdbc:h2:[file:./data/sample]".  This instructs H2 to persist the database to a file.  Note, however, if a different
 build slave runs your project, that file will no longer be available, and all changesets will again be executed.
 
+h2. Version History
 
-h3. Version History
-
-h4. Version 1.2.0 (Jan 5, 2017)
+h4. Version 1.2.0 (Jan 7, 2017)
 
 * [JENKINS-33401|https://issues.jenkins-ci.org/browse/JENKINS-33401] Credentials Integration
-* [JENKINS-40816|https://issues.jenkins-ci.org/browse/JENKINS-40816 ] Provide liquibase dbdoc generation build step
+* [JENKINS-40816|https://issues.jenkins-ci.org/browse/JENKINS-40816] Provide liquibase dbdoc generation build step
 * [JENKINS-40707|https://issues.jenkins-ci.org/browse/JENKINS-40707] Pipeline Support
 
 
-h4. Version 1.1.0 (Aug 25, 2016)
+h3. 1.1.0 (Aug 30, 2016)
 
 Thanks to David Siegal for suggestions, testing, and guidance for this release.
-
 * [JENKINS-37591|https://issues.jenkins-ci.org/browse/JENKINS-37591] Upgraded to use Liquibase 3.5.1
 * [JENKINS-37700|https://issues.jenkins-ci.org/browse/JENKINS-37700] Allow base path to be set.
 * [JENKINS-37699|https://issues.jenkins-ci.org/browse/JENKINS-37699] Allow expressions in configuration fields
 * [JENKINS-37420|https://issues.jenkins-ci.org/browse/JENKINS-37420] Added roll back build step
 * [JENKINS-37592|https://issues.jenkins-ci.org/browse/JENKINS-37592] Tag on successful update.
 * [JENKINS-37637|https://issues.jenkins-ci.org/browse/JENKINS-37637] Allow changesets to be loaded from classpath.
-* Fixed includeAll handling
-* UI tweaks & enhancements
 
-h4. Version 1.0.2 (May 04, 2016)
+h3. 1.0.2 (May 4, 2016)
 * Initial Release
