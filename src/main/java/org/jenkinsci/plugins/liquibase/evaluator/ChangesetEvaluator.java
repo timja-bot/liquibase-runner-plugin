@@ -14,11 +14,11 @@ import liquibase.Liquibase;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
 
+import java.util.logging.Logger;
+
 import org.jenkinsci.plugins.liquibase.common.LiquibaseCommand;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Jenkins builder which evaluates liquibase changesets.
@@ -28,7 +28,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluator.class);
+    private static final Logger LOG = Logger.getLogger(ChangesetEvaluator.class.getName());
 
     protected boolean testRollbacks;
     private boolean dropAll;

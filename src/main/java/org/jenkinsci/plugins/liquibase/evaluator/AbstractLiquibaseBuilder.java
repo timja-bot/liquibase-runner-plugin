@@ -60,6 +60,12 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     private Boolean useIncludedDriver;
     private String credentialsId;
 
+
+    @Deprecated
+    protected transient String username;
+    @Deprecated
+    protected transient String password;
+
     @Deprecated
     public AbstractLiquibaseBuilder(String databaseEngine,
                                     String changeLogFile,
@@ -391,5 +397,31 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         this.credentialsId = credentialsId;
     }
 
+    @DataBoundSetter
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
+    @DataBoundSetter
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Deprecated
+    public String getUsername() {
+        return username;
+    }
+    @Deprecated
+    public String getPassword() {
+        return password;
+    }
+
+    public void clearLegacyCredentials() {
+        username=null;
+        password=null;
+    }
+
+    public boolean hasLegacyCredentials() {
+        return !Strings.isNullOrEmpty(username);
+    }
 }
