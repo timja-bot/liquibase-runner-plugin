@@ -30,6 +30,7 @@ import org.jenkinsci.plugins.liquibase.evaluator.ChangeSetDetail;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,8 +51,8 @@ public class ChangesetEvaluatorBuildResultTest {
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluatorBuildResultTest.class);
     private static final String LIQUIBASE_PROPERTIES = "/example-changesets/h2.liquibase.properties";
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

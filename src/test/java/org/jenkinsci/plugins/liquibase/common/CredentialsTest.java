@@ -15,6 +15,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.integration.LiquibaseTestUtil;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -41,8 +42,8 @@ public class CredentialsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkinsRule = new JenkinsRule();
     protected BuilderStub builderStub = new BuilderStub();
     protected String username = RandomStringUtils.randomAlphabetic(10);
     protected String password = RandomStringUtils.randomAlphabetic(10);

@@ -22,6 +22,7 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -39,8 +40,8 @@ import static org.junit.Assert.assertThat;
 public class LiquibasePipelineTest {
     private static final Logger LOG = LoggerFactory.getLogger(LiquibasePipelineTest.class);
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

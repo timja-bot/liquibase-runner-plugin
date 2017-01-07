@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuilder;
 import org.jenkinsci.plugins.liquibase.evaluator.RolledbackChangesetAction;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -37,8 +38,8 @@ public class RollbackResultTest {
     private static final String CHANGELOG_WITH_ROLLBACK_ERROR_RESOURCE_PATH =
             "/example-changesets/changeset-with-rollback-error.xml";
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkinsRule = new JenkinsRule();
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -99,14 +100,13 @@ public class RollbackResultTest {
 
         RolledbackChangesetAction resultAction = launchBuild(rollbackBuildStep);
 
-        int totalNumberOfChangesets = 4;
-
         assertThat(resultAction.getRolledbackChangesets(), hasItems(
                 hasId("create-table"),
                 hasId("first_tag"),
                 hasId("create-color-table"),
                 hasId("create-testing-table"))
         );
+        int totalNumberOfChangesets = 4;
         assertThat(resultAction.getRolledbackChangesets(), hasSize(totalNumberOfChangesets));
     }
 
