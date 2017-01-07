@@ -105,6 +105,10 @@ status="$?"
 echo "killing jenkins process"
 jps -lv | grep jenk | grep -oE "^[0-9]+" | xargs kill
 
+if [ -e "$h2_file_path" ]; then
+  rm "$h2_file_path"
+fi
+
 if [ "$status" != 0 ]; then
     echo "build failure"
     exit 1
