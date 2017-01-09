@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.Extension;
-import hudson.model.Describable;
 import hudson.model.Item;
 import hudson.model.ModelObject;
 import hudson.model.Project;
@@ -46,9 +45,9 @@ public class CredentialsMigrator {
             List<Project> projects = instance.getItems(Project.class);
             for (Project project : projects) {
                 DescribableList buildersList = project.getBuildersList();
-                Describable describable = buildersList.get(AbstractLiquibaseBuilder.class);
-                if (describable != null) {
-                    AbstractLiquibaseBuilder liquibaseBuilder = (AbstractLiquibaseBuilder) describable;
+                List builders = buildersList.getAll(AbstractLiquibaseBuilder.class);
+                for (Object builder : builders) {
+                    AbstractLiquibaseBuilder liquibaseBuilder = (AbstractLiquibaseBuilder) builder;
                     migrateCredentials(project, liquibaseBuilder);
                 }
             }

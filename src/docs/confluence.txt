@@ -68,6 +68,14 @@ build slave runs your project, that file will no longer be available, and all ch
 
 h2. Version History
 
+h3. Version History
+
+h4. Version 1.2.1 (Jan 9, 2017)
+
+* [JENKINS-40920|https://issues.jenkins-ci.org/browse/JENKINS-40920] Credentials migration fails if project has more than one liquibase builder
+* [JENKINS-40919|https://issues.jenkins-ci.org/browse/JENKINS-40919] Upgrading to 1.2.0 of the liquibase plugin may result in old-data warning
+
+
 h4. Version 1.2.0 (Jan 7, 2017)
 
 * [JENKINS-33401|https://issues.jenkins-ci.org/browse/JENKINS-33401] Credentials Integration
