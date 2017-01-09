@@ -31,12 +31,22 @@ public class ExecutedChangesetAction implements Action {
     private String appliedTag;
 
     private boolean rollbacksTested;
+    @Deprecated
+    private transient Boolean rollbackOnly;
 
     public ExecutedChangesetAction() {
     }
 
     public ExecutedChangesetAction(Run<?, ?> build) {
         this.build = build;
+    }
+
+    protected Object readResolve() {
+        if (rollbackOnly != null) {
+            noExecutionsExpected = rollbackOnly;
+        }
+        return this;
+
     }
 
     public String getIconFileName() {
@@ -185,5 +195,14 @@ public class ExecutedChangesetAction implements Action {
 
     public boolean isNoExecutionsExpected() {
         return noExecutionsExpected;
+    }
+
+    @Deprecated
+    public void setRollbackOnly(boolean rollbackOnly) {
+        this.rollbackOnly = rollbackOnly;
+    }
+
+    public boolean isRollbackOnly() {
+        return rollbackOnly;
     }
 }
