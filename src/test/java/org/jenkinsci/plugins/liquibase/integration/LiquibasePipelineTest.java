@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.liquibase.integration;
 
-import hudson.model.Result;
 import liquibase.exception.LiquibaseException;
 
 import java.io.File;
@@ -30,10 +29,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isSuccessful;
 import static org.junit.Assert.assertThat;
 
 
@@ -62,7 +61,8 @@ public class LiquibasePipelineTest {
         String updateScript = generateUpdatePipelineScript(workspace);
         job.setDefinition(new CpsFlowDefinition(updateScript));
         WorkflowRun workflowRun = job.scheduleBuild2(0).get();
-        assertThat(workflowRun.getResult(), is(Result.SUCCESS));
+        assertThat(workflowRun, isSuccessful());
+
     }
 
     @Test
@@ -72,7 +72,7 @@ public class LiquibasePipelineTest {
         job.setDefinition(new CpsFlowDefinition(script));
         WorkflowRun workflowRun = job.scheduleBuild2(0).get();
 
-        assertThat(workflowRun.getResult(), is(Result.SUCCESS));
+        assertThat(workflowRun, isSuccessful());
 
         File reportIndex = new File(new File(workspace, "doc"), "index.html");
 
@@ -88,7 +88,7 @@ public class LiquibasePipelineTest {
         LiquibaseTestUtil.createFileFromResource(workspace, "/example-changesets/with-changelog-property.xml");
         WorkflowRun workflowRun = job.scheduleBuild2(0).get();
 
-        assertThat(workflowRun.getResult(), is(Result.SUCCESS));
+        assertThat(workflowRun, isSuccessful());
         ExecutedChangesetAction action = workflowRun.getAction(ExecutedChangesetAction.class);
         assertThat(action, notNullValue());
         List<ChangeSetDetail> changeSetDetails = action.getChangeSetDetails();
@@ -108,7 +108,7 @@ public class LiquibasePipelineTest {
         CpsFlowDefinition cpsFlowDefinition = new CpsFlowDefinition(script);
         job.setDefinition(cpsFlowDefinition);
         WorkflowRun run = job.scheduleBuild2(0).get();
-        assertThat(run.getResult(), is(Result.SUCCESS));
+        assertThat(run, isSuccessful());
         RolledbackChangesetAction action = run.getAction(RolledbackChangesetAction.class);
         assertThat(action.getRolledbackChangesets().size(), not(0));
     }
