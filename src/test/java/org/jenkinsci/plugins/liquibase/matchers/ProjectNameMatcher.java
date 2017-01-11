@@ -5,15 +5,15 @@ import hudson.model.AbstractProject;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-public class ProjectWithName extends TypeSafeMatcher<AbstractProject> {
+public class ProjectNameMatcher extends TypeSafeMatcher<AbstractProject> {
     private final String jobName;
 
-    public ProjectWithName(String jobName) {
+    public ProjectNameMatcher(String jobName) {
         this.jobName = jobName;
     }
 
-    public static ProjectWithName isProjectWithName(String expectedName) {
-        return new ProjectWithName(expectedName);
+    public static ProjectNameMatcher isProjectWithName(String expectedName) {
+        return new ProjectNameMatcher(expectedName);
     }
     @Override
     protected boolean matchesSafely(AbstractProject item) {

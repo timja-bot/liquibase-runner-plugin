@@ -38,7 +38,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isSuccessful;
-import static org.jenkinsci.plugins.liquibase.matchers.ProjectWithName.isProjectWithName;
+import static org.jenkinsci.plugins.liquibase.matchers.ProjectNameMatcher.isProjectWithName;
 import static org.junit.Assert.assertThat;
 
 public class LiquibaseRunnerDslExtensionTest {
