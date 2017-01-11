@@ -51,14 +51,13 @@ This build step generates Liquibase's dbDoc based on the supplied changelog.  Se
 It is recommended to use this in conjunction with the [HTMLPublisher plugin|https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin]
 
 
-
-
-
-
 h2. Pipeline Support
 
 All liquibase operations are available to pipeline scripts.  See [documentation|https://github.com/jenkinsci/liquibase-runner-plugin/blob/develop/src/docs/pipeline.md] for information and examples.
 
+h2. Job DSL Support
+
+Using the Job DSL plugin you can script liquibase job creation.  See [documentation|https://github.com/jenkinsci/liquibase-runner-plugin/blob/develop/src/docs/jobdsl.md] for examples.
 
 h2. Usage Tips
 
@@ -68,15 +67,17 @@ build slave runs your project, that file will no longer be available, and all ch
 
 h2. Version History
 
-h3. Version History
+h3. Version 1.3.0 (Jan ?, 2017)
 
-h4. Version 1.2.1 (Jan 9, 2017)
+* [JENKINS-40963|https://issues.jenkins-ci.org/browse/JENKINS-40963] Allow Liquibase runner to integrate with Job DSL plugin
+
+h3. Version 1.2.1 (Jan 9, 2017)
 
 * [JENKINS-40920|https://issues.jenkins-ci.org/browse/JENKINS-40920] Credentials migration fails if project has more than one liquibase builder
 * [JENKINS-40919|https://issues.jenkins-ci.org/browse/JENKINS-40919] Upgrading to 1.2.0 of the liquibase plugin may result in old-data warning
 
 
-h4. Version 1.2.0 (Jan 7, 2017)
+h3. Version 1.2.0 (Jan 7, 2017)
 
 * [JENKINS-33401|https://issues.jenkins-ci.org/browse/JENKINS-33401] Credentials Integration
 * [JENKINS-40816|https://issues.jenkins-ci.org/browse/JENKINS-40816] Provide liquibase dbdoc generation build step
