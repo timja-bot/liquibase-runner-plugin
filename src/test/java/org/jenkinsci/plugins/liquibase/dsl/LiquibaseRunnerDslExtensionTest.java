@@ -37,7 +37,7 @@ import com.google.common.collect.Iterables;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
-import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isSuccessfulBuild;
+import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isSuccessful;
 import static org.jenkinsci.plugins.liquibase.matchers.ProjectWithName.isProjectWithName;
 import static org.junit.Assert.assertThat;
 
@@ -68,7 +68,7 @@ public class LiquibaseRunnerDslExtensionTest {
 
         LOG.debug("build log:{}", formatLogForLog(build.getLog(1000)));
 
-        assertThat(build, isSuccessfulBuild());
+        assertThat(build, isSuccessful());
 
         List<AbstractProject> projects = jenkinsRule.getInstance().getItems(AbstractProject.class);
 
@@ -104,7 +104,7 @@ public class LiquibaseRunnerDslExtensionTest {
 
         logBuildLog(build);
 
-        assertThat(build, isSuccessfulBuild());
+        assertThat(build, isSuccessful());
 
     }
 

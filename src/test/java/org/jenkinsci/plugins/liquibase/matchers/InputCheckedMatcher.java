@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.liquibase.integration;
+package org.jenkinsci.plugins.liquibase.matchers;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;

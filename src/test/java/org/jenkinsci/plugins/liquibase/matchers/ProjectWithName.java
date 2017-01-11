@@ -23,6 +23,10 @@ public class ProjectWithName extends TypeSafeMatcher<AbstractProject> {
     @Override
     public void describeTo(Description description) {
         description.appendText("a project with display name of ").appendValue(jobName);
+    }
 
+    @Override
+    protected void describeMismatchSafely(AbstractProject item, Description mismatchDescription) {
+        mismatchDescription.appendText("a project with display name of ").appendValue(item.getDisplayName());
     }
 }
