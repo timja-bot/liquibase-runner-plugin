@@ -7,17 +7,22 @@ Version 1.2.0 now uses the [Credentials Plugin|https://wiki.jenkins-ci.org/displ
 
 h2. Features
 
-Adds liquibase changeset evaluation as an available build step.  See Liquibase documentation at [http://www.liquibase.org].
-Any evaluated changesets are listed on the build's summary page, as well as details about each changeset.&nbsp; In addition, supplies a build step to roll back applied changesets.
+Adds liquibase related operations (update, rollback, and dbdoc generation) as available build steps.  See Liquibase documentation at [http://www.liquibase.org].
+Evaluated changesets and their details appear on the build's summary page.
 
 Uses liquibase version 3.5.1.
 {gallery}
+
+h2. Known Limitations
+
+* Jenkins master will need to be able to connect to the target database.  If, due to network constraints, your Jenkins slave node can initiate this connection but your Jenkins master cannot, consider the workaround described in [JENKINS-41002|https://issues.jenkins-ci.org/browse/JENKINS-41002], which uses port forwarding to facilitate database connectivity.
 
 
 h2. Installation
 
 * Install the liquibase-runner plugin using Jenkins' plugin manager. Depending on how you use and configure the plugin, you may need to install a database server, and potentially your target schema.
 * Once installed, three build steps are made available: "Evaluate liquibase changesets", "Generate Liquibase dbDoc", and "Rollback liquibase changes".
+
 
 h2. Common Configuration Amongst Builders
 
@@ -55,9 +60,6 @@ h2. Pipeline Support
 
 All liquibase operations are available to pipeline scripts.  See [documentation|https://github.com/jenkinsci/liquibase-runner-plugin/blob/develop/src/docs/pipeline.md] for information and examples.
 
-h2. Job DSL Support
-
-Using the Job DSL plugin you can script liquibase job creation.  See [documentation|https://github.com/jenkinsci/liquibase-runner-plugin/blob/develop/src/docs/jobdsl.md] for examples.
 
 h2. Usage Tips
 
@@ -67,24 +69,19 @@ build slave runs your project, that file will no longer be available, and all ch
 
 h2. Version History
 
-h3. Version 1.3.0 (Jan ?, 2017)
-
-* [JENKINS-40963|https://issues.jenkins-ci.org/browse/JENKINS-40963] Allow Liquibase runner to integrate with Job DSL plugin
-
-h3. Version 1.2.1 (Jan 9, 2017)
+h4. Version 1.2.1 (Jan 9, 2017)
 
 * [JENKINS-40920|https://issues.jenkins-ci.org/browse/JENKINS-40920] Credentials migration fails if project has more than one liquibase builder
 * [JENKINS-40919|https://issues.jenkins-ci.org/browse/JENKINS-40919] Upgrading to 1.2.0 of the liquibase plugin may result in old-data warning
 
-
-h3. Version 1.2.0 (Jan 7, 2017)
+h4. Version 1.2.0 (Jan 7, 2017)
 
 * [JENKINS-33401|https://issues.jenkins-ci.org/browse/JENKINS-33401] Credentials Integration
 * [JENKINS-40816|https://issues.jenkins-ci.org/browse/JENKINS-40816] Provide liquibase dbdoc generation build step
 * [JENKINS-40707|https://issues.jenkins-ci.org/browse/JENKINS-40707] Pipeline Support
 
 
-h3. 1.1.0 (Aug 30, 2016)
+h4. 1.1.0 (Aug 30, 2016)
 
 Thanks to David Siegal for suggestions, testing, and guidance for this release.
 * [JENKINS-37591|https://issues.jenkins-ci.org/browse/JENKINS-37591] Upgraded to use Liquibase 3.5.1
@@ -94,5 +91,6 @@ Thanks to David Siegal for suggestions, testing, and guidance for this release.
 * [JENKINS-37592|https://issues.jenkins-ci.org/browse/JENKINS-37592] Tag on successful update.
 * [JENKINS-37637|https://issues.jenkins-ci.org/browse/JENKINS-37637] Allow changesets to be loaded from classpath.
 
-h3. 1.0.2 (May 4, 2016)
+h4. 1.0.2 (May 4, 2016)
+
 * Initial Release
