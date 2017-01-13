@@ -8,15 +8,11 @@ import javaposse.jobdsl.plugin.ExecuteDslScripts;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hamcrest.core.StringContains;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.evaluator.DatabaseDocBuilder;
 import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuilder;
@@ -30,13 +26,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isSuccessful;
 import static org.jenkinsci.plugins.liquibase.matchers.ProjectNameMatcher.isProjectWithName;
 import static org.junit.Assert.assertThat;
@@ -52,19 +45,19 @@ public class LiquibaseRunnerDslExtensionTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     protected FreeStyleProject project;
     protected File workspace;
-    protected String generatedJobName;
+    protected String expectedProjectName;
 
     @Before
     public void setup() throws IOException {
         project = jenkinsRule.createFreeStyleProject(RandomStringUtils.randomAlphabetic(5));
         workspace = temporaryFolder.newFolder(RandomStringUtils.randomAlphabetic(8));
 
-        generatedJobName = RandomStringUtils.randomAlphabetic(10);
+        expectedProjectName = RandomStringUtils.randomAlphabetic(10);
     }
 
     @Test
     public void should_spawn_liquibase_project() throws IOException, ExecutionException, InterruptedException {
-        FreeStyleBuild build = launchDslProject(generatedJobName, "/dsl/liquibase-update.groovy");
+        FreeStyleBuild build = launchDslProject(expectedProjectName, "/dsl/liquibase-update-fullconfig.groovy");
 
         LOG.debug("build log:{}", formatLogForLog(build.getLog(1000)));
 
@@ -72,35 +65,35 @@ public class LiquibaseRunnerDslExtensionTest {
 
         List<AbstractProject> projects = jenkinsRule.getInstance().getItems(AbstractProject.class);
 
-        assertThat(projects, hasItem(isProjectWithName(generatedJobName)));
-    }
+        assertThat(projects, hasItem(isProjectWithName(expectedProjectName)));
 
-    @Test
-    public void should_handle_changelog_parameter_syntax()
-            throws InterruptedException, ExecutionException, IOException {
-        FreeStyleBuild freeStyleBuild = launchDslProject(generatedJobName, "/dsl/update-with-params.groovy");
-        logBuildLog(freeStyleBuild);
-        Project project = findGeneratedProject(generatedJobName);
-        ChangesetEvaluator changesetEvaluator =
-                (ChangesetEvaluator) project.getBuildersList().getAll(ChangesetEvaluator.class).get(0);
+        FreeStyleProject project =
+                jenkinsRule.getInstance().getItemByFullName(expectedProjectName, FreeStyleProject.class);
 
-        String changeLogParameters = changesetEvaluator.getChangeLogParameters();
-        assertThat(changeLogParameters, StringContains.containsString("sample.table.name=blue"));
+        ChangesetEvaluator builder = project.getBuildersList().get(ChangesetEvaluator.class);
 
+        assertThat(builder.getChangeLogFile(), is("sunny-day-changeset.xml"));
+        assertThat(builder.isTestRollbacks(), is(true));
+        assertThat(builder.getUrl(), is("jdbc:postgresql://localhost:5432/sample-db"));
+        assertThat(builder.getDriverClassname(), is("org.postgresql.Driver"));
+        assertThat(builder.getContexts(), is("staging"));
+        assertThat(builder.getChangeLogParameters(), containsString("sample.table.name=blue"));
+        assertThat(builder.getChangeLogParameters(), containsString("favorite.food=spaghetti"));
     }
 
     @Test
     public void should_build_generated_update_project_successfully()
             throws InterruptedException, ExecutionException, IOException {
 
-        launchDslProject(generatedJobName, "/dsl/liquibase-update.groovy");
-        AbstractProject first = findGeneratedProject(generatedJobName);
+        launchDslProject(expectedProjectName, "/dsl/liquibase-update.groovy");
 
-        assertThat(first, notNullValue());
+        Project project = jenkinsRule.getInstance().getItemByFullName(expectedProjectName, Project.class);
+
+        assertThat(project, notNullValue());
 
         LiquibaseTestUtil.createFileFromResource(workspace, "/example-changesets/sunny-day-changeset.xml");
 
-        FreeStyleBuild build = ((FreeStyleProject) first).scheduleBuild2(0).get();
+        FreeStyleBuild build = ((FreeStyleProject) project).scheduleBuild2(0).get();
 
         logBuildLog(build);
 
@@ -110,8 +103,9 @@ public class LiquibaseRunnerDslExtensionTest {
 
     @Test
     public void should_generate_dbdoc_project() throws InterruptedException, ExecutionException, IOException {
-        launchDslProject(generatedJobName, "/dsl/dbdoc.groovy");
-        Project project = findGeneratedProject(generatedJobName);
+        launchDslProject(expectedProjectName, "/dsl/dbdoc.groovy");
+
+        Project project = jenkinsRule.getInstance().getItemByFullName(expectedProjectName, Project.class);
         assertThat(project, notNullValue());
         DatabaseDocBuilder builder =
                 (DatabaseDocBuilder) project.getBuildersList().getAll(DatabaseDocBuilder.class).get(0);
@@ -123,14 +117,14 @@ public class LiquibaseRunnerDslExtensionTest {
 
     @Test
     public void should_generate_rollback_project() throws InterruptedException, ExecutionException, IOException {
-        FreeStyleBuild build = launchDslProject(generatedJobName, "/dsl/rollback-dsl.groovy");
+        FreeStyleBuild build = launchDslProject(expectedProjectName, "/dsl/rollback-dsl.groovy");
         LOG.debug("build log:{}", formatLogForLog(build.getLog(100)));
 
         List<AbstractProject> projects = jenkinsRule.getInstance().getItems(AbstractProject.class);
 
-        assertThat(projects, hasItem(isProjectWithName(generatedJobName)));
+        assertThat(projects, hasItem(isProjectWithName(expectedProjectName)));
 
-        Project project = findGeneratedProject(generatedJobName);
+        Project project = jenkinsRule.getInstance().getItemByFullName(expectedProjectName, Project.class);
         RollbackBuilder rollbackBuilder =
                 (RollbackBuilder) project.getBuildersList().getAll(RollbackBuilder.class).get(0);
 
@@ -144,28 +138,6 @@ public class LiquibaseRunnerDslExtensionTest {
 
     private static void logBuildLog(FreeStyleBuild build) throws IOException {
         LOG.debug("build log of generated project:{}", formatLogForLog(build.getLog(1000)));
-    }
-
-    private static Project findGeneratedProject(final String jobName) {
-        List<AbstractProject> projects = jenkinsRule.getInstance().getItems(AbstractProject.class);
-        Collection<AbstractProject>
-                foundGeneratedProjects = Collections2.filter(projects, new Predicate<AbstractProject>() {
-            @Override
-            public boolean apply(@Nullable AbstractProject abstractProject) {
-                boolean include =false;
-
-                if (abstractProject != null) {
-                    if (abstractProject.getDisplayName().equals(jobName)) {
-                        include = true;
-                    } else {
-                        include = false;
-                    }
-                }
-                return include;
-            }
-        });
-
-        return (Project) Iterables.getFirst(foundGeneratedProjects, null);
     }
 
     private FreeStyleBuild launchDslProject(String jobName, String scriptResourcePath)
