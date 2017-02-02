@@ -1,0 +1,49 @@
+INFO 1/17/17 4:11 PM: liquibase: Successfully acquired change log lock
+INFO 1/17/17 4:11 PM: liquibase: Creating database history table with name: PUBLIC.DATABASECHANGELOG
+INFO 1/17/17 4:11 PM: liquibase: Reading from PUBLIC.DATABASECHANGELOG
+INFO 1/17/17 4:11 PM: liquibase: example-changesets/changeset-with-error.xml: example-changesets/changeset-with-error.xml::create-table::keith: Table shape created
+INFO 1/17/17 4:11 PM: liquibase: example-changesets/changeset-with-error.xml: example-changesets/changeset-with-error.xml::create-table::keith: ChangeSet example-changesets/changeset-with-error.xml::create-table::keith ran successfully in 8ms
+SEVERE 1/17/17 4:11 PM: liquibase: example-changesets/changeset-with-error.xml: example-changesets/changeset-with-error.xml::sql-error::keith: Change Set example-changesets/changeset-with-error.xml::sql-error::keith failed.  Error: Syntax error in SQL statement "i[*]'m certainly not valid sql"; SQL statement:
+i'm certainly not valid sql [42000-178] [Failed SQL: i'm certainly not valid sql]
+INFO 1/17/17 4:11 PM: liquibase: example-changesets/changeset-with-error.xml::sql-error::keith: Successfully released change log lock
+SEVERE 1/17/17 4:11 PM: liquibase: example-changesets/changeset-with-error.xml::sql-error::keith: Syntax error in SQL statement "i[*]'m certainly not valid sql"; SQL statement:
+i'm certainly not valid sql [42000-178] [Failed SQL: i'm certainly not valid sql]
+liquibase.exception.MigrationFailedException: Migration failed for change set example-changesets/changeset-with-error.xml::sql-error::keith:
+     Reason: liquibase.exception.DatabaseException: Syntax error in SQL statement "i[*]'m certainly not valid sql"; SQL statement:
+i'm certainly not valid sql [42000-178] [Failed SQL: i'm certainly not valid sql]
+	at liquibase.changelog.ChangeSet.execute(ChangeSet.java:605)
+	at liquibase.changelog.visitor.UpdateVisitor.visit(UpdateVisitor.java:51)
+	at liquibase.changelog.ChangeLogIterator.run(ChangeLogIterator.java:79)
+	at liquibase.Liquibase.update(Liquibase.java:214)
+	at liquibase.Liquibase.update(Liquibase.java:192)
+	at liquibase.integration.commandline.Main.doMigration(Main.java:1126)
+	at liquibase.integration.commandline.Main.run(Main.java:184)
+	at liquibase.integration.commandline.Main.main(Main.java:103)
+Caused by: liquibase.exception.DatabaseException: Syntax error in SQL statement "i[*]'m certainly not valid sql"; SQL statement:
+i'm certainly not valid sql [42000-178] [Failed SQL: i'm certainly not valid sql]
+	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:301)
+	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:55)
+	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:107)
+	at liquibase.database.AbstractJdbcDatabase.execute(AbstractJdbcDatabase.java:1273)
+	at liquibase.database.AbstractJdbcDatabase.executeStatements(AbstractJdbcDatabase.java:1255)
+	at liquibase.changelog.ChangeSet.execute(ChangeSet.java:568)
+	... 7 more
+Caused by: org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "i[*]'m certainly not valid sql"; SQL statement:
+i'm certainly not valid sql [42000-178]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:344)
+	at org.h2.message.DbException.get(DbException.java:178)
+	at org.h2.message.DbException.get(DbException.java:154)
+	at org.h2.message.DbException.getSyntaxError(DbException.java:190)
+	at org.h2.command.Parser.getSyntaxError(Parser.java:517)
+	at org.h2.command.Parser.checkRunOver(Parser.java:3582)
+	at org.h2.command.Parser.initialize(Parser.java:3498)
+	at org.h2.command.Parser.parse(Parser.java:293)
+	at org.h2.command.Parser.parse(Parser.java:282)
+	at org.h2.command.Parser.prepareCommand(Parser.java:243)
+	at org.h2.engine.Session.prepareLocal(Session.java:442)
+	at org.h2.engine.Session.prepareCommand(Session.java:384)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1188)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:172)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:160)
+	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:299)
+	... 12 more
