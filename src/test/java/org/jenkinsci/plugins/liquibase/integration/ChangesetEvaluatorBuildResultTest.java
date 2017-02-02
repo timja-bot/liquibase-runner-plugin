@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.liquibase.integration;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Result;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
@@ -29,7 +28,9 @@ import org.hamcrest.Matcher;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangeSetDetail;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
+import org.jenkinsci.plugins.liquibase.matchers.IsChangeSetDetail;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,8 +42,11 @@ import org.slf4j.LoggerFactory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.jenkinsci.plugins.liquibase.integration.IsChangeSetDetail.hasId;
-import static org.jenkinsci.plugins.liquibase.integration.IsChangeSetDetail.isChangeSetDetail;
+import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isFailure;
+import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isSuccessful;
+import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isUnstable;
+import static org.jenkinsci.plugins.liquibase.matchers.IsChangeSetDetail.hasId;
+import static org.jenkinsci.plugins.liquibase.matchers.IsChangeSetDetail.isChangeSetDetail;
 import static org.junit.Assert.assertThat;
 
 public class ChangesetEvaluatorBuildResultTest {
@@ -50,8 +54,8 @@ public class ChangesetEvaluatorBuildResultTest {
     private static final Logger LOG = LoggerFactory.getLogger(ChangesetEvaluatorBuildResultTest.class);
     private static final String LIQUIBASE_PROPERTIES = "/example-changesets/h2.liquibase.properties";
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -66,7 +70,7 @@ public class ChangesetEvaluatorBuildResultTest {
             throws IOException, ExecutionException, InterruptedException {
 
         FreeStyleBuild freeStyleBuild = createAndBuildErrorFreeProject();
-        assertThat(freeStyleBuild.getResult(), is(Result.SUCCESS));
+        assertThat(freeStyleBuild, isSuccessful());
     }
 
     @Test
@@ -75,14 +79,14 @@ public class ChangesetEvaluatorBuildResultTest {
         File changesetFileWithError = LiquibaseTestUtil.createChangesetFileWithError(temporaryFolder);
         FreeStyleProject project = createProjectWithChangelogFile(changesetFileWithError);
         FreeStyleBuild build = launchBuildForProject(project);
-        assertThat(build.getResult(), is(Result.UNSTABLE));
+        assertThat(build, isUnstable());
     }
 
     @Test
     public void should_indicate_success_with_yaml_formatted_changeset()
             throws IOException, ExecutionException, InterruptedException {
         FreeStyleBuild build = createAndBuildLiquibaseProject("/example-changesets/yaml-changeset-sunnyday.yml");
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
     }
 
     @Test
@@ -105,7 +109,8 @@ public class ChangesetEvaluatorBuildResultTest {
 
         project.getBuildersList().add(evaluator);
         FreeStyleBuild build = launchBuildForProject(project);
-        assertThat(build.getResult(), is(Result.FAILURE));
+        assertThat(build , isFailure());
+
     }
 
 
@@ -125,7 +130,7 @@ public class ChangesetEvaluatorBuildResultTest {
         evaluator.setLiquibasePropertiesPath(LiquibaseTestUtil.extractFilenameFromResourcePath(LIQUIBASE_PROPERTIES));
         project.getBuildersList().add(evaluator);
         FreeStyleBuild build = launchBuildForProject(project);
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
     }
 
 
@@ -150,7 +155,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
         FreeStyleBuild build = launchBuildForProject(project);
 
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
 
         ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
 
@@ -162,7 +167,7 @@ public class ChangesetEvaluatorBuildResultTest {
     public void should_handle_json_changesets_successfully()
             throws InterruptedException, ExecutionException, IOException {
         FreeStyleBuild build = createAndBuildLiquibaseProject("/example-changesets/json-changeset-sunnyday.json");
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
     }
 
     @Test
@@ -185,7 +190,8 @@ public class ChangesetEvaluatorBuildResultTest {
         LiquibaseTestUtil.createFileFromResource(rootDirectory, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML);
         FreeStyleBuild build = launchBuildForProject(project);
 
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
+
         ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
 
         assertThat(action.getChangeSetDetails(), containsSunnyDayChangesetDetails());
@@ -210,7 +216,7 @@ public class ChangesetEvaluatorBuildResultTest {
 
         FreeStyleBuild build = launchBuildForProject(project);
 
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
         ExecutedChangesetAction action = build.getAction(ExecutedChangesetAction.class);
         assertThat(action.getChangeSetDetails(), containsSunnyDayChangesetDetails());
     }
@@ -233,7 +239,7 @@ public class ChangesetEvaluatorBuildResultTest {
         project.setCustomWorkspace(includedDir.getParent());
         FreeStyleBuild build = launchBuildForProject(project);
 
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
         List<ChangeSetDetail> changeSetDetails = build.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
 
         assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
@@ -288,7 +294,7 @@ public class ChangesetEvaluatorBuildResultTest {
         FreeStyleProject project = createProjectWithChangelogFile(rootChangeset);
         FreeStyleBuild build = launchBuildForProject(project);
 
-        assertThat(build.getResult(), is(Result.SUCCESS));
+        assertThat(build, isSuccessful());
         List<ChangeSetDetail> changeSetDetails = build.getAction(ExecutedChangesetAction.class).getChangeSetDetails();
 
         assertThat(changeSetDetails, containsSunnyDayChangesetDetails());
@@ -315,7 +321,7 @@ public class ChangesetEvaluatorBuildResultTest {
      * @return
      */
     private static Matcher<Iterable<? extends ChangeSetDetail>> containsSunnyDayChangesetDetails() {
-        return contains(
+        return  contains(
                 isChangeSetDetail(new ChangeSetDetail.Builder().withAuthor("keith").withId("create-table")
                                                                .withComments("This is a simple create table")
                                                                .withSuccessfullyExecuted(true).build()),

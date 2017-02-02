@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -25,16 +26,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.jenkinsci.plugins.liquibase.integration.InputCheckedMatcher.isChecked;
-import static org.jenkinsci.plugins.liquibase.integration.InputCheckedMatcher.isNotChecked;
+import static org.jenkinsci.plugins.liquibase.matchers.InputCheckedMatcher.isChecked;
+import static org.jenkinsci.plugins.liquibase.matchers.InputCheckedMatcher.isNotChecked;
 import static org.junit.Assert.assertThat;
 
 public class DriverSelectionFormTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DriverSelectionFormTest.class);
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkinsRule = new JenkinsRule();
 
 
     @Rule
@@ -47,7 +48,7 @@ public class DriverSelectionFormTest {
     public void setup() throws IOException, SAXException {
 
         webClient = jenkinsRule.createWebClient();
-        project = jenkinsRule.createFreeStyleProject("new-project");
+        project = jenkinsRule.createFreeStyleProject(RandomStringUtils.randomAlphabetic(8));
         evaluator = new ChangesetEvaluator();
         evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
         project.getBuildersList().add(evaluator);

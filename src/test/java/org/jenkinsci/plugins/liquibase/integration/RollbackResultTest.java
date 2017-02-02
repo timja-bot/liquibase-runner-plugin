@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.liquibase.integration;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Result;
 import liquibase.exception.LiquibaseException;
 
 import java.io.File;
@@ -16,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuilder;
 import org.jenkinsci.plugins.liquibase.evaluator.RolledbackChangesetAction;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -24,10 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.jenkinsci.plugins.liquibase.integration.IsChangeSetDetail.hasId;
+import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isSuccessful;
+import static org.jenkinsci.plugins.liquibase.matchers.BuildResultMatcher.isUnstable;
+import static org.jenkinsci.plugins.liquibase.matchers.IsChangeSetDetail.hasId;
 import static org.junit.Assert.assertThat;
 
 public class RollbackResultTest {
@@ -37,8 +38,8 @@ public class RollbackResultTest {
     private static final String CHANGELOG_WITH_ROLLBACK_ERROR_RESOURCE_PATH =
             "/example-changesets/changeset-with-rollback-error.xml";
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkinsRule = new JenkinsRule();
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -67,7 +68,7 @@ public class RollbackResultTest {
         buildStep.setNumberOfChangesetsToRollback(String.valueOf(numberOfChangesetsToRollback));
         RolledbackChangesetAction action = launchBuild(buildStep);
 
-        assertThat(action.getBuild().getResult(), is(Result.SUCCESS));
+        assertThat(action.getBuild(), isSuccessful());
         assertThat(action.getRolledbackChangesets(), hasSize(numberOfChangesetsToRollback));
     }
 
@@ -83,9 +84,10 @@ public class RollbackResultTest {
 
         RolledbackChangesetAction action = launchBuild(rollbackBuildStep);
 
-        assertThat(action.getBuild().getResult(), is(Result.SUCCESS));
-        int amountOfChangesetsExistingAfterTag = 2;
-        assertThat(action.getRolledbackChangesets(), hasSize(amountOfChangesetsExistingAfterTag));
+
+        assertThat(action.getBuild(), isSuccessful());
+        int expectedChangesetsToBeRolledBack = 3;
+        assertThat(action.getRolledbackChangesets(), hasSize(expectedChangesetsToBeRolledBack));
     }
 
     @Test
@@ -99,14 +101,13 @@ public class RollbackResultTest {
 
         RolledbackChangesetAction resultAction = launchBuild(rollbackBuildStep);
 
-        int totalNumberOfChangesets = 4;
-
         assertThat(resultAction.getRolledbackChangesets(), hasItems(
                 hasId("create-table"),
                 hasId("first_tag"),
                 hasId("create-color-table"),
                 hasId("create-testing-table"))
         );
+        int totalNumberOfChangesets = 4;
         assertThat(resultAction.getRolledbackChangesets(), hasSize(totalNumberOfChangesets));
     }
 
@@ -125,7 +126,8 @@ public class RollbackResultTest {
 
         RolledbackChangesetAction resultAction = launchBuild(buildStep);
         assertThat(resultAction, notNullValue());
-        assertThat(resultAction.getBuild().getResult(), is(Result.UNSTABLE));
+        assertThat(resultAction.getBuild(), isUnstable());
+
     }
 
     protected static RollbackBuilder createBaseBuildStep(RollbackBuilder.RollbackStrategy rollbackStrategy,

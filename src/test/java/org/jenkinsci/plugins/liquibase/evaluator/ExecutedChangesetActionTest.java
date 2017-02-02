@@ -9,7 +9,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.jenkinsci.plugins.liquibase.integration.IsChangeSetDetail.hasId;
+import static org.jenkinsci.plugins.liquibase.matchers.IsChangeSetDetail.hasId;
 import static org.junit.Assert.assertThat;
 
 public class ExecutedChangesetActionTest {
