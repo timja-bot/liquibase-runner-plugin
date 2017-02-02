@@ -10,7 +10,7 @@ h2. Features
 Adds liquibase related operations (update, rollback, and dbdoc generation) as available build steps.  See Liquibase documentation at [http://www.liquibase.org].
 Evaluated changesets and their details appear on the build's summary page.
 
-Uses liquibase version 3.5.1.
+Uses liquibase version 3.5.3.
 {gallery}
 
 h2. Known Limitations
@@ -68,6 +68,15 @@ h2. Usage Tips
 build slave runs your project, that file will no longer be available, and all changesets will again be executed.
 
 h2. Version History
+
+
+h4. Version 1.3.0 (Jan , 2017)
+
+* [JENKINS-41681|https://issues.jenkins-ci.org/browse/JENKINS-41681] Update plugin to use liquibase 3.5.3
+* [JENKINS-41655|https://issues.jenkins-ci.org/browse/JENKINS-41655] liquibase runner causes 'schema_name()' error when used with jtds
+* [JENKINS-40963|https://issues.jenkins-ci.org/browse/JENKINS-40963] Allow Liquibase runner to integrate with Job DSL plugin
+
+
 
 h4. Version 1.2.1 (Jan 9, 2017)
 
