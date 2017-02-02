@@ -23,13 +23,22 @@ public class IsChangeSetDetail {
 
             @Override
             protected boolean matchesSafely(ChangeSetDetail changeSetDetail) {
-                return id.equals(changeSetDetail.getId());
+                boolean matches;
+                if (id!=null) {
+                    matches = id.equals(changeSetDetail.getId());
+                } else {
+                    matches=true;
+                }
+                return matches;
             }
         };
     }
     public static Matcher<ChangeSetDetail> isChangeSetDetail(ChangeSetDetail changeSetDetail) {
         return allOf(
-                hasId(changeSetDetail.getId()), hasAuthor(changeSetDetail.getAuthor()), hasComments(changeSetDetail.getComments()));
+                hasId(changeSetDetail.getId()),
+                hasAuthor(changeSetDetail.getAuthor()),
+                hasComments(changeSetDetail.getComments()),
+                hasPath(changeSetDetail.getPath()));
     }
 
     public static Matcher<ChangeSetDetail> hasComments(final String comments) {
@@ -62,7 +71,15 @@ public class IsChangeSetDetail {
         return new TypeSafeMatcher<ChangeSetDetail>() {
             @Override
             protected boolean matchesSafely(ChangeSetDetail changeSetDetail) {
-                return author.equals(changeSetDetail.getAuthor());
+
+                boolean matches = false;
+                if (author!=null) {
+                    matches = author.equals(changeSetDetail.getAuthor());
+                } else {
+                    matches = changeSetDetail.getAuthor() == null;
+                }
+
+                return matches;
             }
 
             @Override
@@ -76,5 +93,31 @@ public class IsChangeSetDetail {
             }
         };
     }
+
+    public static Matcher<ChangeSetDetail> hasPath(final String path) {
+        return new TypeSafeMatcher<ChangeSetDetail>() {
+            @Override
+            protected boolean matchesSafely(ChangeSetDetail changeSetDetail) {
+                boolean matches;
+                if (path!=null) {
+                    matches = path.equals(changeSetDetail.getPath());
+                } else {
+                    matches = true;
+                }
+                return matches;
+            }
+
+            @Override
+            protected void describeMismatchSafely(ChangeSetDetail item, Description mismatchDescription) {
+                mismatchDescription.appendText("was path '").appendText(item.getPath()).appendText("'");
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("path '").appendText(path).appendText("'");
+            }
+        };
+    }
+
 
 }

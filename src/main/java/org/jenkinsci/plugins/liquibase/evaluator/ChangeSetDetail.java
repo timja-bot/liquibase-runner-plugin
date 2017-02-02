@@ -30,7 +30,7 @@ public class ChangeSetDetail implements Action {
     private String id;
     private String comments;
     private String description;
-    private String filePath;
+    private String path;
     private String exceptionMessage;
     private boolean rolledBack;
 
@@ -45,11 +45,13 @@ public class ChangeSetDetail implements Action {
         setId(builder.id);
         setComments(builder.comments);
         setDescription(builder.description);
+        setPath(builder.path);
+
     }
 
     public static ChangeSetDetail fromChangeSet(ChangeSet changeSet) {
         ChangeSetDetail changeSetDetail = new ChangeSetDetail();
-        changeSetDetail.setFilePath(changeSet.getFilePath());
+        changeSetDetail.setPath(changeSet.getFilePath());
         changeSetDetail.setId(changeSet.getId());
         changeSetDetail.setAuthor(changeSet.getAuthor());
         changeSetDetail.setComments(changeSet.getComments());
@@ -95,6 +97,7 @@ public class ChangeSetDetail implements Action {
         return truncateString(executedSql);
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -106,7 +109,7 @@ public class ChangeSetDetail implements Action {
 
         ChangeSetDetail that = (ChangeSetDetail) o;
 
-        if (!parent.equals(that.parent)) {
+        if (parent != null ? !parent.equals(that.parent) : that.parent != null) {
             return false;
         }
         if (author != null ? !author.equals(that.author) : that.author != null) {
@@ -115,7 +118,7 @@ public class ChangeSetDetail implements Action {
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
         }
-        if (filePath != null ? !filePath.equals(that.filePath) : that.filePath != null) {
+        if (path != null ? !path.equals(that.path) : that.path != null) {
             return false;
         }
 
@@ -124,10 +127,10 @@ public class ChangeSetDetail implements Action {
 
     @Override
     public int hashCode() {
-        int result = parent.hashCode();
+        int result = parent != null ? parent.hashCode() : 0;
         result = 31 * result + (author != null ? author.hashCode() : 0);
         result = 31 * result + (id != null ? id.hashCode() : 0);
-        result = 31 * result + (filePath != null ? filePath.hashCode() : 0);
+        result = 31 * result + (path != null ? path.hashCode() : 0);
         return result;
     }
 
@@ -166,7 +169,7 @@ public class ChangeSetDetail implements Action {
                 ", id='" + id + '\'' +
                 ", comments='" + comments + '\'' +
                 ", description='" + description + '\'' +
-                ", filePath='" + filePath + '\'' +
+                ", filePath='" + path + '\'' +
                 '}';
     }
 
@@ -236,8 +239,8 @@ public class ChangeSetDetail implements Action {
     }
 
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getExceptionMessage() {
@@ -252,6 +255,10 @@ public class ChangeSetDetail implements Action {
         return rolledBack;
     }
 
+    public String getPath() {
+        return path;
+    }
+
     public void setRolledBack(boolean rolledBack) {
         this.rolledBack = rolledBack;
     }
@@ -262,6 +269,8 @@ public class ChangeSetDetail implements Action {
         private String id;
         private String comments;
         private String description;
+
+        private String path;
 
 
         public Builder() {
@@ -289,6 +298,11 @@ public class ChangeSetDetail implements Action {
 
         public Builder withDescription(String val) {
             description = val;
+            return this;
+        }
+
+        public Builder withPath(String val) {
+            path =val;
             return this;
         }
 

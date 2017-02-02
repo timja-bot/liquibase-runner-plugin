@@ -1,0 +1,13 @@
+INFO 1/17/17 3:28 PM: liquibase: Successfully acquired change log lock
+INFO 1/17/17 3:28 PM: liquibase: Creating database history table with name: PUBLIC.DATABASECHANGELOG
+INFO 1/17/17 3:28 PM: liquibase: Reading from PUBLIC.DATABASECHANGELOG
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::create-table::keith: Table shape created
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::create-table::keith: ChangeSet sunny-day-changeset.xml::create-table::keith ran successfully in 9ms
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::first_tag::keith: Tag 'first_tag' applied to database
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::first_tag::keith: ChangeSet sunny-day-changeset.xml::first_tag::keith ran successfully in 1ms
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::create-color-table::keith: Table color created
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::create-color-table::keith: ChangeSet sunny-day-changeset.xml::create-color-table::keith ran successfully in 10ms
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::create-testing-table::keith: Table fortesting created
+INFO 1/17/17 3:28 PM: liquibase: sunny-day-changeset.xml: sunny-day-changeset.xml::create-testing-table::keith: ChangeSet sunny-day-changeset.xml::create-testing-table::keith ran successfully in 5ms
+INFO 1/17/17 3:28 PM: liquibase: Successfully released change log lock
+Liquibase Update Successful
