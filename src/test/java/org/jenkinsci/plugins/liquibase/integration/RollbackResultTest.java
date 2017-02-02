@@ -86,8 +86,8 @@ public class RollbackResultTest {
 
 
         assertThat(action.getBuild(), isSuccessful());
-        int amountOfChangesetsExistingAfterTag = 2;
-        assertThat(action.getRolledbackChangesets(), hasSize(amountOfChangesetsExistingAfterTag));
+        int expectedChangesetsToBeRolledBack = 3;
+        assertThat(action.getRolledbackChangesets(), hasSize(expectedChangesetsToBeRolledBack));
     }
 
     @Test
