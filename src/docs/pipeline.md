@@ -22,6 +22,7 @@ node {
           testRollbacks: true,
           url: 'jdbc:postgresql://localhost:5432/sample-db',
           driverClassname: 'org.postgresql.Driver',
+          classpath: 'path/to/additional/classes', // may be relative or absolute
           // instead of driverClassname, you can set databaseEngine to MySQL, Derby, Postgres, Derby, or Hypersonic
           databaseEngine: 'MySQL',
           credentialsId: 'database_password_credentials_id',
