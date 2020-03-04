@@ -1,3 +1,5 @@
+package pipelinescripts;
+
 node {
   ws('@WORKSPACE@') {
 

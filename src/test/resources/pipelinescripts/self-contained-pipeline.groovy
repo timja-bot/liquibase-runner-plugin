@@ -1,3 +1,5 @@
+package pipelinescripts;
+
 node {
   writeFile file: 'changeset.yml', text: changelog()
 

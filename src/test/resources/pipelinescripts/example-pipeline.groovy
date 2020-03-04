@@ -1,3 +1,5 @@
+package pipelinescripts;
+
 node {
   // using minimum configuration will cause the plugin to use an H2 inmemory database.
   liquibaseUpdate('changeset.xml')
