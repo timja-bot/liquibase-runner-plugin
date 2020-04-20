@@ -4,6 +4,7 @@ import hudson.model.Action;
 import liquibase.changelog.ChangeSet;
 import liquibase.sql.Sql;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +24,7 @@ public class ChangeSetDetail implements Action {
     private static final Logger LOG = LoggerFactory.getLogger(ChangeSetDetail.class);
 
     public static final int MAX_LINES = 15;
-    private List<Sql> sqls;
+    private List<String> sqls;
     private boolean successfullyExecuted = true;
     private ExecutedChangesetAction parent;
     private String author;
@@ -59,7 +60,11 @@ public class ChangeSetDetail implements Action {
 
     public static ChangeSetDetail fromChangeSet(ChangeSet changeSet, List<Sql> sqlList) {
         ChangeSetDetail changeSetDetail = ChangeSetDetail.fromChangeSet(changeSet);
-        changeSetDetail.setSqls(sqlList);
+        List<String> sqls = new ArrayList<>();
+        for (Sql sql : sqlList) {
+            sqls.add(sql.toSql());
+        }
+        changeSetDetail.setSqls(sqls);
         return changeSetDetail;
     }
 
@@ -74,8 +79,8 @@ public class ChangeSetDetail implements Action {
     public String getExecutedSql() {
         StringBuilder sb = new StringBuilder();
         if (sqls != null) {
-            for (Sql changesetSql : sqls) {
-                sb.append(changesetSql.toSql()).append('\n');
+            for (String changesetSql : sqls) {
+                sb.append(changesetSql).append('\n');
             }
         }
 
@@ -138,7 +143,7 @@ public class ChangeSetDetail implements Action {
         return join;
     }
 
-    public List<Sql> getSqls() {
+    public List<String> getSqls() {
         return sqls;
     }
 
@@ -150,7 +155,7 @@ public class ChangeSetDetail implements Action {
         this.successfullyExecuted = successfullyExecuted;
     }
 
-    public void addSql(Sql sql) {
+    public void addSql(String sql) {
         if (!sqls.contains(sql)) {
             sqls.add(sql);
         }
@@ -231,7 +236,7 @@ public class ChangeSetDetail implements Action {
     }
 
 
-    public void setSqls(List<Sql> sqls) {
+    public void setSqls(List<String> sqls) {
         this.sqls = sqls;
     }
 

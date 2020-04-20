@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
-/*
 import hudson.EnvVars;
 
 import java.text.ParseException;
@@ -10,13 +9,11 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import static org.exparity.hamcrest.date.IsSameInstant.sameInstant;
+import static org.exparity.hamcrest.date.DateMatchers.sameInstant;
 import static org.junit.Assert.assertThat;
-*/
 
 public class RollbackBuilderTest {
 
-	/*
     private static final String RESOLVE_FROM_DATE = "13/10/1973 8:00";
     private static final String HOURS_IN_DAY = "24";
     protected SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -35,6 +32,5 @@ public class RollbackBuilderTest {
 
         assertThat(result, sameInstant(theDayBefore));
     }
-    */
 
 }
