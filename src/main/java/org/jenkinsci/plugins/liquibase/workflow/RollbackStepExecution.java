@@ -13,6 +13,9 @@ import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import com.google.inject.Inject;
 
 public class RollbackStepExecution extends AbstractSynchronousStepExecution<Void> {
+
+    private static final long serialVersionUID = 865832747L;
+
     @Inject
     private transient RollbackStep step;
 

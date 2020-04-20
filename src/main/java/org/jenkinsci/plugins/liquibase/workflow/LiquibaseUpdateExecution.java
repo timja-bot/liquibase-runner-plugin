@@ -14,6 +14,8 @@ import com.google.inject.Inject;
 
 public class LiquibaseUpdateExecution extends AbstractSynchronousStepExecution<Void> {
 
+    private static final long serialVersionUID = 1236313L;
+
     @Inject
     private transient LiquibaseUpdateBuildStep step;
 
