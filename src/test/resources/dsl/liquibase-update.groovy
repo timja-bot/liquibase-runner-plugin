@@ -1,3 +1,5 @@
+package dsl;
+
 freeStyleJob('@JOB_NAME@') {
   customWorkspace('@WORKSPACE@')
   steps {

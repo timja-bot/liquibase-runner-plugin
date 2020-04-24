@@ -6,7 +6,7 @@
 
     <f:section title="Database Driver">
         <f:radioBlock inline="true" name="useIncludedDriver"
-                      checked="${instance.databaseEngine==null || instance.databaseEngine!=''}" value="true"
+                      checked="${instance.databaseEngine!=null &amp;&amp; instance.databaseEngine!=''}" value="true"
                       title="${%Use one of the included drivers}">
             <f:entry title="${%Database engine}" field="databaseEngine">
                 <select class="setting-input" name="LiquibaseBuilder.databaseEngine">

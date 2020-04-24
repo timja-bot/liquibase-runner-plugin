@@ -130,6 +130,10 @@ public class LiquibaseContext implements Context {
         return useIncludedDriver;
     }
 
+    public void setUseIncludedDriver(Boolean useIncludedDriver) {
+        this.useIncludedDriver = useIncludedDriver;
+    }
+
     public String getCredentialsId() {
         return credentialsId;
     }
@@ -202,8 +206,8 @@ public class LiquibaseContext implements Context {
         StringBuilder sb = new StringBuilder("");
         String result = null;
         if (changeLogParameters != null) {
-            for (String key : changeLogParameters.keySet()) {
-                sb.append(key).append("=").append(changeLogParameters.get(key)).append("\n");
+            for (Map.Entry<String, String> entry : changeLogParameters.entrySet()) {
+                sb.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
             }
             result = sb.substring(0, sb.length() - 1);
         } else {
