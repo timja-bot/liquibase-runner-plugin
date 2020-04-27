@@ -33,6 +33,16 @@
             <name>Keith Collison</name>
             <email>keithc238@gmail.com</email>
         </developer>
+    	<developer>
+		<id>r2datical</id>
+		<name>Robert Reeves</name>
+		<email>r2@datical.com</email>
+	</developer>
+	<developer>
+		<id>nvoxland</id>
+		<name>Nathan Voxland</name>
+		<email>nathan@liquibase.org</email>
+	</developer>
     </developers>
     <repositories>
         <repository>
