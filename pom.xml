@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>liquibase-runner</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.0</version>
     <name>Liquibase Runner</name>
 
     <packaging>hpi</packaging>
