@@ -174,7 +174,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         liquibase.setChangeExecListener(new BuildChangeExecListener(action, listener));
 
         if (!Strings.isNullOrEmpty(changeLogParameters)) {
-            populateChangeLogParameters(liquibase, environment, changeLogParameters, resolveMacros);
+            populateChangeLogParameters(liquibase, environment, configProperties, changeLogParameters, resolveMacros);
         }
         return liquibase;
     }
@@ -204,7 +204,15 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
     protected static void populateChangeLogParameters(Liquibase liquibase,
                                                       Map environment,
+                                                      Properties configProperties,
                                                       CharSequence changeLogParameters, boolean resolveMacros) {
+        for (Map.Entry entry : configProperties.entrySet()) {
+            String key = (String) entry.getKey();
+            if (key.startsWith("parameter.")) {
+                liquibase.setChangeLogParameter(key.replaceFirst("^parameter.", ""), entry.getValue());
+            }
+        }
+
         Map<String, String> keyValuePairs = Splitter.on("\n").trimResults().withKeyValueSeparator("=").split(changeLogParameters);
         for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
             String value = entry.getValue();
