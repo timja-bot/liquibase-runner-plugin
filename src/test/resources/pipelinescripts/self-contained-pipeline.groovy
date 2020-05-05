@@ -4,7 +4,6 @@ node {
   writeFile file: 'changeset.yml', text: changelog()
 
   liquibaseUpdate(changeLogFile: 'changeset.yml', testRollbacks: true,
-          driverClassname: 'org.h2.Driver',
           url: 'jdbc:h2:mem:builder-db')
 }
 

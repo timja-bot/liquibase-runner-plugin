@@ -5,9 +5,6 @@
          xmlns:c="/lib/credentials">
 
     <f:section title="Connection Details">
-        <f:entry title="${%Database driver classname}" field="driverClassname">
-            <f:textbox/>
-        </f:entry>
         <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb">
             <f:textbox/>
         </f:entry>

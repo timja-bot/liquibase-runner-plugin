@@ -19,7 +19,6 @@ import static com.cloudbees.plugins.credentials.CredentialsMatchers.anyOf;
 import static com.cloudbees.plugins.credentials.CredentialsMatchers.instanceOf;
 
 public abstract class AbstractLiquibaseDescriptor extends BuildStepDescriptor<Builder> {
-    private List<IncludedDatabaseDriver> includedDatabaseDrivers;
 
     public AbstractLiquibaseDescriptor(Class<? extends Builder> clazz) {
         super(clazz);
@@ -29,26 +28,11 @@ public abstract class AbstractLiquibaseDescriptor extends BuildStepDescriptor<Bu
         super();
     }
 
-    public List<IncludedDatabaseDriver> getIncludedDatabaseDrivers() {
-        if (includedDatabaseDrivers == null) {
-            initDriverList();
-        }
-        return includedDatabaseDrivers;
-    }
-
     public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Project project) {
         return new StandardListBoxModel()
                 .withEmptySelection()
                 .withMatching(anyOf(
                         instanceOf(UsernamePasswordCredentials.class)),
                         CredentialsProvider.lookupCredentials(StandardUsernameCredentials.class, project));
-    }
-
-    private void initDriverList() {
-        includedDatabaseDrivers = Lists.newArrayList(new IncludedDatabaseDriver("MySQL", "com.mysql.jdbc.Driver"),
-                new IncludedDatabaseDriver("PostgreSQL", "org.postgresql.Driver"),
-                new IncludedDatabaseDriver("Derby", "org.apache.derby.jdbc.EmbeddedDriver"),
-                new IncludedDatabaseDriver("Hypersonic", "org.hsqldb.jdbcDriver"),
-                new IncludedDatabaseDriver("H2", "org.h2.Driver"));
     }
 }

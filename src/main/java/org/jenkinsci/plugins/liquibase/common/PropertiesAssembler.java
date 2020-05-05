@@ -12,7 +12,6 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder;
-import org.jenkinsci.plugins.liquibase.evaluator.IncludedDatabaseDriver;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,6 @@ import com.google.common.collect.Lists;
 public class PropertiesAssembler {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesAssembler.class);
     private static final String DEFAULT_JDBC_URL = "jdbc:h2:mem:builder-db";
-    private static final String DEFAULT_DB_DRIVER = "org.h2.Driver";
 
     /**
      * Creates a properties instance for use with liquibase execution.  Property values may come from these sources,
@@ -100,29 +98,7 @@ public class PropertiesAssembler {
                 environment, build);
         addPropertyIfDefined(properties, LiquibaseProperty.LABELS, liquibaseBuilder.getLabels(), environment, build);
         addPropertyIfDefined(properties, LiquibaseProperty.CONTEXTS, liquibaseBuilder.getContexts(), environment, build);
-        resolveDatabaseDriver(liquibaseBuilder, properties, environment, build);
     }
-
-    private static void resolveDatabaseDriver(AbstractLiquibaseBuilder liquibaseBuilder,
-                                              Properties properties,
-                                              Map environment, Run<?, ?> build) {
-
-
-        boolean useIncludedDriver = isBuilderUsingIncludedDriver(liquibaseBuilder);
-        if (useIncludedDriver) {
-            setDriverFromDBEngine(liquibaseBuilder, properties);
-        } else {
-            addPropertyIfDefined(properties, LiquibaseProperty.DRIVER, liquibaseBuilder.getDriverClassname(),
-                    environment, build);
-        }
-    }
-
-    private static boolean isBuilderUsingIncludedDriver(AbstractLiquibaseBuilder liquibaseBuilder) {
-        boolean useIncludedDriver =
-                liquibaseBuilder.hasUseIncludedDriverBeenSet() && liquibaseBuilder.isUseIncludedDriver();
-        return useIncludedDriver && !Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine());
-    }
-
 
     private static void assembleFromPropertiesFile(Properties properties,
                                                    String liquibasePropertiesPath,
@@ -153,22 +129,7 @@ public class PropertiesAssembler {
         }
     }
 
-    public static void setDriverFromDBEngine(AbstractLiquibaseBuilder liquibaseBuilder, Properties properties) {
-        if (!Strings.isNullOrEmpty(liquibaseBuilder.getDatabaseEngine())) {
-            for (IncludedDatabaseDriver includedDatabaseDriver : liquibaseBuilder.getDrivers()) {
-                if (includedDatabaseDriver.getDisplayName().equals(liquibaseBuilder.getDatabaseEngine())) {
-                    setProperty(properties, LiquibaseProperty.DRIVER, includedDatabaseDriver.getDriverClassName());
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("using db driver class[" + includedDatabaseDriver.getDriverClassName() + "] ");
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
     private static void assembleDefaults(Properties properties) {
-        setProperty(properties, LiquibaseProperty.DRIVER, DEFAULT_DB_DRIVER);
         setProperty(properties, LiquibaseProperty.URL, DEFAULT_JDBC_URL);
     }
 

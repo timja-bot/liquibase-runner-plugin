@@ -95,18 +95,16 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                               String contexts,
                               String liquibasePropertiesPath,
                               String classpath,
-                              String driverClassname,
                               String changeLogParameters,
                               boolean testRollbacks,
                               boolean dropAll,
                               String labels,
                               String basePath,
                               boolean tagOnSuccessfulBuild,
-                              boolean useIncludedDriver,
                               String credentialsId) {
         super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
-                classpath, driverClassname, changeLogParameters, labels, basePath, useIncludedDriver, credentialsId);
+                classpath, changeLogParameters, labels, basePath, credentialsId);
         this.testRollbacks = testRollbacks;
         this.dropAll = dropAll;
         this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;

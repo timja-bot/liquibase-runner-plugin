@@ -14,7 +14,6 @@ public class LiquibaseWorkflowUtil {
         builder.setContexts(step.getContexts());
         builder.setLiquibasePropertiesPath(step.getLiquibasePropertiesPath());
         builder.setClasspath(step.getClasspath());
-        builder.setDriverClassname(step.getDriverClassname());
         builder.setLabels(step.getLabels());
         builder.setCredentialsId(step.getCredentialsId());
         builder.setBasePath(step.getBasePath());
@@ -24,9 +23,6 @@ public class LiquibaseWorkflowUtil {
             builder.setChangeLogParameters(parameterList);
         }
         builder.setDatabaseEngine(step.getDatabaseEngine());
-        if (step.getDatabaseEngine() != null) {
-            builder.setUseIncludedDriver(true);
-        }
     }
 
     protected static String composeParameters(AbstractLiquibaseStep step) {
