@@ -75,7 +75,12 @@ public class Util {
             //jenkins FilePath prefers unix style, even on windows
             filePath = filePath.replace("\\", "/");
 
-            FilePath file = workspace.child(filePath);
+            FilePath file;
+            if (workspace == null) {
+                file = new FilePath(new File(filePath));
+            } else {
+                file = workspace.child(filePath);
+            }
             try {
 
                 if (file.isDirectory()) {
