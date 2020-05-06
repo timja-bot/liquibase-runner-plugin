@@ -5,7 +5,7 @@
          xmlns:c="/lib/credentials">
 
     <f:section title="Connection Details">
-        <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb">
+        <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb. The JDBC driver must be available in the classpath">
             <f:textbox/>
         </f:entry>
         <f:entry field="credentialsId" title="Credentials">
@@ -35,7 +35,7 @@
             <f:expandableTextbox name="labels"/>
         </f:entry>
         <f:entry title="Classpath" field="classpath"
-                 description="Classpath containing migration files and JDBC Driver">
+                 description="Classpath containing migration files and JDBC Driver. Can be relative to working directory or absolute. Jar files in listed directories are automatically added. Drivers for PostgreSQL, Mysql, H2, and Hsql come pre-bundled with this plugin.">
             <f:textbox/>
         </f:entry>
         <f:entry title="Changelog Parameters" field="changeLogParameters"

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -149,12 +148,14 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         EnvVars environment = build.getEnvironment(listener);
 
         try {
+            ClassLoader liquibaseClassLoader = this.getClass().getClassLoader();
+
             if (!Strings.isNullOrEmpty(resolvedClasspath)) {
-                Util.addClassloader(launcher.isUnix(), workspace, resolvedClasspath);
+                liquibaseClassLoader = Util.createClassLoader(launcher.isUnix(), workspace, resolvedClasspath);
             }
-            JdbcConnection jdbcConnection = createJdbcConnection(configProperties);
+            JdbcConnection jdbcConnection = createJdbcConnection(configProperties, liquibaseClassLoader);
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros);
+            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros, liquibaseClassLoader);
 
             String changeLogFile = getProperty(configProperties, LiquibaseProperty.CHANGELOG_FILE);
             liquibase = new Liquibase(changeLogFile, resourceAccessor, database);
@@ -172,7 +173,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
     private ResourceAccessor createResourceAccessor(FilePath workspace,
                                                     Map environment,
-                                                    boolean resolveMacros) {
+                                                    boolean resolveMacros,
+                                                    ClassLoader liquibaseClassLoader) {
         String resolvedBasePath;
         if (resolveMacros) {
             resolvedBasePath = hudson.Util.replaceMacro(basePath,  environment);
@@ -188,8 +190,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
         ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
         return new CompositeResourceAccessor(filePathAccessor,
-                new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
-                new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
+                new ClassLoaderResourceAccessor(liquibaseClassLoader)
         );
     }
 
@@ -213,25 +214,18 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         }
     }
 
-    private static JdbcConnection createJdbcConnection(Properties configProperties) {
+    private static JdbcConnection createJdbcConnection(Properties configProperties, ClassLoader liquibaseClassLoader) {
         Connection connection;
         String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
         final String driverName = DatabaseFactory.getInstance().findDefaultDriver(dbUrl);
         try {
-            Util.registerDatabaseDriver(driverName,
-                    configProperties.getProperty(LiquibaseProperty.CLASSPATH.propertyName()));
+            Util.registerDatabaseDriver(driverName, liquibaseClassLoader);
             String userName = getProperty(configProperties, LiquibaseProperty.USERNAME);
             String password = getProperty(configProperties, LiquibaseProperty.PASSWORD);
             connection = DriverManager.getConnection(dbUrl, userName, password);
         } catch (SQLException e) {
             throw new RuntimeException(
                     "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException("Error registering database driver " + driverName, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Error registering database driver " + driverName, e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Error registering database driver " + driverName, e);
         }
         return new JdbcConnection(connection);
     }
