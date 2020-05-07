@@ -75,7 +75,6 @@ public class LiquibaseRunnerDslExtensionTest {
         assertThat(builder.getChangeLogFile(), is("sunny-day-changeset.xml"));
         assertThat(builder.isTestRollbacks(), is(true));
         assertThat(builder.getUrl(), is("jdbc:postgresql://localhost:5432/sample-db"));
-        assertThat(builder.getDriverClassname(), is("org.postgresql.Driver"));
         assertThat(builder.getContexts(), is("staging"));
         assertThat(builder.getChangeLogParameters(), containsString("sample.table.name=blue"));
         assertThat(builder.getChangeLogParameters(), containsString("favorite.food=spaghetti"));

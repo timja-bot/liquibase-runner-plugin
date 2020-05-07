@@ -7,7 +7,6 @@ freeStyleJob('@JOB_NAME@') {
       changeLogFile('sunny-day-changeset.xml')
       testRollbacks(true)
       url('jdbc:postgresql://localhost:5432/sample-db')
-      driverClassname('org.postgresql.Driver')
       contexts('staging')
       changeLogParameters(["sample.table.name": "blue",
                            "favorite.food"    : "spaghetti"])

@@ -11,8 +11,7 @@ public enum LiquibaseProperty {
     URL(),
     DEFAULT_SCHEMA_NAME("defaultSchemaName"),
     LOG_LEVEL("logLevel"),
-    DEFAULT_CATALOG_NAME("defaultCatalogName"),
-    DRIVER();
+    DEFAULT_CATALOG_NAME("defaultCatalogName");
 
 
     private String cliOption;

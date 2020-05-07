@@ -28,9 +28,6 @@ job() {
           changeLogFile('changeset.yml')
           testRollbacks(true)
           url('jdbc:postgresql://localhost:5432/sample-db')
-          driverClassname('org.postgresql.Driver')
-          // instead of driverClassname, you can set databaseEngine to MySQL, Derby, Postgres, Derby, or Hypersonic
-          databaseEngine('MySQL')
           credentialsId('database_password_credentials_id')
           liquibasePropertiesPath('/etc/liquibase.properties')
           contexts('staging')  // can be comma delimited list
@@ -57,7 +54,6 @@ job() {
             changeLogFile('changeset.yml')
             testRollbacks(true)
             url('jdbc:postgresql://localhost:5432/sample-db')
-            driverClassname('org.postgresql.Driver')
             credentialsId('database_password_credentials_id')
             rollbackToTag('deploy-2.5')
             rollbackCount(2)
