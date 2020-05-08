@@ -7,7 +7,7 @@ Adds liquibase changeset evaluation as an available build step.  See Liquibase d
 In addition, supplies a build step to roll back applied changesets.
 Any evaluated changesets are listed on the build's summary page, as well as details about each changeset.
 
-Uses liquibase version 3.5.1
+Uses Liquibase version 3.8.9
 
 # Installation
 
