@@ -18,6 +18,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -94,6 +96,11 @@ public class Util {
             }
         }
 
-        return new URLClassLoader(Iterables.toArray(classpathUrls, URL.class), Util.class.getClassLoader());
+        return AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+            @Override
+            public URLClassLoader run() {
+                return new URLClassLoader(Iterables.toArray(classpathUrls, URL.class), Util.class.getClassLoader());
+            }
+        });
     }
 }
