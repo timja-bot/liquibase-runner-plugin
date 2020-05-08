@@ -4,32 +4,8 @@
          xmlns:f="/lib/form"
          xmlns:c="/lib/credentials">
 
-    <f:section title="Database Driver">
-        <f:radioBlock inline="true" name="useIncludedDriver"
-                      checked="${instance.databaseEngine==null || instance.databaseEngine!=''}" value="true"
-                      title="${%Use one of the included drivers}">
-            <f:entry title="${%Database engine}" field="databaseEngine">
-                <select class="setting-input" name="LiquibaseBuilder.databaseEngine">
-                    <option value="">Select included driver</option>
-                    <j:forEach var="engine" items="${descriptor.getIncludedDatabaseDrivers()}">
-                        <f:option selected="${instance.databaseEngine==engine.displayName}"
-                                  value="${engine.displayName}">${engine.displayName}
-                        </f:option>
-                    </j:forEach>
-                </select>
-            </f:entry>
-        </f:radioBlock>
-
-        <f:radioBlock inline="true" name="useIncludedDriver"
-                      checked="${instance.driverClassname!=null &amp;&amp; instance.driverClassname!=''}" value="false"
-                      title="${%Specify driver classname}">
-            <f:entry title="${%Database driver classname}" field="driverClassname">
-                <f:textbox value="${instance.driverClassname}"/>
-            </f:entry>
-        </f:radioBlock>
-    </f:section>
     <f:section title="Connection Details">
-        <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb">
+        <f:entry title="Database URL" field="url" description="example: jdbc:mysql://localhost:3306/sampledb. The JDBC driver must be available in the classpath">
             <f:textbox value="${instance.url}"/>
         </f:entry>
 
@@ -59,7 +35,7 @@
             <f:expandableTextbox name="labels" value="${instance.labels}"/>
         </f:entry>
         <f:entry title="Classpath" field="classpath"
-                 description="Classpath containing migration files and JDBC Driver">
+                 description="Classpath containing migration files and JDBC Driver. Can be relative to working directory or absolute. Jar files in listed directories are automatically added. Drivers for PostgreSQL, Mysql, H2, and Hsql come pre-bundled with this plugin.">
             <f:textbox value="${instance.classpath}"/>
         </f:entry>
         <f:entry title="Changelog Parameters" field="changeLogParameters"

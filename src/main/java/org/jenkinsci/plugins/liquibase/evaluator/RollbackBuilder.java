@@ -31,6 +31,7 @@ import org.kohsuke.stapler.DataBoundSetter;
  * Build step that invoke's liquibase's rollback against a target database.
  */
 public class RollbackBuilder extends AbstractLiquibaseBuilder {
+
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
     public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
@@ -41,7 +42,7 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
     private String rollbackToTag;
     private String rollbackToDate;
 
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
+    private transient SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
 
     public enum RollbackStrategy {
         TAG, DATE, RELATIVE, COUNT
@@ -106,18 +107,17 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
                            String contexts,
                            String liquibasePropertiesPath,
                            String classpath,
-                           String driverClassname,
                            String changeLogParameters,
                            String labels,
                            String basePath,
                            String rollbackType,
                            String numberOfChangesetsToRollback,
                            String rollbackLastHours,
-                           String rollbackToTag, String rollbackToDate, boolean useIncludedDriver,
+                           String rollbackToTag, String rollbackToDate,
                            String credentialsId) {
         super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
-                classpath, driverClassname, changeLogParameters, labels, basePath, useIncludedDriver, credentialsId);
+                classpath, changeLogParameters, labels, basePath, credentialsId);
 
         this.rollbackType = rollbackType;
         this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;

@@ -89,31 +89,6 @@ public class ChangesetEvaluatorBuildResultTest {
         assertThat(build, isSuccessful());
     }
 
-    @Test
-    public void should_mark_liquibase_setup_problem_as_failure()
-            throws IOException, ExecutionException, InterruptedException {
-
-        Properties properties = new Properties();
-        properties.setProperty("driver", "nosuch.driver");
-        properties.setProperty("changeLogFile", "sunny-day-changeset.xml");
-        LiquibaseTestUtil.createFileFromResource(temporaryFolder.getRoot(), "/example-changesets/sunny-day-changeset.xml");
-
-        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-        project.setCustomWorkspace(temporaryFolder.getRoot().getAbsolutePath());
-
-        File propertiesFile = temporaryFolder.newFile();
-        properties.store(new FileOutputStream(propertiesFile), "Liquibase Test Properties");
-
-        ChangesetEvaluator evaluator = new ChangesetEvaluator();
-        evaluator.setLiquibasePropertiesPath(propertiesFile.getAbsolutePath());
-
-        project.getBuildersList().add(evaluator);
-        FreeStyleBuild build = launchBuildForProject(project);
-        assertThat(build , isFailure());
-
-    }
-
-
 
     /**
      * Covers https://github.com/jenkinsci/liquibase-runner-plugin/issues/8

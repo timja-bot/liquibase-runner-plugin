@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -53,11 +52,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     protected String contexts;
     protected String liquibasePropertiesPath;
     protected String classpath;
-    protected String driverClassname;
     protected String labels;
     private String changeLogParameters;
     private String basePath;
-    private Boolean useIncludedDriver;
     private String credentialsId;
 
 
@@ -74,11 +71,10 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                     String contexts,
                                     String liquibasePropertiesPath,
                                     String classpath,
-                                    String driverClassname,
                                     String changeLogParameters,
                                     String labels,
                                     String basePath,
-                                    boolean useIncludedDriver, String credentialsId) {
+                                    String credentialsId) {
         this.databaseEngine = databaseEngine;
         this.changeLogFile = changeLogFile;
         this.url = url;
@@ -86,11 +82,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         this.contexts = contexts;
         this.liquibasePropertiesPath = liquibasePropertiesPath;
         this.classpath = classpath;
-        this.driverClassname = driverClassname;
         this.changeLogParameters = changeLogParameters;
         this.labels = labels;
         this.basePath = basePath;
-        this.useIncludedDriver = useIncludedDriver;
         this.credentialsId = credentialsId;
     }
 
@@ -99,9 +93,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     }
 
     protected Object readResolve() {
-        if (useIncludedDriver == null) {
-            useIncludedDriver = Strings.isNullOrEmpty(driverClassname);
-        }
         return this;
     }
 
@@ -151,19 +142,20 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                      Properties configProperties,
                                      Launcher launcher, FilePath workspace) throws IOException, InterruptedException {
         Liquibase liquibase;
-        String driverName = getProperty(configProperties, LiquibaseProperty.DRIVER);
         String resolvedClasspath = getProperty(configProperties, LiquibaseProperty.CLASSPATH);
 
         boolean resolveMacros = build instanceof AbstractBuild;
         EnvVars environment = build.getEnvironment(listener);
 
         try {
+            ClassLoader liquibaseClassLoader = this.getClass().getClassLoader();
+
             if (!Strings.isNullOrEmpty(resolvedClasspath)) {
-                Util.addClassloader(launcher.isUnix(), workspace, resolvedClasspath);
+                liquibaseClassLoader = Util.createClassLoader(launcher.isUnix(), workspace, resolvedClasspath);
             }
-            JdbcConnection jdbcConnection = createJdbcConnection(configProperties, driverName);
+            JdbcConnection jdbcConnection = createJdbcConnection(configProperties, liquibaseClassLoader);
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros);
+            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros, liquibaseClassLoader);
 
             String changeLogFile = getProperty(configProperties, LiquibaseProperty.CHANGELOG_FILE);
             liquibase = new Liquibase(changeLogFile, resourceAccessor, database);
@@ -181,7 +173,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
     private ResourceAccessor createResourceAccessor(FilePath workspace,
                                                     Map environment,
-                                                    boolean resolveMacros) {
+                                                    boolean resolveMacros,
+                                                    ClassLoader liquibaseClassLoader) {
         String resolvedBasePath;
         if (resolveMacros) {
             resolvedBasePath = hudson.Util.replaceMacro(basePath,  environment);
@@ -197,8 +190,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
         ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
         return new CompositeResourceAccessor(filePathAccessor,
-                new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
-                new ClassLoaderResourceAccessor(ClassLoader.getSystemClassLoader())
+                new ClassLoaderResourceAccessor(liquibaseClassLoader)
         );
     }
 
@@ -222,25 +214,18 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         }
     }
 
-    private static JdbcConnection createJdbcConnection(Properties configProperties, String driverName) {
+    private static JdbcConnection createJdbcConnection(Properties configProperties, ClassLoader liquibaseClassLoader) {
         Connection connection;
         String dbUrl = getProperty(configProperties, LiquibaseProperty.URL);
+        final String driverName = DatabaseFactory.getInstance().findDefaultDriver(dbUrl);
         try {
-
-            Util.registerDatabaseDriver(driverName,
-                    configProperties.getProperty(LiquibaseProperty.CLASSPATH.propertyName()));
+            Util.registerDatabaseDriver(driverName, liquibaseClassLoader);
             String userName = getProperty(configProperties, LiquibaseProperty.USERNAME);
             String password = getProperty(configProperties, LiquibaseProperty.PASSWORD);
             connection = DriverManager.getConnection(dbUrl, userName, password);
         } catch (SQLException e) {
             throw new RuntimeException(
                     "Error getting database connection using driver " + driverName + " using url '" + dbUrl + "'", e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException("Error registering database driver " + driverName, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Error registering database driver " + driverName, e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Error registering database driver " + driverName, e);
         }
         return new JdbcConnection(connection);
     }
@@ -264,10 +249,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                 LOG.warn("error closing database", e);
             }
         }
-    }
-
-    public List<IncludedDatabaseDriver> getDrivers() {
-        return ChangesetEvaluator.DESCRIPTOR.getIncludedDatabaseDrivers();
     }
 
     public String getDatabaseEngine() {
@@ -333,15 +314,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         this.classpath = classpath;
     }
 
-    public String getDriverClassname() {
-        return driverClassname;
-    }
-
-    @DataBoundSetter
-    public void setDriverClassname(String driverClassname) {
-        this.driverClassname = driverClassname;
-    }
-
     public String getChangeLogParameters() {
         return changeLogParameters;
     }
@@ -368,24 +340,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     public void setBasePath(String basePath) {
         this.basePath = basePath;
     }
-    public void clearDriverClassname() {
-        driverClassname = null;
-    }
 
     public void clearDatabaseEngine() {
         databaseEngine=null;
-    }
-    public boolean hasUseIncludedDriverBeenSet() {
-        return useIncludedDriver!=null;
-    }
-
-    public boolean isUseIncludedDriver() {
-        return useIncludedDriver;
-    }
-
-    @DataBoundSetter
-    public void setUseIncludedDriver(Boolean useIncludedDriver) {
-        this.useIncludedDriver = useIncludedDriver;
     }
 
     public String getCredentialsId() {

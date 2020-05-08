@@ -9,18 +9,15 @@ import java.util.Map;
  */
 public class LiquibaseContext implements Context {
 
-    protected String databaseEngine;
     protected String changeLogFile;
     protected String url;
     protected String defaultSchemaName;
     protected String contexts;
     protected String liquibasePropertiesPath;
     protected String classpath;
-    protected String driverClassname;
     protected String labels;
     private Map<String, String> changeLogParameters;
     private String basePath;
-    private Boolean useIncludedDriver;
     private String credentialsId;
     protected Integer rollbackCount = 0;
     private Integer rollbackLastHours;
@@ -30,11 +27,6 @@ public class LiquibaseContext implements Context {
     private boolean dropAll;
     protected boolean tagOnSuccessfulBuild;
     private String outputDirectory;
-
-
-    void databaseEngine(String databaseEngine) {
-        this.databaseEngine = databaseEngine;
-    }
 
     void changeLogFile(String changeLogFile) {
         this.changeLogFile = changeLogFile;
@@ -63,10 +55,6 @@ public class LiquibaseContext implements Context {
         this.classpath = classpath;
     }
 
-    void driverClassname(String driverClassname) {
-        this.driverClassname = driverClassname;
-    }
-
     void labels(String labels) {
         this.labels = labels;
     }
@@ -81,9 +69,6 @@ public class LiquibaseContext implements Context {
 
     void rollbackCount(int rollbackCount) {
         this.rollbackCount = rollbackCount;
-    }
-    public String getDatabaseEngine() {
-        return databaseEngine;
     }
 
     public String getChangeLogFile() {
@@ -110,10 +95,6 @@ public class LiquibaseContext implements Context {
         return classpath;
     }
 
-    public String getDriverClassname() {
-        return driverClassname;
-    }
-
     public String getLabels() {
         return labels;
     }
@@ -124,10 +105,6 @@ public class LiquibaseContext implements Context {
 
     public String getBasePath() {
         return basePath;
-    }
-
-    public Boolean getUseIncludedDriver() {
-        return useIncludedDriver;
     }
 
     public String getCredentialsId() {
@@ -202,8 +179,8 @@ public class LiquibaseContext implements Context {
         StringBuilder sb = new StringBuilder("");
         String result = null;
         if (changeLogParameters != null) {
-            for (String key : changeLogParameters.keySet()) {
-                sb.append(key).append("=").append(changeLogParameters.get(key)).append("\n");
+            for (Map.Entry<String, String> entry : changeLogParameters.entrySet()) {
+                sb.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
             }
             result = sb.substring(0, sb.length() - 1);
         } else {

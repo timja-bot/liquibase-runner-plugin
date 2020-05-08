@@ -19,6 +19,7 @@ import java.io.IOException;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.slf4j.LoggerFactory;
 
 public class DatabaseDocBuilder extends AbstractLiquibaseBuilder {
 
@@ -54,9 +55,12 @@ public class DatabaseDocBuilder extends AbstractLiquibaseBuilder {
     }
     private static class DatabaseDocGenerationCallback implements FilePath.FileCallable<Void> {
 
-        Liquibase liquibase;
-        Contexts contexts;
-        LabelExpression labelExpression;
+        transient Liquibase liquibase;
+        transient Contexts contexts;
+        transient LabelExpression labelExpression;
+
+        private static final long serialVersionUID = 3472462442L;
+
 
         public DatabaseDocGenerationCallback(Liquibase liquibase, Contexts contexts, LabelExpression labelExpression) {
             this.liquibase = liquibase;
@@ -66,7 +70,9 @@ public class DatabaseDocBuilder extends AbstractLiquibaseBuilder {
 
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            f.mkdirs();
+            if (!f.mkdirs()) {
+                LoggerFactory.getLogger(getClass()).debug("Did not create "+f.getAbsolutePath());
+            }
             try {
                 liquibase.generateDocumentation(f.getAbsolutePath(), contexts, labelExpression);
             } catch (LiquibaseException e) {

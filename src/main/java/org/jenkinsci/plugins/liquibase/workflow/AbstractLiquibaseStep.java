@@ -15,7 +15,6 @@ public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
     protected String contexts = null;
     protected String liquibasePropertiesPath = null;
     protected String classpath = null;
-    protected String driverClassname = null;
     protected String labels = null;
     private String basePath = null;
     private List<String> changeLogParameterList = null;
@@ -60,11 +59,6 @@ public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
     @DataBoundSetter
     public void setClasspath(String classpath) {
         this.classpath = Util.fixEmptyAndTrim(classpath);
-    }
-
-    @DataBoundSetter
-    public void setDriverClassname(String driverClassname) {
-        this.driverClassname = Util.fixEmptyAndTrim(driverClassname);
     }
 
     @DataBoundSetter
@@ -114,10 +108,6 @@ public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
 
     public String getClasspath() {
         return classpath;
-    }
-
-    public String getDriverClassname() {
-        return driverClassname;
     }
 
     public String getLabels() {

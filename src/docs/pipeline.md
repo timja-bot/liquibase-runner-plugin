@@ -21,9 +21,7 @@ node {
   liquibaseUpdate(changeLogFile: 'changeset.yml',
           testRollbacks: true,
           url: 'jdbc:postgresql://localhost:5432/sample-db',
-          driverClassname: 'org.postgresql.Driver',
-          // instead of driverClassname, you can set databaseEngine to MySQL, Derby, Postgres, Derby, or Hypersonic
-          databaseEngine: 'MySQL',
+          classpath: 'path/to/additional/classes', // may be relative or absolute
           credentialsId: 'database_password_credentials_id',
           liquibasePropertiesPath: '/etc/liquibase.properties',
           contexts: 'staging',
@@ -46,7 +44,6 @@ node {
   // rollbackCount, rollbackToTag, rollbackToDate, or rollbackLastHours.
   liquibaseRollback(changeLogFile: 'changeset.yml',
           url: 'jdbc:postgresql://localhost:5432/sample-db',
-          driverClassname: 'org.postgresql.Driver',
           credentialsId: 'database_password_credentials_id',
           liquibasePropertiesPath: '/etc/liquibase.properties',
           rollbackToTag: 'deploy-2.5',
@@ -64,7 +61,6 @@ DbDoc Generation
 node {
    liquibaseDbDoc( changeLogFile: 'changeset.yml',   // same basic configuration parameters
                    url: 'jdbc:postgresql://localhost:5432/sample-db',
-                   driverClassname: 'org.postgresql.Driver',
                    outputDirectory: 'dbdoc')
                    
    // works great with the HTML publisher plugin (sold separately)                   

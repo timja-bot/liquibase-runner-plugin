@@ -9,7 +9,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import static org.exparity.hamcrest.date.IsSameInstant.sameInstant;
+import static org.exparity.hamcrest.date.DateMatchers.sameInstant;
 import static org.junit.Assert.assertThat;
 
 public class RollbackBuilderTest {

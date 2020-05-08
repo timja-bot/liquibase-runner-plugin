@@ -14,6 +14,8 @@ import com.google.inject.Inject;
 
 public class DbDocExecution extends AbstractSynchronousStepExecution<Void> {
 
+    private static final long serialVersionUID = 842377246724L;
+
     @Inject
     private transient DbDocBuildStep step;
 

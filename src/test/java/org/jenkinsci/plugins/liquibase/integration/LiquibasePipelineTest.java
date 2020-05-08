@@ -67,7 +67,7 @@ public class LiquibasePipelineTest {
 
     @Test
     public void should_allow_dbdoc_generation() throws IOException, ExecutionException, InterruptedException {
-        String script = generatePipelineScript(workspace, "/pipeline-scripts/db-doc-template.groovy");
+        String script = generatePipelineScript(workspace, "/pipelinescripts/db-doc-template.groovy");
         LiquibaseTestUtil.createFileFromResource(workspace, LiquibaseTestUtil.SUNNY_DAY_CHANGESET_XML);
         job.setDefinition(new CpsFlowDefinition(script));
         WorkflowRun workflowRun = job.scheduleBuild2(0).get();
@@ -81,7 +81,7 @@ public class LiquibasePipelineTest {
     }
     @Test
     public void should_allow_changelog_parameters() throws IOException, ExecutionException, InterruptedException {
-        String baseScript = generatePipelineScript(workspace, "/pipeline-scripts/pipeline-with-changelog-params.groovy");
+        String baseScript = generatePipelineScript(workspace, "/pipelinescripts/pipeline-with-changelog-params.groovy");
         String parameterValue = RandomStringUtils.randomAlphabetic(5);
         String pipelineScript = baseScript.replaceAll("@PARAM_VALUE@", parameterValue);
         job.setDefinition(new CpsFlowDefinition(pipelineScript));
@@ -103,7 +103,7 @@ public class LiquibasePipelineTest {
             throws IOException, SQLException, LiquibaseException, ExecutionException, InterruptedException {
         File databaseFile = temporaryFolder.newFile();
         String jdbcUrl = LiquibaseTestUtil.composeJdbcUrl(databaseFile);
-        String baseScript = generatePipelineScript(workspace, "/pipeline-scripts/rollback-pipeline-template.groovy");
+        String baseScript = generatePipelineScript(workspace, "/pipelinescripts/rollback-pipeline-template.groovy");
         String script = baseScript.replaceAll("@DB_URL@", jdbcUrl);
         CpsFlowDefinition cpsFlowDefinition = new CpsFlowDefinition(script);
         job.setDefinition(cpsFlowDefinition);
@@ -119,7 +119,7 @@ public class LiquibasePipelineTest {
     }
 
     private String generateUpdatePipelineScript(File workspace) throws IOException {
-        return generatePipelineScript(workspace, "/pipeline-scripts/pipeline-template.groovy");
+        return generatePipelineScript(workspace, "/pipelinescripts/pipeline-template.groovy");
     }
 
     private String generatePipelineScript(File workspace, String resourcePath) throws IOException {
