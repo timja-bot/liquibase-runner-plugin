@@ -34,12 +34,6 @@
         <f:entry title="Label Expression" description="Expression defining labeled ChangeSet to execute">
             <f:expandableTextbox name="labels" value="${instance.labels}"/>
         </f:entry>
-        <!--
-        <f:entry title="Classpath" field="classpath"
-                 description="Classpath containing migration files and JDBC Driver. Can be relative to working directory or absolute. Jar files in listed directories are automatically added. Drivers for PostgreSQL, Mysql, H2, and Hsql come pre-bundled with this plugin.">
-            <f:textbox value="${instance.classpath}"/>
-        </f:entry>
-        -->
         <f:entry title="Changelog Parameters" field="changeLogParameters"
                  help="/plugin/liquibase-runner/help-changeLogParameters.html">
             <f:textarea value="${instance.changeLogProperties}"/>

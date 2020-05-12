@@ -13,7 +13,6 @@ public class LiquibaseWorkflowUtil {
         builder.setDefaultSchemaName(step.getDefaultSchemaName());
         builder.setContexts(step.getContexts());
         builder.setLiquibasePropertiesPath(step.getLiquibasePropertiesPath());
-        builder.setClasspath(step.getClasspath());
         builder.setLabels(step.getLabels());
         builder.setCredentialsId(step.getCredentialsId());
         builder.setBasePath(step.getBasePath());

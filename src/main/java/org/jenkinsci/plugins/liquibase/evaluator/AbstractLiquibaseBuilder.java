@@ -1,13 +1,11 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.Descriptor;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.tasks.Builder;
 import jenkins.tasks.SimpleBuildStep;
 import liquibase.Contexts;
@@ -19,19 +17,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-import liquibase.resource.CompositeResourceAccessor;
 import liquibase.resource.ResourceAccessor;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nonnull;
-
 import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.jenkinsci.plugins.liquibase.common.PropertiesAssembler;
 import org.jenkinsci.plugins.liquibase.common.Util;
@@ -39,8 +25,13 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.Properties;
 
 public abstract class AbstractLiquibaseBuilder extends Builder implements SimpleBuildStep {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractLiquibaseBuilder.class);
@@ -51,7 +42,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     protected String defaultSchemaName;
     protected String contexts;
     protected String liquibasePropertiesPath;
-    protected String classpath;
     protected String labels;
     private String changeLogParameters;
     private String basePath;
@@ -70,7 +60,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                     String defaultSchemaName,
                                     String contexts,
                                     String liquibasePropertiesPath,
-                                    String classpath,
                                     String changeLogParameters,
                                     String labels,
                                     String basePath,
@@ -81,7 +70,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         this.defaultSchemaName = defaultSchemaName;
         this.contexts = contexts;
         this.liquibasePropertiesPath = liquibasePropertiesPath;
-        this.classpath = classpath;
         this.changeLogParameters = changeLogParameters;
         this.labels = labels;
         this.basePath = basePath;
@@ -142,7 +130,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                      Properties configProperties,
                                      Launcher launcher, FilePath workspace) throws IOException, InterruptedException {
         Liquibase liquibase;
-        String resolvedClasspath = getProperty(configProperties, LiquibaseProperty.CLASSPATH);
 
         boolean resolveMacros = build instanceof AbstractBuild;
         EnvVars environment = build.getEnvironment(listener);
@@ -150,12 +137,9 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         try {
             ClassLoader liquibaseClassLoader = this.getClass().getClassLoader();
 
-            if (!Strings.isNullOrEmpty(resolvedClasspath)) {
-                liquibaseClassLoader = Util.createClassLoader(launcher.isUnix(), workspace, resolvedClasspath);
-            }
             JdbcConnection jdbcConnection = createJdbcConnection(configProperties, liquibaseClassLoader);
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
-            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros, liquibaseClassLoader);
+            ResourceAccessor resourceAccessor = createResourceAccessor(workspace, environment, resolveMacros);
 
             String changeLogFile = getProperty(configProperties, LiquibaseProperty.CHANGELOG_FILE);
             liquibase = new Liquibase(changeLogFile, resourceAccessor, database);
@@ -173,8 +157,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
     private ResourceAccessor createResourceAccessor(FilePath workspace,
                                                     Map environment,
-                                                    boolean resolveMacros,
-                                                    ClassLoader liquibaseClassLoader) {
+                                                    boolean resolveMacros) {
         String resolvedBasePath;
         if (resolveMacros) {
             resolvedBasePath = hudson.Util.replaceMacro(basePath,  environment);
@@ -188,10 +171,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
             filePath = workspace.child(resolvedBasePath);
         }
 
-        ResourceAccessor filePathAccessor = new FilePathAccessor(filePath);
-        return new CompositeResourceAccessor(filePathAccessor,
-                new ClassLoaderResourceAccessor(liquibaseClassLoader)
-        );
+        return new FilePathAccessor(filePath);
     }
 
     protected static void populateChangeLogParameters(Liquibase liquibase,
@@ -303,15 +283,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     @DataBoundSetter
     public void setLiquibasePropertiesPath(String liquibasePropertiesPath) {
         this.liquibasePropertiesPath = liquibasePropertiesPath;
-    }
-
-    public String getClasspath() {
-        return classpath;
-    }
-
-    @DataBoundSetter
-    public void setClasspath(String classpath) {
-        this.classpath = classpath;
     }
 
     public String getChangeLogParameters() {
