@@ -78,7 +78,6 @@ public class LiquibaseRunnerDslExtension extends ContextExtensionPoint {
         builder.setDefaultSchemaName(context.getDefaultSchemaName());
         builder.setContexts(context.getContexts());
         builder.setLiquibasePropertiesPath(context.getLiquibasePropertiesPath());
-        builder.setClasspath(context.getClasspath());
         builder.setLabels(context.getLabels());
         builder.setCredentialsId(context.getCredentialsId());
         builder.setBasePath(context.getBasePath());

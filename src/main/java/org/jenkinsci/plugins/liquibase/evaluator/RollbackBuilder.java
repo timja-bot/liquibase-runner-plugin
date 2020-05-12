@@ -106,7 +106,6 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
                            String defaultSchemaName,
                            String contexts,
                            String liquibasePropertiesPath,
-                           String classpath,
                            String changeLogParameters,
                            String labels,
                            String basePath,
@@ -117,7 +116,7 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
                            String credentialsId) {
         super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
-                classpath, changeLogParameters, labels, basePath, credentialsId);
+                changeLogParameters, labels, basePath, credentialsId);
 
         this.rollbackType = rollbackType;
         this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;

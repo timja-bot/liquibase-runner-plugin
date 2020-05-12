@@ -14,7 +14,6 @@ public class LiquibaseContext implements Context {
     protected String defaultSchemaName;
     protected String contexts;
     protected String liquibasePropertiesPath;
-    protected String classpath;
     protected String labels;
     private Map<String, String> changeLogParameters;
     private String basePath;
@@ -51,9 +50,6 @@ public class LiquibaseContext implements Context {
     void credentialsId(String credentialsId) {
         this.credentialsId = credentialsId;
     }
-    void classpath(String classpath) {
-        this.classpath = classpath;
-    }
 
     void labels(String labels) {
         this.labels = labels;
@@ -89,10 +85,6 @@ public class LiquibaseContext implements Context {
 
     public String getLiquibasePropertiesPath() {
         return liquibasePropertiesPath;
-    }
-
-    public String getClasspath() {
-        return classpath;
     }
 
     public String getLabels() {

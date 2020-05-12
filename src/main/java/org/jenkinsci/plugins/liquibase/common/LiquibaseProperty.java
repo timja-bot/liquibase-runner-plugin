@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.liquibase.common;
 public enum LiquibaseProperty {
     USERNAME,
     PASSWORD,
-    CLASSPATH("classpath"),
     LABELS,
     DEFAULTS_FILE("defaultsFile"),
     CHANGELOG_FILE("changeLogFile"),

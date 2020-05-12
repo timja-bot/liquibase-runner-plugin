@@ -73,21 +73,6 @@ public class AbstractLiquibaseBuilderTest {
     }
 
     @Test
-    public void should_load_changeset_from_system_classpath()
-            throws IOException, LiquibaseException, InterruptedException {
-
-        // this changelogFile is available only through this test class's classloader
-        liquibaseProperties.setProperty("changeLogFile", "example-changesets/single-changeset.xml");
-
-        Liquibase liquibase = liquibaseBuilderStub
-                .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties, launcher,
-                        build.getWorkspace());
-        liquibase.update(new Contexts());
-
-        assertThatOneChangesetExecuted(liquibase);
-    }
-
-    @Test
     public void should_populate_changelog_parameters() throws IOException, InterruptedException {
 
         Liquibase liquibase = liquibaseBuilderStub
@@ -113,31 +98,6 @@ public class AbstractLiquibaseBuilderTest {
 
 
 
-    @Test
-    public void should_load_changeset_from_dynamic_classpath()
-            throws IOException, LiquibaseException, InterruptedException {
-
-        File changesets = temporaryFolder.newFolder("changesets");
-
-        String subDirectoryName = RandomStringUtils.randomAlphabetic(5);
-        File randomSubDir = new File(changesets, subDirectoryName);
-
-        LiquibaseTestUtil.createFileFromResource(randomSubDir, "/example-changesets/single-changeset.xml");
-
-        String changeLogResourcePath = subDirectoryName + "/single-changeset.xml";
-        liquibaseProperties.setProperty("changeLogFile", changeLogResourcePath);
-        liquibaseProperties.setProperty("classpath", changesets.getAbsolutePath());
-
-
-        Liquibase liquibase =
-                liquibaseBuilderStub
-                        .createLiquibase(build, buildListener, new ExecutedChangesetAction(build), liquibaseProperties,
-                        launcher, build.getWorkspace());
-        liquibase.update(new Contexts(""));
-
-        assertThatOneChangesetExecuted(liquibase);
-
-    }
 
     private static void assertThatOneChangesetExecuted(Liquibase liquibase) throws LiquibaseException {
         DatabaseChangeLog databaseChangeLog = liquibase.getDatabaseChangeLog();

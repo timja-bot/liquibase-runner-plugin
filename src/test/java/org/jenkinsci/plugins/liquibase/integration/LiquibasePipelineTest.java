@@ -79,24 +79,6 @@ public class LiquibasePipelineTest {
         assertThat(reportIndex, exists());
 
     }
-    @Test
-    public void should_allow_changelog_parameters() throws IOException, ExecutionException, InterruptedException {
-        String baseScript = generatePipelineScript(workspace, "/pipelinescripts/pipeline-with-changelog-params.groovy");
-        String parameterValue = RandomStringUtils.randomAlphabetic(5);
-        String pipelineScript = baseScript.replaceAll("@PARAM_VALUE@", parameterValue);
-        job.setDefinition(new CpsFlowDefinition(pipelineScript));
-        LiquibaseTestUtil.createFileFromResource(workspace, "/example-changesets/with-changelog-property.xml");
-        WorkflowRun workflowRun = job.scheduleBuild2(0).get();
-
-        assertThat(workflowRun, isSuccessful());
-        ExecutedChangesetAction action = workflowRun.getAction(ExecutedChangesetAction.class);
-        assertThat(action, notNullValue());
-        List<ChangeSetDetail> changeSetDetails = action.getChangeSetDetails();
-        assertThat(changeSetDetails, hasSize(1));
-        String executedSql = changeSetDetails.get(0).getExecutedSql();
-        assertThat(executedSql, StringContains.containsString(parameterValue));
-
-    }
 
     @Test
     public void should_allow_rollback_dsl()

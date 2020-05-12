@@ -14,7 +14,6 @@ public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
     protected String defaultSchemaName = null;
     protected String contexts = null;
     protected String liquibasePropertiesPath = null;
-    protected String classpath = null;
     protected String labels = null;
     private String basePath = null;
     private List<String> changeLogParameterList = null;
@@ -54,11 +53,6 @@ public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
     @DataBoundSetter
     public void setLiquibasePropertiesPath(String liquibasePropertiesPath) {
         this.liquibasePropertiesPath = Util.fixEmptyAndTrim(liquibasePropertiesPath);
-    }
-
-    @DataBoundSetter
-    public void setClasspath(String classpath) {
-        this.classpath = Util.fixEmptyAndTrim(classpath);
     }
 
     @DataBoundSetter
@@ -105,11 +99,7 @@ public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
     public String getLiquibasePropertiesPath() {
         return liquibasePropertiesPath;
     }
-
-    public String getClasspath() {
-        return classpath;
-    }
-
+    
     public String getLabels() {
         return labels;
     }
