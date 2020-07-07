@@ -62,7 +62,7 @@
                     <tr>
                         <td colspan="2">
                             <pre>
-                                <j:out  value="${it.exceptionMessage}"/>
+                                ${it.exceptionMessage}
                             </pre>
                         </td>
                     </tr>
