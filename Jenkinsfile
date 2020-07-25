@@ -7,4 +7,4 @@ def configurations = [
     //[ platform: "linux", jdk: "11", jenkins: null ],
     //[ platform: "windows", jdk: "11", jenkins: null ],
 ]
-buildPlugin(configurations: configurations, findbugs: [archive: true])
+buildPlugin(configurations: configurations)
