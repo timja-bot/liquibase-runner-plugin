@@ -7,6 +7,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.tasks.Builder;
+import hudson.tools.ToolInstallation;
 import jenkins.tasks.SimpleBuildStep;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -21,6 +22,7 @@ import liquibase.resource.ResourceAccessor;
 import org.jenkinsci.plugins.liquibase.common.LiquibaseProperty;
 import org.jenkinsci.plugins.liquibase.common.PropertiesAssembler;
 import org.jenkinsci.plugins.liquibase.common.Util;
+import org.jenkinsci.plugins.liquibase.install.LiquibaseInstallation;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,8 @@ import java.util.Properties;
 public abstract class AbstractLiquibaseBuilder extends Builder implements SimpleBuildStep {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractLiquibaseBuilder.class);
 
+    protected String installationName;
+
     protected String databaseEngine;
     protected String changeLogFile;
     protected String url;
@@ -46,7 +50,6 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     private String changeLogParameters;
     private String basePath;
     private String credentialsId;
-
 
     @Deprecated
     protected transient String username;
@@ -63,7 +66,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
                                     String changeLogParameters,
                                     String labels,
                                     String basePath,
-                                    String credentialsId) {
+                                    String credentialsId,
+                                    String installationName) {
         this.databaseEngine = databaseEngine;
         this.changeLogFile = changeLogFile;
         this.url = url;
@@ -74,10 +78,50 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         this.labels = labels;
         this.basePath = basePath;
         this.credentialsId = credentialsId;
+        this.installationName = installationName;
     }
 
     public AbstractLiquibaseBuilder() {
 
+    }
+
+    public LiquibaseInstallation getInstallation(EnvVars env, TaskListener listener, FilePath workspace) throws IOException, InterruptedException {
+        LiquibaseInstallation foundInstallation = null;
+        if (installationName != null) {
+            for (LiquibaseInstallation i : ToolInstallation.all().get(LiquibaseInstallation.DescriptorImpl.class).getInstallations()) {
+                if (installationName.equals(i.getName())) {
+                    foundInstallation = i;
+                    break;
+                }
+            }
+        }
+
+        if (foundInstallation == null) {
+            return null;
+        }
+
+        Computer computer = workspace.toComputer();
+        if (computer == null) {
+            return null;
+        }
+        Node node = computer.getNode();
+        if (node == null) {
+            return null;
+        }
+
+        LiquibaseInstallation returnInstaller = foundInstallation.forNode(node, listener);
+        returnInstaller = returnInstaller.forEnvironment(env);
+
+        return returnInstaller;
+    }
+
+    public String getInstallationName() {
+        return installationName;
+    }
+
+    @DataBoundSetter
+    public void setInstallationName(String installationName) {
+        this.installationName = installationName;
     }
 
     protected Object readResolve() {
@@ -103,9 +147,28 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
 
         Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build,
                 build.getEnvironment(listener), workspace);
+
+
         ExecutedChangesetAction executedChangesetAction = new ExecutedChangesetAction(build);
-        Liquibase liquibase =
-                createLiquibase(build, listener, executedChangesetAction, configProperties, launcher, workspace);
+
+
+        LiquibaseInstallation installation = getInstallation(build.getEnvironment(listener), listener, workspace);
+        if (installation == null) {
+            listener.fatalError("Liquibase installation was not found.");
+            build.setResult(Result.NOT_BUILT);
+            return;
+        }
+        listener.getLogger().println("Liquibase home: "+installation.getHome());
+
+        if (!installation.isValidLiquibaseHome()) {
+            listener.fatalError("Liquibase installation "+installation.getHome()+" is not a valid Liquibase install");
+            build.setResult(Result.NOT_BUILT);
+            return;
+        }
+
+        final ClassLoader liquibaseClassLoader = installation.getClassLoader();
+
+        Liquibase liquibase = createLiquibase(build, listener, executedChangesetAction, configProperties, launcher, workspace);
         String liqContexts = getProperty(configProperties, LiquibaseProperty.CONTEXTS);
         Contexts contexts = new Contexts(liqContexts);
         LabelExpression labelExpression =

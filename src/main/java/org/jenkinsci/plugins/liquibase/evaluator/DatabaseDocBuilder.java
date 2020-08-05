@@ -101,6 +101,7 @@ public class DatabaseDocBuilder extends AbstractLiquibaseBuilder {
         return DESCRIPTOR;
     }
 
+    @Extension
     public static class DescriptorImpl extends AbstractLiquibaseDescriptor {
 
         public DescriptorImpl() {

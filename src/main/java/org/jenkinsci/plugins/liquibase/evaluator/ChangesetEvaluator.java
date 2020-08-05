@@ -2,23 +2,18 @@ package org.jenkinsci.plugins.liquibase.evaluator;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.tasks.Builder;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.MigrationFailedException;
-
-import java.util.logging.Logger;
-
 import org.jenkinsci.plugins.liquibase.common.LiquibaseCommand;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+
+import java.util.logging.Logger;
 
 /**
  * Jenkins builder which evaluates liquibase changesets.
@@ -100,10 +95,11 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
                               String labels,
                               String basePath,
                               boolean tagOnSuccessfulBuild,
-                              String credentialsId) {
+                              String credentialsId,
+                              String installationName) {
         super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
-                changeLogParameters, labels, basePath, credentialsId);
+                changeLogParameters, labels, basePath, credentialsId, installationName);
         this.testRollbacks = testRollbacks;
         this.dropAll = dropAll;
         this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
@@ -142,6 +138,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
         this.tagOnSuccessfulBuild = tagOnSuccessfulBuild;
     }
 
+    @Extension
     public static class DescriptorImpl extends AbstractLiquibaseDescriptor {
 
         public DescriptorImpl() {
@@ -159,7 +156,7 @@ public class ChangesetEvaluator extends AbstractLiquibaseBuilder {
 
         @Override
         public String getDisplayName() {
-            return "Evaluate liquibase changesets";
+            return "Evaluate Liquibase Changesets";
         }
     }
 

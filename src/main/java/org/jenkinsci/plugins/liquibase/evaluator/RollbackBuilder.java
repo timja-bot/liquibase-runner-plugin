@@ -113,10 +113,11 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
                            String numberOfChangesetsToRollback,
                            String rollbackLastHours,
                            String rollbackToTag, String rollbackToDate,
-                           String credentialsId) {
+                           String credentialsId,
+                           String installationName) {
         super(databaseEngine, changeLogFile, url, defaultSchemaName, contexts,
                 liquibasePropertiesPath,
-                changeLogParameters, labels, basePath, credentialsId);
+                changeLogParameters, labels, basePath, credentialsId, installationName);
 
         this.rollbackType = rollbackType;
         this.numberOfChangesetsToRollback = numberOfChangesetsToRollback;
@@ -204,6 +205,7 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
         this.rollbackLastHours = rollbackLastHours;
     }
 
+    @Extension
     public static class DescriptorImpl extends AbstractLiquibaseDescriptor {
 
         @Initializer(before = InitMilestone.PLUGINS_STARTED)

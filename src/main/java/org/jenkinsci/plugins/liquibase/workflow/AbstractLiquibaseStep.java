@@ -8,6 +8,8 @@ import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.kohsuke.stapler.DataBoundSetter;
 
 public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
+
+    protected String installationName;
     protected final String changeLogFile;
     protected String databaseEngine = null;
     protected String url = null;
@@ -120,4 +122,11 @@ public abstract class AbstractLiquibaseStep extends AbstractStepImpl {
         return credentialsId;
     }
 
+    public String getInstallationName() {
+        return installationName;
+    }
+
+    public void setInstallationName(String installationName) {
+        this.installationName = installationName;
+    }
 }

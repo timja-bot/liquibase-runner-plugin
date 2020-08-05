@@ -16,6 +16,7 @@ public class LiquibaseWorkflowUtil {
         builder.setLabels(step.getLabels());
         builder.setCredentialsId(step.getCredentialsId());
         builder.setBasePath(step.getBasePath());
+        builder.setInstallationName(step.getInstallationName());
 
         String parameterList = composeParameters(step);
         if (parameterList != null) {
