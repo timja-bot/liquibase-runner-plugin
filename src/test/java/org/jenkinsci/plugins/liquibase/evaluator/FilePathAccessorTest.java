@@ -54,7 +54,7 @@ public class FilePathAccessorTest {
 
         Set<String> result =
                 filePathAccessor.list( filePath, null,
-                        childDir.getAbsolutePath(),  true,  false,  true);
+                        childDir.getAbsolutePath(),true,  true,  false  );
 
         assertThat(result, hasSize(1));
         assertThat(result, hasItem(childFilepath));
@@ -64,7 +64,7 @@ public class FilePathAccessorTest {
     public void should_return_null_if_not_found() throws IOException {
         FilePathAccessor accessor = new FilePathAccessor(build.getWorkspace());
 
-        InputStream inputStream = accessor.getResourceAsStream("i_dont_exist");
+        InputStream inputStream = accessor.openStream(null, "i_dont_exist");
         assertThat(inputStream, is(nullValue()));
 
     }

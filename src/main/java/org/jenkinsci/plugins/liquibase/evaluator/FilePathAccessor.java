@@ -1,28 +1,25 @@
 package org.jenkinsci.plugins.liquibase.evaluator;
 
+import com.google.common.collect.Sets;
 import hudson.FilePath;
-import liquibase.resource.ResourceAccessor;
+import liquibase.resource.AbstractResourceAccessor;
+import liquibase.resource.InputStreamList;
+import org.apache.commons.io.filefilter.FileFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.io.filefilter.FileFileFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
+import java.util.*;
 
 /**
  * Provides Jenkin's file abstraction as a liquibase resource accessor.
  */
-public class FilePathAccessor implements ResourceAccessor {
+public class FilePathAccessor extends AbstractResourceAccessor {
     private final FilePath filePath;
 
     private static final Logger LOG = LoggerFactory.getLogger(FilePathAccessor.class);
@@ -31,53 +28,53 @@ public class FilePathAccessor implements ResourceAccessor {
         this.filePath = filePath;
     }
 
-    public InputStream getResourceAsStream(String s) throws IOException {
-        InputStream inputStream = null;
+    @Override
+    public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
+        InputStreamList streams = new InputStreamList();
 
         if (filePath != null) {
-            FilePath child = filePath.child(s);
+            FilePath relativeToPath = null;
+            if (relativeTo == null) {
+                relativeToPath = filePath;
+            } else {
+                relativeToPath = filePath.child(relativeTo);
+            }
+
+            FilePath child = relativeToPath.child(streamPath);
             try {
                 if (child.exists()) {
-                    inputStream = child.read();
+                    streams.add(child.toURI(), child.read());
                 }
             } catch (InterruptedException e) {
-                throw new IOException("Error reading resource[" + s + "] ", e);
+                throw new IOException("Error reading resource[" + streamPath + "] ", e);
             }
         }
 
-        return inputStream;
-    }
-
-    public Set<InputStream> getResourcesAsStream(String path) throws IOException {
-        Set<InputStream> streams = null;
-        try {
-            InputStream resourceAsStream = getResourceAsStream(path);
-            if (resourceAsStream!=null) {
-                streams = Sets.newHashSet();
-                streams.add(resourceAsStream);
-            }
-        } catch (IOException e) {
-            LOG.info("Unable to load resources from path '" + path +"'", e);
-        }
         return streams;
     }
 
-    public Set<String> list(String relativeTo,
-                            String path,
-                            boolean includeFiles,
-                            boolean includeDirectories,
-                            boolean recursive) throws IOException {
+    @Override
+    public SortedSet<String> describeLocations() {
+        try {
+            return new TreeSet<>(Arrays.asList(filePath.toURI().toString()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        return list(filePath, relativeTo, path, includeFiles, includeDirectories, recursive);
+    @Override
+    public SortedSet<String> list(String relativeTo, String path, boolean recursive, boolean includeFiles, boolean includeDirectories) throws IOException {
+        return list(filePath, relativeTo, path, recursive, includeFiles, includeDirectories);
     }
 
     @SuppressWarnings("ReturnOfNull")
-    protected Set<String> list(FilePath workspace,
+    protected SortedSet<String> list(FilePath workspace,
                                String relativeTo,
                                String path,
+                               boolean recursive,
                                boolean includeFiles,
-                               boolean includeDirectories, boolean recursive) throws IOException {
-        Set<String> result = Sets.newHashSet();
+                               boolean includeDirectories) throws IOException {
+        SortedSet<String> result = Sets.newTreeSet();
 
         if (workspace != null) {
             FilePath child;
@@ -98,7 +95,7 @@ public class FilePathAccessor implements ResourceAccessor {
                             result.add(filePath.getRemote());
                         }
                         if (recursive) {
-                            result.addAll(list(workspace, relativeTo, path, includeFiles, includeDirectories, true));
+                            result.addAll(list(workspace, relativeTo, path, true, includeFiles, includeDirectories));
                         }
                     } else {
                         if (includeFiles) {
@@ -150,7 +147,7 @@ public class FilePathAccessor implements ResourceAccessor {
                         urlClassLoader =
                                 new URLClassLoader(new URL[]{new URL("file://" + filePath.getBaseName())});
                     } catch (MalformedURLException e) {
-                        throw new RuntimeException("Unable to construct classloader.",e);
+                        throw new RuntimeException("Unable to construct classloader.", e);
                     }
                 }
                 return urlClassLoader;
