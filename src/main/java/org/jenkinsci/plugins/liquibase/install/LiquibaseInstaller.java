@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.liquibase.install;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Node;
@@ -9,6 +11,7 @@ import hudson.tools.ToolInstallation;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
+import java.net.URL;
 
 public class LiquibaseInstaller extends DownloadFromUrlInstaller {
 
@@ -31,7 +34,9 @@ public class LiquibaseInstaller extends DownloadFromUrlInstaller {
 
     @Override
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        System.out.println("Installing perform!");
-        return super.performInstallation(tool, node, log);
+        final FilePath installationRoot = super.performInstallation(tool, node, log);
+
+
+        return installationRoot;
     }
 }

@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.liquibase.matchers;
 
 import hudson.model.AbstractProject;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 

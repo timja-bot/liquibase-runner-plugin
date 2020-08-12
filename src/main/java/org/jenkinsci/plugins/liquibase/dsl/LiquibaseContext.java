@@ -11,12 +11,11 @@ public class LiquibaseContext implements Context {
 
     protected String changeLogFile;
     protected String url;
-    protected String defaultSchemaName;
     protected String contexts;
     protected String liquibasePropertiesPath;
     protected String labels;
     private Map<String, String> changeLogParameters;
-    private String basePath;
+    private String resourceDirectories;
     private String credentialsId;
     protected Integer rollbackCount = 0;
     private Integer rollbackLastHours;
@@ -27,16 +26,16 @@ public class LiquibaseContext implements Context {
     protected boolean tagOnSuccessfulBuild;
     private String outputDirectory;
 
+    private String tag;
+
+    private String commandArguments;
+
     void changeLogFile(String changeLogFile) {
         this.changeLogFile = changeLogFile;
     }
 
     void url(String url) {
         this.url = url;
-    }
-
-    void defaultSchemaName(String defaultSchemaName) {
-        this.defaultSchemaName = defaultSchemaName;
     }
 
     void contexts(String contexts) {
@@ -59,8 +58,8 @@ public class LiquibaseContext implements Context {
         this.changeLogParameters = changeLogParameters;
     }
 
-    void basePath(String basePath) {
-        this.basePath = basePath;
+    void resourceDirectories(String resourceDirectories) {
+        this.resourceDirectories = resourceDirectories;
     }
 
     void rollbackCount(int rollbackCount) {
@@ -73,10 +72,6 @@ public class LiquibaseContext implements Context {
 
     public String getUrl() {
         return url;
-    }
-
-    public String getDefaultSchemaName() {
-        return defaultSchemaName;
     }
 
     public String getContexts() {
@@ -95,8 +90,8 @@ public class LiquibaseContext implements Context {
         return changeLogParameters;
     }
 
-    public String getBasePath() {
-        return basePath;
+    public String getResourceDirectories() {
+        return resourceDirectories;
     }
 
     public String getCredentialsId() {
@@ -165,6 +160,22 @@ public class LiquibaseContext implements Context {
 
     public String getOutputDirectory() {
         return outputDirectory;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getCommandArguments() {
+        return commandArguments;
+    }
+
+    public void setCommandArguments(String commandArguments) {
+        this.commandArguments = commandArguments;
     }
 
     public String composeChangeLogString() {

@@ -1,18 +1,16 @@
 package org.jenkinsci.plugins.liquibase.common;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.domains.Domain;
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
+import org.jenkinsci.plugins.liquibase.builder.UpdateBuilder;
 import org.jenkinsci.plugins.liquibase.integration.LiquibaseTestUtil;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -24,10 +22,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsScope;
-import com.cloudbees.plugins.credentials.domains.Domain;
-import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -84,12 +82,11 @@ public class CredentialsTest {
         FileUtils.write(propertiesfile, "username=i_shouldnt_be_used\n");
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-        ChangesetEvaluator evaluator = new ChangesetEvaluator();
+        UpdateBuilder evaluator = new UpdateBuilder();
         evaluator.setChangeLogFile(LiquibaseTestUtil
                 .createFileFromResource(temporaryFolder.getRoot(), "/example-changesets/single-changeset.xml")
                 .getAbsolutePath());
         evaluator.setUrl(LiquibaseTestUtil.IN_MEMORY_JDBC_URL);
-        evaluator.setDatabaseEngine(LiquibaseTestUtil.H2);
         evaluator.setLiquibasePropertiesPath(propertiesfile.getAbsolutePath());
         evaluator.setCredentialsId(credentialsId);
         project.getBuildersList().add(evaluator);

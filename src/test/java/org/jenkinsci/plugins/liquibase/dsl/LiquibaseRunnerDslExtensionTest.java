@@ -5,17 +5,10 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Project;
 import javaposse.jobdsl.plugin.ExecuteDslScripts;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
-import org.jenkinsci.plugins.liquibase.evaluator.DatabaseDocBuilder;
-import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuilder;
+import org.jenkinsci.plugins.liquibase.builder.RollbackBuilder;
+import org.jenkinsci.plugins.liquibase.builder.UpdateBuilder;
 import org.jenkinsci.plugins.liquibase.integration.LiquibaseTestUtil;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -25,6 +18,11 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -70,10 +68,10 @@ public class LiquibaseRunnerDslExtensionTest {
         FreeStyleProject project =
                 jenkinsRule.getInstance().getItemByFullName(expectedProjectName, FreeStyleProject.class);
 
-        ChangesetEvaluator builder = project.getBuildersList().get(ChangesetEvaluator.class);
+        UpdateBuilder builder = project.getBuildersList().get(UpdateBuilder.class);
 
         assertThat(builder.getChangeLogFile(), is("sunny-day-changeset.xml"));
-        assertThat(builder.isTestRollbacks(), is(true));
+//        assertThat(builder.isTestRollbacks(), is(true));
         assertThat(builder.getUrl(), is("jdbc:postgresql://localhost:5432/sample-db"));
         assertThat(builder.getContexts(), is("staging"));
         assertThat(builder.getChangeLogParameters(), containsString("sample.table.name=blue"));
@@ -100,21 +98,7 @@ public class LiquibaseRunnerDslExtensionTest {
 
     }
 
-    @Test
-    public void should_generate_dbdoc_project() throws InterruptedException, ExecutionException, IOException {
-        launchDslProject(expectedProjectName, "/dsl/dbdoc.groovy");
-
-        Project project = jenkinsRule.getInstance().getItemByFullName(expectedProjectName, Project.class);
-        assertThat(project, notNullValue());
-        DatabaseDocBuilder builder =
-                (DatabaseDocBuilder) project.getBuildersList().getAll(DatabaseDocBuilder.class).get(0);
-
-        assertThat(builder, notNullValue());
-        assertThat(builder.getOutputDirectory(), is("dbdoc"));
-
-    }
-
-    @Test
+      @Test
     public void should_generate_rollback_project() throws InterruptedException, ExecutionException, IOException {
         FreeStyleBuild build = launchDslProject(expectedProjectName, "/dsl/rollback-dsl.groovy");
         LOG.debug("build log:{}", formatLogForLog(build.getLog(100)));

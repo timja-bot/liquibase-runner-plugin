@@ -12,16 +12,13 @@ import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
+import org.jenkinsci.plugins.liquibase.builder.UpdateBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,22 +27,24 @@ public class LiquibaseInstallation extends ToolInstallation implements NodeSpeci
     private static final long serialVersionUID = 1;
 
     private String liquibaseHome;
+    private String databaseDriverUrl;
 
 
     @DataBoundConstructor
-    public LiquibaseInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
+    public LiquibaseInstallation(String name, String home, String databaseDriverUrl,  List<? extends ToolProperty<?>> properties) {
         super(Util.fixEmptyAndTrim(name), Util.fixEmptyAndTrim("liquibase"), properties);
         liquibaseHome = home;
+        this.databaseDriverUrl = databaseDriverUrl;
     }
 
     @Override
     public LiquibaseInstallation forEnvironment(EnvVars environment) {
-        return new LiquibaseInstallation(getName(), environment.expand(liquibaseHome), getProperties().toList());
+        return new LiquibaseInstallation(getName(), environment.expand(liquibaseHome), environment.expand(databaseDriverUrl), getProperties().toList());
     }
 
     @Override
     public LiquibaseInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
-        return new LiquibaseInstallation(getName(), translateFor(node, log), getProperties().toList());
+        return new LiquibaseInstallation(getName(), translateFor(node, log), databaseDriverUrl, getProperties().toList());
     }
 
     @Override
@@ -69,24 +68,23 @@ public class LiquibaseInstallation extends ToolInstallation implements NodeSpeci
         return liquibaseJar != null && liquibaseJar.exists();
     }
 
-    public ClassLoader getClassLoader() {
-        URLClassLoader urlClassLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
-            @Override
-            public URLClassLoader run() {
-                try {
-                    return new URLClassLoader(new URL[]{getLiquibaseJar().toURI().toURL()});
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+    public String getDatabaseDriverUrl() {
+        return databaseDriverUrl;
+    }
 
-        return urlClassLoader;
-
+    @DataBoundSetter
+    public void setDatabaseDriverUrl(String databaseDriverUrl) {
+        this.databaseDriverUrl = databaseDriverUrl;
     }
 
     @Extension
     public static class DescriptorImpl extends ToolDescriptor<LiquibaseInstallation> {
+
+        private LiquibaseInstallation[] installations = new LiquibaseInstallation[0];
+
+        public DescriptorImpl() {
+            load();
+        }
 
         @Override
         public String getDisplayName() {
@@ -99,12 +97,13 @@ public class LiquibaseInstallation extends ToolInstallation implements NodeSpeci
         }
 
         public LiquibaseInstallation[] getInstallations() {
-            return Jenkins.get().getDescriptorByType(ChangesetEvaluator.DescriptorImpl.class).getInstallations();
+            return installations;
         }
 
         @Override
         public void setInstallations(LiquibaseInstallation... installations) {
-            Jenkins.get().getDescriptorByType(ChangesetEvaluator.DescriptorImpl.class).setInstallations(installations);
+            this.installations = installations;
+            save();
         }
     }
 }

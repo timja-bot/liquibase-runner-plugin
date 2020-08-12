@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
-import org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder;
+import org.jenkinsci.plugins.liquibase.builder.AbstractLiquibaseBuilder;
 import org.jenkinsci.plugins.liquibase.exception.LiquibaseRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,8 +89,6 @@ public class PropertiesAssembler {
         addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile(),
                 environment, build);
 
-        addPropertyIfDefined(properties, LiquibaseProperty.DEFAULT_SCHEMA_NAME, liquibaseBuilder.getDefaultSchemaName(),
-                environment, build);
         addPropertyIfDefined(properties, LiquibaseProperty.URL, liquibaseBuilder.getUrl(), environment, build);
         addPropertyIfDefined(properties, LiquibaseProperty.CHANGELOG_FILE, liquibaseBuilder.getChangeLogFile(),
                 environment, build);

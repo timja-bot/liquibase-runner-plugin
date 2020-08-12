@@ -1,0 +1,60 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form"
+         xmlns:st="jelly:stapler">
+
+    <f:section title="Command Configuration">
+        <f:block>Roll back strategy:
+            <f:radioBlock inline="true" name="rollbackType" value="COUNT"
+                          title="By number of changesets" checked="${instance.rollbackType=='COUNT'}">
+                <f:entry field="numberOfChangesetsToRollback"
+                         title="Number of changesets to roll back">
+                    <f:textbox value="${instance.numberOfChangesetsToRollback}"/>
+                </f:entry>
+            </f:radioBlock>
+
+            <f:radioBlock inline="true" name="rollbackType" value="TAG"
+                          help="/plugin/liquibase-runner/help-rollback-by-tag.html"
+                          title="By tag"
+                          checked="${instance.rollbackType=='TAG'}">
+                <f:entry field="rollbackToTag"
+                         title="Tag to roll back to">
+                    <f:textbox field="rollbackToTag"/>
+                </f:entry>
+            </f:radioBlock>
+            <f:radioBlock inline="true" name="rollbackType" value="DATE"
+                          title="By date/time"
+                          help="/plugin/liquibase-runner/help-rollback-by-date.html"
+                          checked="${instance.rollbackType=='DATE'}">
+                <f:entry field="rollbackToDate"
+                         title="Date to roll back to"
+                         description="format: yyyy-MM-dd' 'HH:mm:ss">
+                    <f:textbox value="${instance.rollbackToDate}"/>
+                </f:entry>
+            </f:radioBlock>
+            <f:radioBlock inline="true" name="rollbackType" value="RELATIVE"
+                          title="By relative time"
+                          help="/plugin/liquibase-runner/help-rollback-by-relative.html"
+                          checked="${instance.rollbackType=='RELATIVE'}">
+                <f:entry field="rollbackLastHours"
+                         title="Number of hours to roll back">
+                    <f:textbox value="${instance.rollbackLastHours}"/>
+                </f:entry>
+            </f:radioBlock>
+        </f:block>
+
+        <st:include
+                page="liquibase-common-command-config.jelly"
+                class="org.jenkinsci.plugins.liquibase.builder.AbstractLiquibaseBuilder"/>
+    </f:section>
+
+
+    <st:include
+            page="liquibase-common-connection-config.jelly"
+            class="org.jenkinsci.plugins.liquibase.builder.AbstractLiquibaseBuilder"/>
+    <st:include
+            page="liquibase-common-install-config.jelly"
+            class="org.jenkinsci.plugins.liquibase.builder.AbstractLiquibaseBuilder"/>
+</j:jelly>
+
