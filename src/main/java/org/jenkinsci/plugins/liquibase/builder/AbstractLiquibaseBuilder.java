@@ -99,10 +99,11 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         final PrintStream log = listener.getLogger();
         log.println("\n\nRunning "+getDescriptor().getDisplayName()+"....");
 
-        Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build,
-                build.getEnvironment(listener), workspace);
+        final EnvVars environment = build.getEnvironment(listener);
 
-        LiquibaseInstallation installation = getInstallation(build.getEnvironment(listener), listener, workspace);
+        Properties configProperties = PropertiesAssembler.createLiquibaseProperties(this, build, environment, workspace);
+
+        LiquibaseInstallation installation = getInstallation(environment, listener, workspace);
         if (installation == null) {
             listener.fatalError("Liquibase installation was not found.");
             build.setResult(Result.NOT_BUILT);
@@ -139,8 +140,8 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         }
 
         ArgumentListBuilder cliCommand = new ArgumentListBuilder(liquibaseCmd);
-        addGlobalArguments(cliCommand, configProperties, build, listener);
-        addCommandAndArguments(cliCommand, configProperties, build, listener);
+        addGlobalArguments(cliCommand, configProperties, build, environment, listener);
+        addCommandAndArguments(cliCommand, configProperties, build, environment, listener);
 
         int exitStatus = launcher.launch().cmds(cliCommand).stdout(listener).join();
         boolean result = didErrorsOccur(build, exitStatus);
@@ -149,7 +150,7 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         }
     }
 
-    protected abstract void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, TaskListener listener) throws IOException;
+    protected abstract void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) throws IOException;
 
     private boolean didErrorsOccur(Run<?, ?> build, int exitStatus) throws IOException {
         boolean result = true;
@@ -274,15 +275,18 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
         cliCommand.addKeyValuePair("--", key, value, maskValue);
     }
 
-    protected void addGlobalArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, TaskListener listener) {
-        addArgument(cliCommand, "classpath", getResourceDirectories().replaceAll("\\s*,\\s*", ";"));
-        addArgument(cliCommand, "defaultsFile", getLiquibasePropertiesPath());
-        addArgument(cliCommand, "changeLogFile", getChangeLogFile());
-        addArgument(cliCommand, "url", getUrl());
+    protected void addGlobalArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) throws IOException, InterruptedException {
+        final String classpath = Util.replaceMacro(getResourceDirectories(), environment);
+        if (classpath != null) {
+            addArgument(cliCommand, "classpath", classpath.replaceAll("\\s*,\\s*", ";"));
+        }
+        addArgument(cliCommand, "defaultsFile", Util.replaceMacro(getLiquibasePropertiesPath(), environment));
+        addArgument(cliCommand, "changeLogFile", Util.replaceMacro(getChangeLogFile(), environment));
+        addArgument(cliCommand, "url", Util.replaceMacro(getUrl(), environment));
         addArgument(cliCommand, "username", getProperty(configProperties, LiquibaseProperty.USERNAME));
         addArgument(cliCommand, "password", getProperty(configProperties, LiquibaseProperty.PASSWORD), true);
-        addArgument(cliCommand, "contexts", getContexts());
-        addArgument(cliCommand, "labels", getLabels());
+        addArgument(cliCommand, "contexts", Util.replaceMacro(getContexts(), environment));
+        addArgument(cliCommand, "labels", Util.replaceMacro(getLabels(), environment));
     }
 
 }

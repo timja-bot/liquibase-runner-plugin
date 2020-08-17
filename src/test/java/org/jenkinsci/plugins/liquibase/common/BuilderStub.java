@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.common;
 
+import hudson.EnvVars;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -13,7 +14,7 @@ import java.util.Properties;
 public class BuilderStub extends AbstractLiquibaseBuilder {
 
     @Override
-    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, TaskListener listener) throws IOException {
+    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) throws IOException {
 
     }
 

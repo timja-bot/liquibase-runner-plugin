@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
@@ -26,7 +27,7 @@ public class UpdateBuilder extends AbstractLiquibaseBuilder {
     }
 
     @Override
-    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, TaskListener listener) {
+    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) {
         cliCommand.add("update");
     }
 

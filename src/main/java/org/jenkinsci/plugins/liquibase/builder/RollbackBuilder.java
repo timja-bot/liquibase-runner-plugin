@@ -47,10 +47,9 @@ public class RollbackBuilder extends AbstractLiquibaseBuilder {
     }
 
     @Override
-    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, TaskListener listener) throws IOException {
+    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) throws IOException {
         try {
             RollbackStrategy rollbackStrategy = RollbackStrategy.valueOf(rollbackType);
-            EnvVars environment = build.getEnvironment(listener);
 
             if (rollbackStrategy == RollbackStrategy.COUNT) {
                 String resolvedRollbackCount = Util.replaceMacro(numberOfChangesetsToRollback, environment);

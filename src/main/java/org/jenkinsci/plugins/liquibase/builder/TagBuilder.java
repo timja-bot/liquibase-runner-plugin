@@ -1,6 +1,8 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Run;
@@ -28,13 +30,13 @@ public class TagBuilder extends AbstractLiquibaseBuilder {
     }
 
     @Override
-    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, TaskListener listener) {
+    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) {
         String tagString = this.getTag();
         if (tagString == null || tagString.trim().equals("")) {
             tagString = build.getParent().getName() + "-" + build.getNumber();
         }
 
-        cliCommand.add("tag", tagString);
+        cliCommand.add("tag", Util.replaceMacro(tagString, environment));
     }
 
     @Override

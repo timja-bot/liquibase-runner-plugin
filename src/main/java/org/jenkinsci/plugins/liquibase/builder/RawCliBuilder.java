@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.liquibase.builder;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
@@ -30,12 +31,12 @@ public class RawCliBuilder extends AbstractLiquibaseBuilder {
     }
 
     @Override
-    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, TaskListener listener) throws IOException {
+    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) throws IOException {
         if (commandArguments == null || commandArguments.trim().equals("")) {
             throw new AbortException("No command line specified in '" + getDescriptor().getDisplayName() + "' configuration");
         }
 
-        cliCommand.add(commandArguments.replaceAll("\r\n", " ").replaceAll("\n", " ").split(" "));
+        cliCommand.add(environment.expand(commandArguments).replaceAll("\r\n", " ").replaceAll("\n", " ").split(" "));
     }
 
     @Override
