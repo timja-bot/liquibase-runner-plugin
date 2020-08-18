@@ -45,14 +45,14 @@ public class LiquibasePipelineTest {
         job = jenkinsRule.jenkins.createProject(WorkflowJob.class, RandomStringUtils.randomAlphabetic(8));
     }
 
-    @Test
-    public void should_allow_friendly_update_name() throws ExecutionException, InterruptedException, IOException {
-        String updateScript = generateUpdatePipelineScript(workspace);
-        job.setDefinition(new CpsFlowDefinition(updateScript));
-        WorkflowRun workflowRun = job.scheduleBuild2(0).get();
-        assertThat(workflowRun, isSuccessful());
-
-    }
+//    @Test
+//    public void should_allow_friendly_update_name() throws ExecutionException, InterruptedException, IOException {
+//        String updateScript = generateUpdatePipelineScript(workspace);
+//        job.setDefinition(new CpsFlowDefinition(updateScript));
+//        WorkflowRun workflowRun = job.scheduleBuild2(0).get();
+//        assertThat(workflowRun, isSuccessful());
+//
+//    }
 
 //    @Test
 //    public void should_allow_rollback_dsl()
