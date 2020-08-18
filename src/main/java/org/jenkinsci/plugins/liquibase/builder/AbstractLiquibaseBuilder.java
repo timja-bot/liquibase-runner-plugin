@@ -48,10 +48,13 @@ public abstract class AbstractLiquibaseBuilder extends Builder implements Simple
     public LiquibaseInstallation getInstallation(EnvVars env, TaskListener listener, FilePath workspace) throws IOException, InterruptedException {
         LiquibaseInstallation foundInstallation = null;
         if (installationName != null) {
-            for (LiquibaseInstallation i : ToolInstallation.all().get(LiquibaseInstallation.DescriptorImpl.class).getInstallations()) {
-                if (installationName.equals(i.getName())) {
-                    foundInstallation = i;
-                    break;
+            final LiquibaseInstallation.DescriptorImpl installDescriptor = ToolInstallation.all().get(LiquibaseInstallation.DescriptorImpl.class);
+            if (installDescriptor != null) {
+                for (LiquibaseInstallation i : installDescriptor.getInstallations()) {
+                    if (installationName.equals(i.getName())) {
+                        foundInstallation = i;
+                        break;
+                    }
                 }
             }
         }
