@@ -97,7 +97,7 @@ public class LiquibaseInstallation extends ToolInstallation implements NodeSpeci
         }
 
         public LiquibaseInstallation[] getInstallations() {
-            return installations;
+            return Arrays.copyOf(installations, installations.length);
         }
 
         @Override
