@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.liquibase.matchers;
 
 import hudson.model.Result;
 import hudson.model.Run;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 

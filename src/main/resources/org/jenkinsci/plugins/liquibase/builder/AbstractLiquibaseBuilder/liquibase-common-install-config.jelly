@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form"
+         xmlns:c="/lib/credentials">
+
+     <f:section title="Install Locations">
+        <f:entry title="Liquibase Installation">
+            <select class="setting-input" name="ChangesetEvaluator.installationName">
+                <j:forEach var="inst" items="${descriptor.installations}">
+                    <f:option selected="${inst.name==instance.installationName}">${inst.name}</f:option>
+                </j:forEach>
+            </select>
+        </f:entry>
+
+        <f:entry help="/plugin/liquibase-runner/help-resourceDirectories.html" title="Search Directories" field="resourceDirectories">
+            <f:textbox value="${instance.resourceDirectories}"/>
+        </f:entry>
+    </f:section>
+</j:jelly>

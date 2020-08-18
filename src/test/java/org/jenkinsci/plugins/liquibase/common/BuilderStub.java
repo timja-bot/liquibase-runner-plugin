@@ -1,31 +1,20 @@
 package org.jenkinsci.plugins.liquibase.common;
 
-import hudson.FilePath;
+import hudson.EnvVars;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.Builder;
-import liquibase.Contexts;
-import liquibase.LabelExpression;
-import liquibase.Liquibase;
-import liquibase.exception.LiquibaseException;
+import hudson.util.ArgumentListBuilder;
+import org.jenkinsci.plugins.liquibase.builder.AbstractLiquibaseBuilder;
 
 import java.io.IOException;
-
-import org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder;
-import org.jenkinsci.plugins.liquibase.evaluator.ExecutedChangesetAction;
+import java.util.Properties;
 
 public class BuilderStub extends AbstractLiquibaseBuilder {
 
     @Override
-    public void runPerform(Run<?, ?> build,
-                           TaskListener listener,
-                           Liquibase liquibase,
-                           Contexts contexts,
-                           LabelExpression labelExpression,
-                           ExecutedChangesetAction executedChangesetAction,
-                           FilePath workspace)
-            throws InterruptedException, IOException, LiquibaseException {
+    protected void addCommandAndArguments(ArgumentListBuilder cliCommand, Properties configProperties, Run<?, ?> build, EnvVars environment, TaskListener listener) throws IOException {
 
     }
 

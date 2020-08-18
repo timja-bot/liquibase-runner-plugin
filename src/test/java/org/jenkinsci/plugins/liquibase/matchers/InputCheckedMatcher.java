@@ -1,10 +1,9 @@
 package org.jenkinsci.plugins.liquibase.matchers;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
-
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.google.common.base.Strings;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 public class InputCheckedMatcher extends TypeSafeMatcher<HtmlInput> {
 

@@ -6,10 +6,7 @@ import javaposse.jobdsl.dsl.helpers.step.StepContext;
 import javaposse.jobdsl.plugin.ContextExtensionPoint;
 import javaposse.jobdsl.plugin.DslExtensionMethod;
 
-import org.jenkinsci.plugins.liquibase.evaluator.AbstractLiquibaseBuilder;
-import org.jenkinsci.plugins.liquibase.evaluator.ChangesetEvaluator;
-import org.jenkinsci.plugins.liquibase.evaluator.DatabaseDocBuilder;
-import org.jenkinsci.plugins.liquibase.evaluator.RollbackBuilder;
+import org.jenkinsci.plugins.liquibase.builder.*;
 
 @SuppressWarnings("MethodMayBeStatic")
 @Extension(optional = true)
@@ -18,13 +15,9 @@ public class LiquibaseRunnerDslExtension extends ContextExtensionPoint {
     @DslExtensionMethod(context = StepContext.class)
     @RequiresPlugin(id = "liquibase-runner", minimumVersion = "1.3.0")
     public Object liquibaseUpdate(Runnable closure) {
-        ChangesetEvaluator builder = new ChangesetEvaluator();
+        UpdateBuilder builder = new UpdateBuilder();
         LiquibaseContext context = composeContext(closure);
-
         setCommonBuilderProperties(builder, context);
-        builder.setTagOnSuccessfulBuild(context.isTagOnSuccessfulBuild());
-        builder.setTestRollbacks(context.isTestRollbacks());
-        builder.setDropAll(context.isDropAll());
 
         return builder;
     }
@@ -32,9 +25,10 @@ public class LiquibaseRunnerDslExtension extends ContextExtensionPoint {
     @DslExtensionMethod(context = StepContext.class)
     @RequiresPlugin(id = "liquibase-runner", minimumVersion = "1.3.0")
     public Object liquibaseRollback(Runnable closure) {
-        LiquibaseContext context = composeContext(closure);
         RollbackBuilder rollbackBuilder = new RollbackBuilder();
+        LiquibaseContext context = composeContext(closure);
         setCommonBuilderProperties(rollbackBuilder, context);
+
         if (context.getRollbackCount()!=null) {
             rollbackBuilder.setNumberOfChangesetsToRollback(String.valueOf(context.getRollbackCount()));
             rollbackBuilder.setRollbackType(RollbackBuilder.RollbackStrategy.COUNT.name());
@@ -52,17 +46,42 @@ public class LiquibaseRunnerDslExtension extends ContextExtensionPoint {
             rollbackBuilder.setRollbackLastHours(String.valueOf(context.getRollbackLastHours()));
             rollbackBuilder.setRollbackType(RollbackBuilder.RollbackStrategy.RELATIVE.name());
         }
+
         return rollbackBuilder;
     }
 
     @DslExtensionMethod(context = StepContext.class)
     @RequiresPlugin(id = "liquibase-runner", minimumVersion = "1.3.0")
-    public Object liquibaseDbDoc(Runnable closure) {
+    public Object liquibaseTag(Runnable closure) {
+        TagBuilder tagBuilder = new TagBuilder();
         LiquibaseContext context = composeContext(closure);
-        DatabaseDocBuilder builder = new DatabaseDocBuilder(context.getOutputDirectory());
+        setCommonBuilderProperties(tagBuilder, context);
+
+        tagBuilder.setTag(context.getTag());
+
+        return tagBuilder;
+    }
+
+    @DslExtensionMethod(context = StepContext.class)
+    @RequiresPlugin(id = "liquibase-runner", minimumVersion = "1.3.0")
+    public Object liquibaseDropAll(Runnable closure) {
+        DropAllBuilder builder = new DropAllBuilder();
+        LiquibaseContext context = composeContext(closure);
         setCommonBuilderProperties(builder, context);
 
         return builder;
+    }
+
+    @DslExtensionMethod(context = StepContext.class)
+    @RequiresPlugin(id = "liquibase-runner", minimumVersion = "1.3.0")
+    public Object liquibaseCli(Runnable closure) {
+        RawCliBuilder tagBuilder = new RawCliBuilder();
+        LiquibaseContext context = composeContext(closure);
+        setCommonBuilderProperties(tagBuilder, context);
+
+        tagBuilder.setCommandArguments(context.getCommandArguments());
+
+        return tagBuilder;
     }
 
     private static LiquibaseContext composeContext(Runnable closure) {
@@ -75,11 +94,10 @@ public class LiquibaseRunnerDslExtension extends ContextExtensionPoint {
         builder.setChangeLogParameters(context.composeChangeLogString());
         builder.setChangeLogFile(context.getChangeLogFile());
         builder.setUrl(context.getUrl());
-        builder.setDefaultSchemaName(context.getDefaultSchemaName());
         builder.setContexts(context.getContexts());
         builder.setLiquibasePropertiesPath(context.getLiquibasePropertiesPath());
         builder.setLabels(context.getLabels());
         builder.setCredentialsId(context.getCredentialsId());
-        builder.setBasePath(context.getBasePath());
+        builder.setResourceDirectories(context.getResourceDirectories());
     }
 }

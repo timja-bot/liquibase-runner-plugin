@@ -8,9 +8,7 @@ public enum LiquibaseProperty {
     CHANGELOG_FILE("changeLogFile"),
     CONTEXTS(),
     URL(),
-    DEFAULT_SCHEMA_NAME("defaultSchemaName"),
-    LOG_LEVEL("logLevel"),
-    DEFAULT_CATALOG_NAME("defaultCatalogName");
+    LOG_LEVEL("logLevel");
 
 
     private String cliOption;
