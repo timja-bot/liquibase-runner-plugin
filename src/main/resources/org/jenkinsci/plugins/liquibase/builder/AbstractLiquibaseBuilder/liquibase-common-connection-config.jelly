@@ -10,7 +10,7 @@
         </f:entry>
 
         <f:entry field="credentialsId" title="Credentials">
-            <c:select/>
+            <c:select expressionAllowed="true"/>
         </f:entry>
     </f:section>
 </j:jelly>
