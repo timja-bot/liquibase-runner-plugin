@@ -9,7 +9,7 @@
         <relativePath />
     </parent>
     <artifactId>liquibase-runner</artifactId>
-    <version>1.4.10</version>
+    <version>1.4.11-SNAPSHOT</version>
     <name>Liquibase Runner</name>
 
     <packaging>hpi</packaging>
@@ -51,7 +51,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/liquibase-runner-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/liquibase-runner-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/liquibase-runner-plugin</url>
-      <tag>liquibase-runner-1.4.10</tag>
+      <tag>liquibase-runner-1.4.2</tag>
   </scm>
     <developers>
         <developer>
