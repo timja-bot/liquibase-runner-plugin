@@ -50,7 +50,7 @@
     <scm>
         <connection>scm:git:ssh://github.com/jenkinsci/liquibase-runner-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/liquibase-runner-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/liqiubase-runner-plugin</url>
+        <url>https://github.com/jenkinsci/liquibase-runner-plugin</url>
       <tag>liquibase-runner-1.4.2</tag>
   </scm>
     <developers>
