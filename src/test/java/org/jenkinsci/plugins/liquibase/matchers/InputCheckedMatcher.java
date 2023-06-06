@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.liquibase.matchers;
 
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlInput;
 import com.google.common.base.Strings;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
